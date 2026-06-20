@@ -1,0 +1,201 @@
+﻿@using Application.ViewModels
+@using System.Text.Encodings.Web
+@model ReportSettingViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style
+{
+    <link href="~/shamsidate/jalalidatepicker.min.css" rel="stylesheet" />
+    <script src="~/shamsidate/jalalidatepicker.min.js"></script>
+        <title>تنظیمات چاپ</title>
+}
+@section ProfileName
+{
+}
+@section Body
+{
+    @if (!string.IsNullOrEmpty(ViewBag.Message))
+    {
+        var encodedMessage = JavaScriptEncoder.Default.Encode(ViewBag.Message.ToString());
+        <script>
+            alert('@encodedMessage');
+        </script>
+    }
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    }
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">تنظیمات چاپ</h3>
+        </div>
+        <!-- /.card-header -->
+        <!-- form start -->
+        <form method="post" enctype="multipart/form-data" asp-action="ReportSetting" asp-controller="Reports">
+            @Html.AntiForgeryToken()
+            <div class="card-body">
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label class="form-label">شماره سند</label>
+                        <input asp-for="ShomareSanad" type="text" class="form-control" placeholder="شماره سند">
+                        <span asp-validation-for="ShomareSanad" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="form-label">شماره بازنگری</label>
+                        <input asp-for="ShomareBaznegari" type="text" class="form-control" placeholder="شماره بازنگری">
+                        <span asp-validation-for="ShomareBaznegari" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label class="form-label">تاریخ بازنگری</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                            </div>
+                            <input asp-for="TarikhBaznegari" data-jdp data-jdp-miladi-input="miladi_date" type="text" class="form-control" placeholder="تاریخ را وارد کنید" />
+                            <span asp-validation-for="TarikhBaznegari" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="form-label">آدرس دفتر</label>
+                        <input asp-for="OfficeAddress" type="text" class="form-control" placeholder="آدرس دفتر">
+                        <span asp-validation-for="OfficeAddress" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label class="form-label">آدرس کارخانه</label>
+                        <input asp-for="FactoryAddress" type="text" class="form-control" placeholder="آدرس کارخانه">
+                        <span asp-validation-for="FactoryAddress" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="form-label">تلفن دفتر</label>
+                        <input asp-for="OfficePhone" type="text" class="form-control" placeholder="تلفن دفتر">
+                        <span asp-validation-for="OfficePhone" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label class="form-label">تلفن کارخانه</label>
+                        <input asp-for="FactoryPhone" type="text" class="form-control" placeholder="تلفن کارخانه">
+                        <span asp-validation-for="FactoryPhone" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="form-label">فاکس</label>
+                        <input asp-for="Fax" type="text" class="form-control" placeholder="فاکس">
+                        <span asp-validation-for="Fax" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label class="form-label">تلفاکس</label>
+                        <input asp-for="Telfax" type="text" class="form-control" placeholder="تلفاکس">
+                        <span asp-validation-for="Telfax" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="form-label">کد پستی</label>
+                        <input asp-for="Postcode" type="text" class="form-control" placeholder="کد پستی">
+                        <span asp-validation-for="Postcode" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group col-md-6">
+                    <label for="Logo">لوگو</label>
+                    <!-- Styled button for file upload -->
+                    <div class="input-group">
+                        <span class="btn btn-success fileinput-button dz-clickable" onclick="document.getElementById('Logo').click();">
+                            <i class="fa fa-plus"></i>
+                            <span>انتخاب لوگو</span>
+                        </span>
+                        <input type="file" id="Logo" name="Logo" accept="image/*" style="display: none;" onchange="previewLogo(this)">
+                    </div>
+                    <!-- Preview -->
+                    @if (!string.IsNullOrEmpty(Model.LogoPath))
+                    {
+                        <img id="logoPreview" src="@Url.Content(Model.LogoPath)" alt="پیش‌نمایش لوگو" style="max-height: 150px; margin-top: 10px;" />
+                    }
+                    else
+                    {
+                        <img id="logoPreview" src="#" alt="پیش‌نمایش لوگو" style="max-height: 150px; margin-top: 10px; display: none;" />
+                    }
+                </div>
+            </div>
+            <!-- /.card-body -->
+            <input type="hidden" asp-for="LogoPath" />
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">ثبت</button>
+                <a class="btn btn-secondary" asp-controller="Home" asp-action="Index">انصراف</a>
+            </div>
+        </form>
+    </div>
+}
+@section script {
+    <script>
+        function previewLogo(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const preview = document.getElementById('logoPreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+    <script>
+
+        jalaliDatepicker.startWatch();
+
+        document.querySelector("[data-jdp-miladi-input]").addEventListener("jdp:change", function (e) {
+            var miladiInput = document.getElementById(this.getAttribute("data-jdp-miladi-input"));
+            if (!this.value) {
+                miladiInput.value = "";
+                return;
+            }
+            var date = this.value.split("/");
+            miladiInput.value = jalali_to_gregorian(date[0], date[1], date[2]).join("/")
+        });
+
+        function jalali_to_gregorian(jy, jm, jd) {
+            jy = Number(jy);
+            jm = Number(jm);
+            jd = Number(jd);
+            var gy = (jy <= 979) ? 621 : 1600;
+            jy -= (jy <= 979) ? 0 : 979;
+            var days = (365 * jy) + ((parseInt(jy / 33)) * 8) + (parseInt(((jy % 33) + 3) / 4))
+                + 78 + jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
+            gy += 400 * (parseInt(days / 146097));
+            days %= 146097;
+            if (days > 36524) {
+                gy += 100 * (parseInt(--days / 36524));
+                days %= 36524;
+                if (days >= 365) days++;
+            }
+            gy += 4 * (parseInt((days) / 1461));
+            days %= 1461;
+            gy += parseInt((days - 1) / 365);
+            if (days > 365) days = (days - 1) % 365;
+            var gd = days + 1;
+            var sal_a = [0, 31, ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            var gm
+            for (gm = 0; gm < 13; gm++) {
+                var v = sal_a[gm];
+                if (gd <= v) break;
+                gd -= v;
+            }
+            return [gy, gm, gd];
+        }
+    </script>
+}
+

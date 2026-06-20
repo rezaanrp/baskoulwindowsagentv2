@@ -1,0 +1,356 @@
+﻿@using Application.ViewModels.Users
+@model InsertUsersListViewModel
+
+@{
+    ViewData["Title"] = "تغییر اطلاعات کاربری";
+  //  Layout = ViewData["Layout"]?.ToString() ?? "_LayoutDefault";
+
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style
+    {
+    <title>کاربر جدید</title>
+}
+
+@section ProfileName
+    {
+    <!-- نمایش نام کاربر جاری در اینجا -->
+}
+
+@section Body
+    {
+    @if (TempData["InvalidCodMrakaz"] != null)
+    {
+        <script>
+            alert('@Html.Raw(TempData["InvalidCodMrakaz"])');
+        </script>
+    }
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-10">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h4 class="mb-0 text-center">
+                        <i class="fa fa-user-plus me-2"></i> ثبت کاربر جدید
+                    </h4>
+                </div>
+
+                @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                {
+                    <p class="text-danger text-center my-2">@ViewBag.ErrorMessage</p>
+                }
+
+                <form id="register-user-form" method="post" class="p-3">
+                    @Html.AntiForgeryToken()  <!-- امنیت CSRF -->
+
+                    <div class="card-body">
+                        <div class="row g-3">
+
+                            <!-- نام کاربری -->
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="UserName" class="form-control" placeholder="نام کاربری" />
+                                    <label>نام کاربری</label>
+                                    <span asp-validation-for="UserName" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <!-- نام -->
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="Name" class="form-control" placeholder="نام" />
+                                    <label>نام</label>
+                                    <span asp-validation-for="Name" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <!-- نام خانوادگی -->
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="Family" class="form-control" placeholder="نام خانوادگی" />
+                                    <label>نام خانوادگی</label>
+                                    <span asp-validation-for="Family" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <!-- شماره همراه -->
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="Mobile" class="form-control" placeholder="شماره همراه" />
+                                    <label>شماره همراه</label>
+                                    <span asp-validation-for="Mobile" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3" />
+
+                        <div class="row g-3">
+                            <!-- رمز عبور -->
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="Password" class="form-control" placeholder="رمز عبور" type="password" />
+                                    <label>رمز عبور</label>
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <!-- تکرار رمز عبور -->
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input asp-for="RepeatePassword" class="form-control" placeholder="تکرار رمز عبور" type="password" />
+                                    <label>تکرار رمز عبور</label>
+                                    <span asp-validation-for="RepeatePassword" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3" />
+
+                        <div class="row g-3">
+                            <!-- انتخاب سایت‌ها -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold mb-1">
+                                    <i class="text-primary me-1"></i> سایت‌ها
+                                </label>
+                                <div class="p-2 border rounded bg-light">
+                                    @foreach (var site in Model.AvailableSites)
+                                    {
+                                        <div class="form-check mb-1">
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="SelectedSiteIds"
+                                                   value="@site.ID"
+                                                   @(Model.SelectedSiteIds.Contains(site.ID) ? "checked" : "") />
+                                            <label class="form-check-label">@site.name</label>
+                                        </div>
+                                    }
+                                    <span asp-validation-for="SelectedSiteIds" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <select asp-for="Role" class="form-select custom-select" id="roleSelect">
+                                        @switch (Model.UserRole)
+                                        {
+                                            case "SuperAdmin":
+                                                // SuperAdmin can see all roles
+                                                <option value="Administrator">مدیر سیستم همیار</option>
+                                                <option value="User">کاربر عادی همیار</option>
+                                                <option value="NONHAMYAADMIN">مدیر سیستم</option>
+                                                <option value="NONHAMYARUSER">کاربر عادی</option>
+                                                break;
+
+                                            case "Administrator":
+                                                // Administrator sees Administrator + User
+                                                <option value="Administrator">مدیر سیستم همیار</option>
+                                                <option value="User">کاربر عادی همیار</option>
+                                                break;
+
+                                            case "NonHamyarAdmin":
+                                                // NONHAMYAADMIN sees NONHAMYAADMIN + NONHAMYARUSER
+                                                <option value="NONHAMYAADMIN">مدیر سیستم</option>
+                                                <option value="NONHAMYARUSER">کاربر عادی</option>
+                                                break;
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Role" class="text-danger"></span>
+                                </div>
+                                <label class="form-label">نقش کاربر</label>
+                            </div>
+                            @if (Model.UserRole != "NonHamyarAdmin" && Model.UserRole != "NonHamyarUser")
+                            {
+                                <div class="col-md-3">
+                                    <div class="input-group">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="showPopup()">دریافت توکن</button>
+                                        <input asp-for="Token" class="form-control form-control-sm" id="Token" placeholder="دریافت توکن">
+                                        <span asp-validation-for="Token" class="text-danger"></span>
+                                    </div>
+                                    <label class="form-label fw-bold">توکن</label>
+                                </div>
+                            }
+                        </div>
+                        <br />
+                       @*  <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-group ">
+                                    <div class="input-group-prepend">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="showPopupWin()">ریافت توکن برای ارسال وزن از ویندوز</button> <!-- btn-sm -->
+                                    </div>
+                                    <input asp-for="WindowsToken" class="form-control form-control-sm" id="WindowsToken" placeholder="دریافت توکن"> <!-- form-control-sm -->
+                                    <span asp-validation-for="WindowsToken" class="text-danger"></span>
+                                </div>
+                                <label class="form-label fw-bold">توکن</label>
+                            </div>
+                        </div> *@
+                    </div>
+
+                    <div class="card-footer d-flex justify-content-end gap-2 border-0">
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="fa fa-save me-1"></i> ذخیره
+                        </button>
+                        <a asp-controller="UserManager" asp-action="Index" class="btn btn-secondary px-4">
+                            <i class="fa fa-times me-1"></i> لغو
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="popupForm" style="display: none; position: fixed; top: 20%; left: 35%; width: 30%; background: white; border: 1px solid #ccc; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 9999;">
+        <h5>دریافت توکن</h5>
+        <form id="tokenForm">
+            <div class="mb-3">
+                <label for="HamUsername" class="form-label">نام کاربری</label>
+                <input type="text" name="HamUsername" class="form-control" id="HamUsername" />
+            </div>
+            <div class="mb-3">
+                <label for="HamPassword" class="form-label">رمز عبور</label>
+                <input type="password" name="HamPassword" class="form-control" id="HamPassword" />
+            </div>
+            <button type="submit" class="btn btn-success">ارسال</button>
+            <button type="button" class="btn btn-secondary" onclick="hidePopup()">بستن</button>
+        </form>
+    </div>
+    <div id="popupFormWin" style="display: none; position: fixed; top: 20%; left: 35%; width: 30%; background: white; border: 1px solid #ccc; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 9999;">
+        <h5>دریافت توکن برای ارسال وزن از ویندوز</h5>
+        <form id="tokenFormWin">
+            <div class="mb-3">
+                <label for="WinPassword" class="form-label">رمز عبور</label>
+                <input type="password" name="WinPassword" class="form-control" id="WinPassword" />
+            </div>
+            <button type="submit" class="btn btn-success">ارسال</button>
+            <button type="button" class="btn btn-secondary" onclick="hidePopupWin()">بستن</button>
+        </form>
+    </div>
+       <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("tokenForm");
+
+            form.addEventListener("submit", function (e) {
+                e.preventDefault(); // Prevent full-page post
+
+                const HamUsername = document.getElementById("HamUsername").value;
+                const HamPassword = document.getElementById("HamPassword").value;
+
+                const url = '@Url.Action("GetToken", "APIs", null, Context.Request.Scheme)';
+                console.log("Sending token request to:", url);
+
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ HamUsername, HamPassword })
+                })
+                .then(async response => {
+                    const raw = await response.text(); // Read raw response
+                    console.log("Raw response:", raw);
+
+                    try {
+                        const data = JSON.parse(raw); // Try to parse JSON
+
+                        if (!data.success) {
+                            alert(data.message || "دریافت توکن با خطا مواجه شد");
+                            return;
+                        }
+
+                        document.getElementById("Token").value = data.token;
+                        hidePopup();
+                    } catch (e) {
+                        console.error("خطا در تبدیل پاسخ به JSON:", e);
+                        alert("پاسخ نامعتبر از سرور دریافت شد.");
+                    }
+                })
+                .catch(error => {
+                    console.error("خطا در ارسال درخواست:", error);
+                    alert("درخواست با خطا مواجه شد");
+                });
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("tokenFormWin");
+
+            form.addEventListener("submit", function (e) {
+                e.preventDefault(); // Prevent full-page post
+
+                const WinPassword = document.getElementById("WinPassword").value;
+
+                    const url = '@Url.Action("GetToken", "WindowsAPIs")';
+                console.log("Sending token request to:", url);
+
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ WinPassword })
+                })
+                .then(async response => {
+                    const raw = await response.text(); // Read raw response
+                    console.log("Raw response:", raw);
+
+                    try {
+                        const data = JSON.parse(raw); // Try to parse JSON
+
+                        if (!data.success) {
+                            alert(data.message || "دریافت توکن با خطا مواجه شد");
+                            return;
+                        }
+
+                        document.getElementById("WindowsToken").value = data.token;
+                        hidePopupWin();
+                    } catch (e) {
+                        console.error("خطا در تبدیل پاسخ به JSON:", e);
+                        alert("پاسخ نامعتبر از سرور دریافت شد.");
+                    }
+                })
+                .catch(error => {
+                    console.error("خطا در ارسال درخواست:", error);
+                    alert("درخواست با خطا مواجه شد");
+                });
+            });
+        });
+    </script>
+}
+
+@section script {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('change-password-form').addEventListener('submit', function (e) {
+            var role = document.getElementById('roleSelect').value;
+            if (!role) {
+                e.preventDefault();
+                alert('لطفاً نقش کاربر را انتخاب کنید.');
+            }
+        });
+    </script>
+    <script>
+        document.getElementById('change-password-form').addEventListener('submit', function (e) {
+            var token = document.getElementById('Token').value;
+            if (!token) {
+                alert('کاربر بدون توکن ثبت شد');
+            }
+        });
+    </script>
+    <script>
+        function showPopup() {
+            document.getElementById('popupForm').style.display = 'block';
+        }
+
+        function hidePopup() {
+            document.getElementById('popupForm').style.display = 'none';
+        }
+    </script>
+    <script>
+        function showPopupWin() {
+            document.getElementById('popupFormWin').style.display = 'block';
+        }
+
+        function hidePopupWin() {
+            document.getElementById('popupFormWin').style.display = 'none';
+        }
+    </script>
+}

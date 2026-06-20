@@ -1,0 +1,122 @@
+﻿@using Application.ViewModels
+@model CodeMarkazViewModel
+
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider {
+        background-color: #2196F3;
+    }
+
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+    /* Rounded sliders */
+    .slider.round {
+        border-radius: 34px;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+</style>
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+<div class="card-header">
+        <h3 class="card-title">ایجاد مرکز جدید</h3>
+    </div>
+    <!-- /.card-header -->
+    <!-- form start -->
+    <form id="add-codemarkaz-form" method="post" asp-controller="CodeMarkazForURL" asp-action="InsertURLMarkaz">
+        @Html.AntiForgeryToken()  <!-- اضافه کردن توکن ضد جعل برای امنیت بیشتر -->
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <label class="form-label">نام مرکز</label>
+                        <input asp-for="CoName" class="form-control" aria-required="true" />
+                        <span asp-validation-for="CoName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <label class="form-label">کد مرکز</label>
+                        <input asp-for="CodMarkaz" class="form-control" aria-required="true" />
+                        <span asp-validation-for="CodMarkaz" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <label class="form-label">Connection URL</label>
+                        <input asp-for="MarkazURL" class="form-control" aria-required="true" />
+                        <span asp-validation-for="MarkazURL" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <label class="form-label">API URL</label>
+                        <input asp-for="APIURL" class="form-control" aria-required="true" />
+                        <span asp-validation-for="APIURL" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label d-block">به‌روز رسانی خودکار</label>
+                        <label class="switch">
+                            <input type="checkbox" asp-for="AutoAsync" value="true" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <br />
+            <hr />
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success px-4">ذخیره</button>
+            <a class="btn btn-secondary px-4" asp-controller="CodeMarkazForURL" asp-action="CodeURLList">لغو</a>
+        </div>
+    </form>

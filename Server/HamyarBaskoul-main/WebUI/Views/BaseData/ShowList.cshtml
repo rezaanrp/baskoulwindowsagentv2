@@ -1,0 +1,334 @@
+﻿@using Application.ViewModels.BaseData
+@model ListPageViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style
+{
+    <title>ایجاد اطلاعات پایه </title>
+
+}
+@section ProfileName
+{
+
+}
+@section Body
+{
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            direction: rtl;
+            text-align: center;
+        }
+
+        .menu-item {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 1px solid #e1e1e1;
+            border-radius: 15px;
+            padding: 25px 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+            .menu-item i {
+                font-size: 2rem;
+                color: #0d6efd;
+                margin-bottom: 10px;
+                transition: color 0.3s ease;
+            }
+
+            .menu-item span {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #333;
+                transition: color 0.3s ease;
+            }
+
+            .menu-item:hover {
+                background: #0d6efd; /* blue hover */
+                color: #fff;
+                transform: translateY(-5px) scale(1.03);
+                box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25);
+            }
+
+                .menu-item:hover i,
+                .menu-item:hover span {
+                    color: #fff;
+                }
+    </style>
+
+    <div class="card card-outline card-info">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            @switch (Model.type)
+            {
+                case 0:
+                    <h3 class="card-title mb-0 col-lg-10">ایجاد تفصیلی</h3>
+                    ;
+                    break;
+
+                case 1:
+                    <h3 class="card-title mb-0 col-lg-10">ایجاد تفصیلی ۲</h3>
+                    ;
+                    break;
+                case 2:
+                    <h3 class="card-title mb-0 col-lg-10">ایجاد انبار</h3>
+                    ;
+                    break;
+                case 3:
+                    <h3 class="card-title mb-0 col-lg-10">ایجاد کالا</h3>
+                    ;
+                    break;
+                case 4:
+                    <h3 class="card-title mb-0 col-lg-10">ایجاد وسیله</h3>
+                    ;
+                    break;
+                case 5:
+                    <h3 class="card-title mb-0 col-lg-10">ایجاد راننده</h3>
+                    ;
+                    break;
+                case 6:
+                    <h3 class="card-title mb-0 col-lg-10">ایجاد مرکزحمل</h3>
+                    ;
+                    break;
+                case 7:
+                    <h3 class="card-title mb-0 col-lg-10">ایجاد شخص</h3>
+                    ;
+                    break;
+                case 8:
+                    <h3 class="card-title mb-0 col-lg-10">ایجاد جابه‌جایی</h3>
+                    ;
+                    break;
+                default:
+                    <h3 class="card-title mb-0 col-lg-10">ایجاد اطلاعات پایه</h3>
+                    ;
+                    break;
+            }
+
+            <button type="button" class="btn btn-info btn-sm col-lg-2" data-toggle="modal" data-target="#createEntityModal">
+                <i class="fa fa-plus"></i> افزودن مورد جدید
+            </button>
+        </div>
+        <!-- /.card-header -->
+        <!-- form start -->
+        <div class="card-body">
+            <div class="grid-container">
+                @if (Model != null && Model?.data?.Count > 0)
+                {
+                    <table id="dataTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>عنوان</th>
+                                <th>توضیحات</th>
+                                <th style="width: 150px;">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.data)
+                            {
+                                <tr>
+                                    <td>@item.Onvan</td>
+                                    <td>@item.Tozihat</td>
+                                    <td>
+                                        <a class="btn btn-icon btn-outline-primary _edit"
+                                           href="@Url.Action("EditBaseData", "BaseData", new { id = item.ID })"
+                                           title="ویرایش">
+                                            <i class="fa fa-pencil"></i>
+                                        </a>
+                                        <form class="delete-form d-inline m-0" data-id="@item.ID">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-icon btn-outline-primary _delete" title="حذف">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted text-center">هیچ داده‌ای یافت نشد.</p>
+                }
+            </div>
+        </div>
+
+    </div>
+    <!-- /.card-body -->
+    <div class="card-footer d-flex justify-content-center">
+        @* <a type="button" asp-controller="Home" asp-action="Index" class="btn btn-secondary">انصراف</a> *@
+    </div>
+    <!-- /.card-footer -->
+    <!-- Modal -->
+    <div class="modal fade" id="createEntityModal" tabindex="-1" role="dialog" aria-labelledby="createEntityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="createEntityModalLabel">افزودن مورد جدید</h5>
+                </div>
+
+                <div class="modal-body">
+                    <form id="createEntityForm">
+                        @Html.AntiForgeryToken()
+
+                        <div class="form-group">
+                            <label for="Model_name">عنوان</label>
+                            <input type="text" id="Model_name" name="name" class="form-control" placeholder="نام را وارد کنید">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Model_des">توضیحات</label>
+                            <input type="text" id="Model_des" name="des" class="form-control" placeholder="توضیحات را وارد کنید">
+                        </div>
+
+                        <input type="hidden" name="type" value="@Model?.type" /> <!-- keep current type -->
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEntity()">ذخیره</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap 4 Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">ویرایش اطلاعات</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="editModalBody">
+                    <!-- Partial view will load here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+@section script {
+    <script>
+        function saveEntity() {
+            const form = $("#createEntityForm");
+            const token = $('input[name="__RequestVerificationToken"]').val();
+
+            const data = form.serialize(); // automatically includes name, des, type, and token
+
+            const name = $("#Model_name").val().trim();
+            if (!name) {
+                alert("لطفاً نام را وارد کنید.");
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("AddData", "BaseData")', // Controller and Action names
+                type: 'POST',
+                data: data,
+                success: function (response) {
+                    alert("اطلاعات با موفقیت ذخیره شد.");
+                    $('#createEntityModal').modal('hide');
+                    form[0].reset();
+                    // optionally reload the list or table here
+                    location.reload();
+                },
+                error: function (xhr) {
+                    alert("خطا در ذخیره اطلاعات: " + xhr.responseText);
+                }
+            });
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#dataTable').DataTable({
+                language: {
+                    search: "جستجو:",
+                    lengthMenu: "نمایش _MENU_ رکورد در هر صفحه",
+                    info: "نمایش _START_ تا _END_ از _TOTAL_ رکورد",
+                    paginate: {
+                        previous: "قبلی",
+                        next: "بعدی"
+                    },
+                    zeroRecords: "موردی یافت نشد",
+                    infoEmpty: "رکوردی موجود نیست",
+                    infoFiltered: "(فیلتر شده از مجموع _MAX_ رکورد)"
+                },
+                order: [], // prevents default sorting if you want custom order
+                pageLength: 10 // default rows per page
+            });
+        });
+    </script>
+    <script>
+        document.querySelectorAll(".delete-form").forEach(form => {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+
+                if (!confirm("آیا مطمئن هستید که می‌خواهید این مورد را حذف کنید؟")) {
+                    return;
+                }
+
+                const id = this.getAttribute("data-id");
+                const token = this.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                fetch('@Url.Action("DeleteBaseData", "BaseData")', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: `__RequestVerificationToken=${encodeURIComponent(token)}&Id=${encodeURIComponent(id)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        // Optionally remove the deleted row from the table:
+                        this.closest("tr").remove();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("خطایی رخ داده است. لطفاً دوباره تلاش کنید.");
+                });
+            });
+        });
+    </script>
+
+    <script>
+        $(document).on("click", "._edit", function (e) {
+            e.preventDefault();
+            const url = $(this).attr("href");
+            const modal = new bootstrap.Modal(document.getElementById("editModal"));
+
+            $("#editModalBody").html(`
+                <div class="text-center py-4">
+                    <i class="fa fa-spinner fa-spin fa-2x"></i>
+                    <p>در حال بارگذاری...</p>
+                </div>
+            `);
+
+            $.get(url)
+                .done(function (response) {
+                    $("#editModalBody").html(response);
+                    modal.show();
+                })
+                .fail(function () {
+                    $("#editModalBody").html("<p class='text-danger text-center'>خطا در بارگذاری فرم.</p>");
+                    modal.show();
+                });
+        });
+    </script>
+}

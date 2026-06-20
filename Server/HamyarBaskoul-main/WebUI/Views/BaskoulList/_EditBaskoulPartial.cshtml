@@ -1,0 +1,48 @@
+﻿@using Application.ViewModels.Baskoul
+@model BaskoulViewModel
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+<div class="card-header  bg-info text-white">
+        <h3 class="card-title">ویرایش نام کفه</h3>
+    </div>
+<form id="edit-baskoul-form" method="post" action="@Url.Action("EditBaskoul", "BaskoulList")">
+        @Html.AntiForgeryToken()  <!-- اضافه کردن توکن ضد جعل برای امنیت بیشتر -->
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-floating">
+                        <label class="form-label">نام</label>
+                        <input asp-for="Name" class="form-control" aria-required="true" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <label class="form-label">نوع باسکول</label>
+                        <select asp-for="Type" class="form-control" aria-required="true">
+                            <option value="">انتخاب کنید</option>
+                            <option value="1">باسکول ورودی</option>
+                            <option value="2">باسکول خروجی</option>
+                        </select>
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <br />
+            <hr />
+        </div>
+        <input type="hidden" asp-for="CodMarkaz" />
+        <input type="hidden" asp-for="UserID" />
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ScaleCode" />
+        <input type="hidden" asp-for="Site" />
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success px-4">ذخیره</button>
+            <button class="btn btn-secondary px-4" data-dismiss="modal">لغو</button>
+        </div>
+    </form>
+<input type="hidden" id="hidden-site-id" value=@Model.Site />

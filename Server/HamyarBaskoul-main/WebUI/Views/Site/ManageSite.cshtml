@@ -1,0 +1,268 @@
+﻿@using Application.ViewModels
+@model ManageSiteViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style
+{
+    <title>مدیریت مرکز باسکول</title>
+
+}
+@section ProfileName
+{
+
+}
+@section Body
+{
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+ <div class="row">
+    <div class="col-md-6">
+            <div class="card card-outline card-primary">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title col-md-11">لیست مراکز باسکول</h3>
+                    <button class="btn btn-primary open-modal" href="@Url.Action("CreateSite", "Site")">ایجاد</button>
+                </div>
+
+                <div id="site-list-container">
+                    @await Html.PartialAsync("_SiteListPartial", Model)
+                </div>
+            </div>
+    </div>
+
+    <div class="col-md-6 ">
+            <div class="card card-outline card-primary">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="card-title" id="card-name"></h3>
+                        <h5 id="site-name"></h5>
+                    </div>
+                </div>
+                <div class="card-body" id="baskoul-container">
+                    <!-- /input-group -->
+                </div>
+                <!-- /.card-body -->
+        </div>
+    </div>
+ </div>
+
+    <div class="modal fade" id="siteModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <!-- Add modal-dialog-centered here -->
+            <div class="modal-content" id="siteModalContent">
+                <!-- Form content will be injected here -->
+            </div>
+        </div>
+    </div>
+}
+@section script {
+    <style>
+        .table tbody tr:hover {
+            background-color: #dcdcdc; 
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        function confirmDelete(event, form, siteId) {
+            event.preventDefault();
+
+            if (confirm("آیا مطمئن هستید که می‌خواهید این مورد را حذف کنید؟")) {
+                var id = $(form).find("input[name='Id']").val();
+                var token = $(form).find('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '@Url.Action("DeleteBaskoul", "BaskoulList")',
+                    type: 'POST',
+                    data: {
+                        Id: id,
+                        __RequestVerificationToken: token
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            loadBaskoulList(siteId);
+                        } else {
+                            alert(response.message || "خطا در حذف کفه");
+                        }
+                    },
+                    error: function (xhr) {
+                        alert("خطا در ارتباط با سرور یا توکن نامعتبر است.");
+                    }
+                });
+            }
+        }
+    </script>
+    <script>
+        // Submit form via AJAX
+        $(document).on("submit", "#add-site-form", function (e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const actionUrl = $form.attr("action");
+            const formData = $form.serialize();
+
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        $("#siteModal").modal("hide");
+
+                        $.get('@Url.Action("GetSiteListPartial", "Site")', function (html) {
+                            $("#site-list-container").html(html);
+                        });
+
+                    } else if (typeof response === "string" && $(response).find("form").length > 0) {
+                        $("#siteModal .modal-content").html(response);
+                        $.validator.unobtrusive.parse("#add-site-form");
+                    }
+                },
+                error: function () {
+                    $("#siteModal .modal-content").html('<div class="p-5 text-danger text-center">خطا در ثبت اطلاعات</div>');
+                }
+            });
+        });
+    </script>
+    <script>
+        // Load modal content via AJAX
+        $(document).on("click", ".open-modal", function (e) {
+            e.preventDefault();
+
+            var url = $(this).attr("href");
+
+            $("#siteModal .modal-content").html('<div class="p-5 text-center">در حال بارگذاری...</div>');
+            $("#siteModal").modal("show");
+
+            $.get(url, function (html) {
+                $("#siteModal .modal-content").html(html);
+                $.validator.unobtrusive.parse("#add-site-form"); // init validation after load
+            }).fail(function () {
+                $("#siteModal .modal-content").html('<div class="p-5 text-danger text-center">خطا در بارگذاری فرم</div>');
+            });
+        });
+    </script>
+    <script>
+        $(document).on("submit", "#edit-baskoul-form", function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            var $form = $(this);
+            var url = $form.attr("action");
+            var formData = $form.serialize();
+
+            var siteId = $("#hidden-site-id").val();
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        // ✅ Close the modal
+                        $("#siteModal").modal("hide");
+
+                        loadBaskoulList(siteId);
+                    } else {
+                        // ❌ If ModelState invalid, replace modal content with updated form
+                        $("#siteModal .modal-content").html(response);
+                    }
+                },
+                error: function () {
+                    alert("خطا در ارسال فرم");
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).on("submit", "#add-baskoul-form", function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            var $form = $(this);
+            var url = $form.attr("action");
+            var formData = $form.serialize();
+
+            var siteId = $("#hidden-site-id").val();
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        // ✅ Close the modal
+                        $("#siteModal").modal("hide");
+
+                         loadBaskoulList(siteId);
+                    } else {
+                        // ❌ If ModelState invalid, replace modal content with updated form
+                        $("#siteModal .modal-content").html(response);
+                    }
+                },
+                error: function () {
+                    alert("خطا در ارسال فرم");
+                }
+            });
+        });
+    </script>
+    <script>
+        // Define this globally
+        function loadBaskoulList(siteId) {
+            $.ajax({
+                url: '@Url.Action("GetBaskoulsBySite", "BaskoulList")',
+                type: 'GET',
+                data: { siteid: siteId },
+                success: function (result) {
+                    $("#baskoul-container").html(result);
+                    const siteName = $("#hidden-site-name").data("name");
+                    $("#site-name").text(siteName);
+                    $("#card-name").text("لیست کفه‌ها");
+                },
+                error: function () {
+                    alert("خطا در بارگذاری لیست کفه‌ها");
+                }
+            });
+        }
+
+        // Then your click handler
+        $(document).on("click", ".load-baskoul", function () {
+            var siteId = $(this).data("siteid");
+            var $button = $(this);
+            var $row = $button.closest("tr");
+
+            loadBaskoulList(siteId);
+
+            // Optional: highlight selected row
+            $(".load-baskoul").closest("tr").css("background-color", ""); // remove highlight from all
+            $row.css("background-color", "#dcdcdc");
+        });
+    </script>
+    <script>
+        $(document).on("click", ".load-users", function () {
+            var siteId = $(this).data("siteid");
+            var $button = $(this);
+            var $row = $button.closest("tr");
+
+            $.ajax({
+                url: '@Url.Action("GetUsersBySite", "UserManager")',
+                type: 'GET',
+                data: { siteid: siteId },
+                success: function (result) {
+                    $("#baskoul-container").html(result);
+                    // const siteName = $("#hidden-site-name").data("name");
+                    // $("#site-name").text(siteName);
+                    $("#card-name").text("لیست کاربران");
+                    $("#example2 tbody tr").css("background-color", "");
+                    $row.css("background-color", "#dcdcdc");
+                },
+                error: function () {
+                    alert("خطا در بارگذاری لیست کاربران");
+                }
+            });
+        });
+    </script>
+}

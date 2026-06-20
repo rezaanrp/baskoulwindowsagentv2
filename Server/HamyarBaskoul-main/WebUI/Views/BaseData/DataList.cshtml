@@ -1,0 +1,143 @@
+﻿
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style
+{
+    <title>ایجاد اطلاعات پایه </title>
+
+}
+@section ProfileName
+{
+
+}
+@section Body
+{
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            direction: rtl;
+            text-align: center;
+        }
+
+        .menu-item {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 1px solid #e1e1e1;
+            border-radius: 15px;
+            padding: 25px 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+            .menu-item i {
+                font-size: 2rem;
+                color: #0d6efd;
+                margin-bottom: 10px;
+                transition: color 0.3s ease;
+            }
+
+            .menu-item span {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #333;
+                transition: color 0.3s ease;
+            }
+
+            .menu-item:hover {
+                background: #0d6efd; /* blue hover */
+                color: #fff;
+                transform: translateY(-5px) scale(1.03);
+                box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25);
+            }
+
+                .menu-item:hover i,
+                .menu-item:hover span {
+                    color: #fff;
+                }
+    </style>
+
+    <div class="card card-info">
+        <div class="card-header">
+            <h3 class="card-title">ایجاد اطلاعات پایه</h3>
+        </div>
+        <!-- /.card-header -->
+        <!-- form start -->
+        <div class="card-body">
+            <div class="grid-container">
+                <div class="menu-item">
+                    <i class="fa fa-archive"></i>
+                    <a asp-controller="BaseData" asp-action="ShowList" asp-route-type="2" 
+                    class="list-group-item list-group-item-action">انبار</a>
+                </div>
+
+                <div class="menu-item">
+                    <i class="fa fa-id-card"></i>
+                    <a asp-controller="BaseData" asp-action="ShowList" asp-route-type="5"
+                    class="list-group-item list-group-item-action">راننده</a>
+                </div>
+
+                <div class="menu-item">
+                    <i class="fa fa-truck"></i>
+                    <a asp-controller="BaseData" asp-action="ShowList" asp-route-type="4"
+                    class="list-group-item list-group-item-action">نوع وسیله حمل</a>
+                </div>
+
+                <div class="menu-item">
+                    <i class="fa fa-user"></i>
+                    <a asp-controller="BaseData" asp-action="ShowList" asp-route-type="7"
+                    class="list-group-item list-group-item-action">شخص</a>
+                </div>
+
+                <div class="menu-item"> 
+                    <i class="fa fa-user-circle"></i>
+                    <a asp-controller="BaseData" asp-action="ShowList" asp-route-type="0"
+                    class="list-group-item list-group-item-action">
+                        تفصیلی</a>
+                </div>
+
+                <div class="menu-item">
+                    <i class="fa fa-address-card"></i>
+                    <a asp-controller="BaseData" asp-action="ShowList" asp-route-type="1"
+                    class="list-group-item list-group-item-action">
+                        تفصیلی۲</a>
+                </div>
+
+                <div class="menu-item">
+                    <i class="fa fa-shopping-cart"></i>
+                    <a asp-controller="BaseData" asp-action="ShowList" asp-route-type="3"
+                    class="list-group-item list-group-item-action">کالا</a>
+                </div>
+
+                <div class="menu-item">
+                    <i class="fa fa-building"></i>
+                    <a asp-controller="BaseData" asp-action="ShowList" asp-route-type="6"
+                    class="list-group-item list-group-item-action">نوع مراکز حمل</a>
+                </div>
+
+                <div class="menu-item">
+                    <i class="fa fa-exchange"></i>
+                    <a asp-controller="BaseData" asp-action="ShowList" asp-route-type="8"
+                    class="list-group-item list-group-item-action">نوع جابه‌جایی</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /.card-body -->
+    <div class="card-footer d-flex justify-content-center">
+        @* <a type="button" asp-controller="Home" asp-action="Index" class="btn btn-secondary">انصراف</a> *@
+    </div>
+    <!-- /.card-footer -->
+}
+@section script {
+
+}

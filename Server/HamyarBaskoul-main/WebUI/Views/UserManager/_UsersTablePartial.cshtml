@@ -1,0 +1,33 @@
+﻿@model List<Application.ViewModels.Users.UsersListViewModel>
+
+@* <span id="hidden-site-name" data-name="@ViewBag.SiteName" style="display:none;"></span> *@
+@if (Model.Any())
+{
+    <table class="table table-hover dataTable">
+        <thead>
+            <tr>
+                <th>نام کاربری</th>
+                <th>نام</th>
+                <th>نام خانوادگی</th>
+                <th>نقش کاربر</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.Name</td>
+                    <td>@user.Family</td>
+                    <td>@user.Role</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="text-center">
+        <p>هیچ کاربری یافت نشد</p>
+    </div>
+}

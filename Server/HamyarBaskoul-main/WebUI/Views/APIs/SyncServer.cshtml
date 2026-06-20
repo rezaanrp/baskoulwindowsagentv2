@@ -1,0 +1,247 @@
+﻿@using Application.ViewModels.APIs
+@model SyncServerViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style
+{
+<title>همگام سازی با سرور </title>
+
+}
+@section ProfileName
+{
+
+}
+@section Body
+{
+    <div class="card card-info">
+        <div class="card-header">
+            <h3 class="card-title">به‌روز رسانی اطلاعات با سرور</h3>
+        </div>
+        <!-- /.card-header -->
+        <!-- form start -->
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- First Box -->
+                <div class="col-md-12 mb-3">
+                    <div class="p-3 border rounded">
+                        <!-- Header Row -->
+                        <div class="row mb-2">
+                            <div class="col">
+                                <h6 class="fw-bold">انتخاب دوره</h6>
+                                <hr />
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <label>دوره</label>
+                                <select id="doreSelect" class="form-control custom-select">
+                                    <option value="">دوره را انتخاب کنید</option>
+                                    @foreach (var dore in Model.ListDore.Where(d => !string.IsNullOrWhiteSpace(d.Onvan)))
+                                    {
+                                        <option value="@dore.IDLinq">@dore.Onvan</option>
+                                    }
+                                </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <div class="p-3 border rounded">
+                            <!-- Header Row -->
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <h6 class="fw-bold">دریافت اطلاعات مبانی</h6>
+                                    <hr />
+                                </div>
+                            </div>
+                        <div class="row mb-2">
+                            <div class="col">
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="customCheckbox1" name="SelectedEnums" value="Tafsili" checked="">
+                                        <label for="customCheckbox1" class="custom-control-label">تفصیلی</label>
+                                    </div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="customCheckbox2" name="SelectedEnums" value="Tafsili2" checked="">
+                                        <label for="customCheckbox2" class="custom-control-label">تفصیلی ۲</label>
+                                    </div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="customCheckbox3" name="SelectedEnums" value="Anbar" checked="">
+                                        <label for="customCheckbox3" class="custom-control-label">انبار</label>
+                                    </div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="customCheckbox4" name="SelectedEnums" value="Shakhs" checked="">
+                                        <label for="customCheckbox4" class="custom-control-label">اشخاص</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="customCheckbox5" name="SelectedEnums" value="Kala" checked="">
+                                        <label for="customCheckbox5" class="custom-control-label">کالا</label>
+                                    </div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="customCheckbox6" name="SelectedEnums" value="Vasile" checked="">
+                                        <label for="customCheckbox6" class="custom-control-label">وسیله حمل</label>
+                                    </div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="customCheckbox7" name="SelectedEnums" value="Ranande" checked="">
+                                        <label for="customCheckbox7" class="custom-control-label">راننده</label>
+                                    </div>
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="customCheckbox8" name="SelectedEnums" value="MarkazHaml" checked="">
+                                        <label for="customCheckbox8" class="custom-control-label">مرکز حمل</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="row g-2 align-items-center">
+                                <div class="col-md-1">
+                                    <div>
+                                    <button id="GetFromServerBtn" class="btn btn-primary">دریافت از سرور</button>
+                                    </div>
+                                </div>
+                                <div id="getFromServerLoader" hidden style="text-align: center;">
+                                    <img src="@Url.Content("~/APL/dist/img/loader.gif")" alt="Loading..." style="width: 250px; height: 200px;" />
+                                    <div style="font-size: 12px; color: #555;">در حال دریافت اطلاعات از سرور...</div>
+                                </div>
+
+                                <div id="progressBarContainer" class="col-md-3">
+                                    <div class="progress progress-xs progress-striped active">
+                                        <div id="progressbar2" class="progress-bar bg-success" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <div class="p-3 border rounded">
+                            <!-- Header Row -->
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <h6 class="fw-bold">ارسال اطلاعات</h6>
+                                    <hr />
+                                </div>
+                            </div>
+                        <div class="row g-2 align-items-center">
+                                <div class="col-md-1">
+                                    <div>
+                                        <button id="sendToServerBtn" class="btn btn-primary">ارسال به سرور</button>
+                                    </div>
+                                </div>
+                                <div id="sendToServerLoader" hidden style="text-align: center;">
+                                    <img src="@Url.Content("~/APL/dist/img/loader.gif")" alt="Loading..." style="width: 250px; height: 200px;" />
+                                    <div style="font-size: 12px; color: #555;">در حال ارسال برگه‌ها به سرور...</div>
+                                </div>
+                                <div id="progressBarContainer2" class="col-md-3">
+                                    <div class="progress progress-xs progress-striped active">
+                                        <div id="progressBar" class="progress-bar bg-success" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+           </div>
+            <!-- /.card-body -->
+        <div class="card-footer d-flex justify-content-center">
+            @* <a type="button" asp-controller="Home" asp-action="Index" class="btn btn-secondary">انصراف</a> *@
+        </div>
+            <!-- /.card-footer -->
+    </div>
+}
+@section script {
+    <script>
+        $(document).ready(function () {
+            $('#sendToServerBtn').click(function () {
+                var selectedDore = $('#doreSelect').val();
+                if (!selectedDore) {
+                    alert('ابتدا دوره را انتخاب کنید');
+                    return;
+                }
+
+                 // Show the loader and hide the progress bar
+                $('#sendToServerLoader').prop('hidden', false);  // show loader
+                $('#progressBarContainer2').hide();  // hide progress bar
+                $.ajax({
+                    url: '@Url.Action("SendToServer", "APIs")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(selectedDore),
+                    success: function (response) {
+                         // Hide the loader and show the progress bar
+                        $('#sendToServerLoader').prop('hidden', true);   // hide loader
+                        $('#progressBarContainer2').show();   // show progress bar
+
+                         alert(response.message);
+
+                         if (response.state === true) {
+                        $('#progressBar').css('width', '100%');
+                }
+                    },
+                    error: function (xhr, status, error) {
+                         // Hide the loader and show the progress bar
+                        $('#sendToServerLoader').prop('hidden', true);   // hide loader
+                        $('#progressBarContainer2').show();   // show progress bar
+
+                        alert('ارسال با خطا مواجه شد');
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#GetFromServerBtn').click(function () {
+                var selectedDore = $('#doreSelect').val();
+
+                if (!selectedDore) {
+                    alert('ابتدا دوره را انتخاب کنید');
+                    return;
+                }
+
+                var selectedEnums = [];
+                $('input[name="SelectedEnums"]:checked').each(function () {
+                    selectedEnums.push($(this).val());
+                });
+
+                // Show the loader and hide the progress bar
+                $('#getFromServerLoader').prop('hidden', false);  // show loader
+                $('#progressBarContainer').hide();  // hide progress bar
+
+                $.ajax({
+                    url: '@Url.Action("GetFromServer", "APIs")', // adjust this
+                    type: 'POST',
+                    data: JSON.stringify({ dore: selectedDore, selectedEnums: selectedEnums }),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        // Hide the loader and show the progress bar
+                        $('#getFromServerLoader').prop('hidden', true);   // hide loader
+                        $('#progressBarContainer').show();   // show progress bar
+
+                        if (response.success === true) {
+                            alert('با موفقیت دریافت شد');
+                            $('#progressbar2').css('width', '100%');
+                        } else {
+                            alert('دریافت اطلاعات با خطا مواجه شد');
+                        }
+                    },
+                    error: function () {
+                        // Hide the loader and show the progress bar
+                        $('#getFromServerLoader').prop('hidden', true);   // hide loader
+                        $('#progressBarContainer').show();   // show progress bar
+
+                        alert('خطا در دریافت اطلاعات');
+                    }
+                });
+            });
+        });
+    </script>
+}

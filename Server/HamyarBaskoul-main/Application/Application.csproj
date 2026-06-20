@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Interfaces\IApplicantService.cs1" />
+    <None Remove="Interfaces\IFilingUserService.cs1" />
+    <None Remove="Services\ApplicantService.cs1" />
+    <None Remove="Services\FilingUserService.cs1" />
+    <None Remove="ViewModels\Applicant\ApplicantViewModel.cs1" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="AutoMapper" Version="12.0.1" />
+	  <PackageReference Include="FluentValidation" Version="11.8.0" />
+	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.0" />
+	  <PackageReference Include="MediatR" Version="12.0.1" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.11" />
+	  <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
+	  <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+  </ItemGroup>
+
+</Project>

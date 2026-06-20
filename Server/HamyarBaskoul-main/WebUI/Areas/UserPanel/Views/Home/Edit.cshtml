@@ -1,0 +1,59 @@
+﻿@using Application.ViewModels.Users;
+
+@model UsersListViewModel
+@{
+    ViewData["Title"] = "تغییر اطلاعات کاربری" + " " + User.Identity.Name;
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<div class="content">
+    <div class="container-fluid">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <input type="hidden" asp-for="AvatarName" />
+            <div class="row">
+
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header card-header-primary">
+                            <h4 class="card-title">ویرایش اطلاعات کاربری</h4>
+                            <p class="card-category"></p>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="row">
+
+                                <div class="col-md-3">
+                                    <div class="form-group bmd-form-group">
+                                        <label class="bmd-label-floating">نام</label>
+                                        <input asp-for="Name" type="text" class="form-control">
+                                    </div>
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group bmd-form-group">
+                                        <label class="bmd-label-floating">نام خانوادگی</label>
+                                        <input asp-for="Family" class="form-control">
+                                    </div>
+                                    <span asp-validation-for="Family" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group bmd-form-group">
+                                        <label class="bmd-label-floating">شماره موبایل</label>
+                                        <input asp-for="Mobile" type="text" class="form-control">
+                                    </div>
+                                    <span asp-validation-for="Mobile" class="text-danger"></span>
+                                </div>
+
+                            </div>
+                            <button type="submit" class="btn btn-success btn-round  pull-right">ذخیره اطلاعات</button>
+                            <div class="clearfix"></div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

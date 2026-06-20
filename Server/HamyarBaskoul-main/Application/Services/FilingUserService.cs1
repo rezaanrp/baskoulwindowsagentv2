@@ -1,0 +1,57 @@
+﻿using AutoMapper;
+using Application.Interfaces;
+using Application.ViewModels.FilingUser;
+using Domain.Interfaces;
+using Domain.Models;
+
+namespace Application.Services
+{
+    public class FilingUserService : IFilingUserService
+    {
+        private readonly IFilingUserRepository FilingUserRepository;
+        private readonly IMapper mapper;
+        public FilingUserService(IFilingUserRepository FilingUserRepository, IMapper mapper)
+        {
+            this.FilingUserRepository = FilingUserRepository;
+            this.mapper = mapper;
+        }
+
+        public bool DeleteAllFilingUser()
+        {
+            return FilingUserRepository.DeleteAll();
+        }
+
+        public void DeleteFilingUser(int Id)
+        {
+            FilingUserRepository.Delete(Id);
+        }
+
+        public IEnumerable<FilingUser> GetAllFilingUser()
+        {
+            var result = FilingUserRepository.GetAll();
+            return result;
+        }
+
+        public FilingUserViewModel GetFilingUserById(int Id)
+        {
+            var result = FilingUserRepository.GetById(Id);
+            var result2 = mapper.Map<FilingUserViewModel>(result);
+            return result2;
+        }
+
+        public FilingUser GetFilingUser(int Id)
+        {
+            var result = FilingUserRepository.GetById(Id);
+            return result;
+        }
+        public void InsertFilingUser(FilingUser FilingUser)
+        {
+           FilingUserRepository.Add(FilingUser);
+        }
+
+        public void UpdateFilingUser(FilingUser FilingUser)
+        {
+            FilingUserRepository.Update(FilingUser);
+        }
+    }
+}

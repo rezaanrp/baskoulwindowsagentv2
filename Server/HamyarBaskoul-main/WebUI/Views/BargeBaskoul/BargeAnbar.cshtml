@@ -1,0 +1,330 @@
+﻿@using Application.ViewModels.Baskoul
+@model BargeAnbarViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+@section Style
+{
+<title>برگه بارنامه</title>
+}
+@section ProfileName
+{
+
+}
+@section Body {
+
+    <style>
+        #bottom-toolbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 87%;
+            height: 50px;
+            background-color: rgba(16, 16, 16, 0.7);
+            border-top: 1px solid #aaa;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 9999;
+            box-sizing: border-box;
+        }
+        .toolbar-buttons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .toolbar-buttons .form-check-label {
+            color: white;
+        }
+        .form-check {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+    <div class="card card-secondary">
+        <div class="card-header">
+            <h3 class="card-title">برگه انبار</h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    @if(Model.Baskouls.Any())
+                    {
+                        foreach (var baskoul in Model.Baskouls)
+                        {
+                            <div class="col-12">
+                                <!-- small box -->
+                                <div class="small-box bg-info d-flex align-items-center p-3"
+                                    data-type="@baskoul.Type">
+                                    <!-- Radio Button -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="selectedScale" id="radio-@baskoul.ScaleCode" value="@baskoul.Id">
+                                        <label class="form-check-label" for="radio-@baskoul.ScaleCode"></label>
+                                    </div>
+                                    <div class="inner flex-grow-1">
+                                        <p>@baskoul.Name</p>
+                                        @if (baskoul.Weight == null)
+                                        {
+                                            <h3 id="weight-@baskoul.Site-@baskoul.ScaleCode" style="display: inline;">0</h3>
+                                        }
+                                        else
+                                        {
+                                            <h3 id="weight-@baskoul.Site-@baskoul.ScaleCode" style="display: inline;">@baskoul.Weight</h3> <!-- Unique ID for each scale -->
+                                        }
+                                        <span style="margin-right: 5px;">کیلوگرم</span>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fas fa-weight-hanging"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    } else
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-warning text-center" role="alert">
+                                هیچ باسکولی تعریف نشده است. لطفاً ابتدا یک باسکول ایجاد کنید.
+                            </div>
+                        </div>
+                    }
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card card-outline">
+                                <div class="card-header">
+                                    <h3 class="card-title">ماشین‌های در حال تخلیه/بارگیری</h3>
+                                </div>
+                                <!-- /.card-header -->
+                                <div class="card-body">
+                                    <div class="row">
+                                        <form method="get" asp-action="PartialBargeBaskoul" id="searchForm" class="form-inline mb-3">
+                                            <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" class="form-control mr-2" placeholder="جستجو با شماره ماشین یا قبض..." />
+                                            <input type="hidden" name="codeMarkaz" value="@ViewBag.codeMarkaz" />
+                                            <input type="hidden" name="siteId" value="@ViewBag.siteId" />
+                                            <button type="submit" class="btn btn-primary">جستجو</button>
+                                        </form>
+                                    </div>
+                                    <div id="modelList">
+                                        <div class="row">
+                                            @await Html.PartialAsync("_BargiriTakhlieCard", @Model)
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                </div>
+                             </div>
+                        </div>
+                        <!-- /.col-->
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <div class="col-md-8">
+                    <div class="">
+                        @await Html.PartialAsync("_FormBargeAnbarPartial", @Model.BargeAnbar)
+                        <input type="hidden" id="codmarkaz" asp-for="Codemarkaz" />
+                    </div>
+                </div>
+                </div>
+        </div>
+        <!-- /.card-body -->
+    </div>
+}
+@section script {
+    <script src="~/lib/signalr/signalr.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Connect to SignalR hub
+        // Get the current pathname, e.g., "/appname/somepage"
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        const appname = pathSegments[0]; // First part of the path
+        const codmarkaz = document.getElementById("codmarkaz").value;
+
+        const hubUrl = `/${appname}/hubs/weight`;
+
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(hubUrl)
+            .withAutomaticReconnect()
+            .build();
+
+        // Handle full reconnect scenario
+        connection.onreconnected(async () => {
+            console.log("Reconnected. Rejoining group:", codmarkaz);
+            if (codmarkaz) {
+                try {
+                    await connection.invoke("JoinGroup", codmarkaz);
+                    console.log("Successfully rejoined group:", codmarkaz);
+                } catch (err) {
+                    console.error("Failed to rejoin group:", err);
+                }
+            }
+        });
+
+        // Automatically try to reconnect if the connection drops
+        connection.onclose(async () => {
+            console.log("Connection lost. Reconnecting...");
+            try {
+                await connection.start();
+                console.log("Reconnected.");
+            } catch (err) {
+                console.error("Reconnection failed:", err);
+            }
+        });
+
+               connection.start()
+           .then(() => {
+               console.log("Connected to SignalR hub.");
+               console.log("Connection state:", connection.state);
+           })
+           .catch(err => console.log("Connection failed:", err.toString()));
+        // Should be "Connected" when the connection is active.
+
+        // Listen for weight updates from the server
+                    connection.on("ReceiveWeightUpdate", function (siteId, codmarkazServer, scaleCode, weight) {
+            const codmarkazPage = document.getElementById("codmarkaz").value;
+
+            console.log("Received from hub:");
+            console.log("siteId:", siteId);
+            console.log("codmarkaz (server):", codmarkazServer);
+            console.log("scaleCode:", scaleCode);
+            console.log("weight:", weight);
+            console.log("codmarkaz (view):", codmarkazPage);
+
+            // Validate codmarkaz match
+            if (codmarkazPage !== codmarkazServer) {
+                console.log("Codemarkaz mismatch. Skipping update.");
+                return;
+            }
+
+            // Build the ID selector based on how you structured it in the view
+            const weightElementId = `weight-${siteId}-${scaleCode}`;
+            const weightElement = document.getElementById(weightElementId);
+
+            if (!weightElement) {
+                console.log(`No element found with ID: ${weightElementId}`);
+                return;
+            }
+
+            // Set the new weight
+            weightElement.textContent = weight;
+        });
+
+    </script>
+    <script>
+        $('#ebtalCheckbox').change(function () {
+            var $checkbox = $(this);
+            var isChecked = $checkbox.is(':checked');
+            var bargId = $checkbox.data('bargid');
+
+            $.ajax({
+                url: @Url.Action("EbtalBarge", "BargeBaskoul"),
+                method: 'POST',
+                data: { bargId: bargId },
+                success: function () {
+                    if (isChecked) {
+                        alert('برگه انبار با موفقیت باطل شد.');
+                    } else {
+                        alert('ابطال برگه لغو شد.');
+                    }
+                },
+                error: function () {
+                    alert('پیش از ابطال برگه، آن را از حالت تایید بردارید.');
+                    // ✅ Revert checkbox correctly
+                    $checkbox.prop('checked', !isChecked);
+                }
+            });
+        });
+    </script>
+    <script>
+        $('#sabtCheckbox').change(function () {
+            var $checkbox = $(this);
+            var isChecked = $checkbox.is(':checked');
+            var bargId = $checkbox.data('bargid');
+
+        // Get values of weights
+        var vaznPor = parseFloat($('#VaznPor').val());
+        var vanKhali = parseFloat($('#VanKhali').val());
+
+        // Check if either is null, empty, or 0
+        if (isChecked && (!vaznPor || !vanKhali)) {
+            alert('❌ عملیات توزین این برگه تکمیل نشده است.');
+            $checkbox.prop('checked', false);
+            return;
+        }
+
+            $.ajax({
+                url: '@Url.Action("SabtBarge", "BargeBaskoul")',
+                method: 'POST',
+                data: { bargId: bargId },
+                success: function () {
+                    if (isChecked) {
+                        alert('برگه انبار با موفقیت تایید شد.');
+                    } else {
+                        alert('تایید برگه لغو شد.');
+                    }
+                },
+                error: function () {
+                    alert('پیش از تایید برگه، آن را از ابطال بردارید.');
+                    // ✅ Revert checkbox correctly
+                    $checkbox.prop('checked', !isChecked);
+                }
+            });
+        });
+    </script>
+    <script>
+        // Function to load a specific page (works fine)
+        function loadPage(pageNumber) {
+            var type = '@ViewBag.type';
+            var searchTerm = '@ViewBag.SearchTerm';
+            var codeMarkaz = '@ViewBag.codeMarkaz';
+            var siteId = '@ViewBag.siteId';
+
+            $.ajax({
+                url: '@Url.Action("PartialBargeBaskoul", "BargeBaskoul")',
+                type: 'GET',
+                data: {
+                    type: type,
+                    searchTerm: searchTerm,
+                    codeMarkaz: codeMarkaz,
+                    siteId: siteId,
+                    page: pageNumber
+                },
+                success: function (result) {
+                    $('#modelList').html(result); // Make sure your container has id="modelList"
+                },
+                error: function () {
+                    alert('خطایی رخ داد!');
+                }
+            });
+        }
+
+        // Form submission via AJAX
+        $(document).ready(function () {
+            $('#searchForm').submit(function (e) {
+                e.preventDefault(); // Prevent full page reload
+                var form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: form.serialize(),
+                    success: function (result) {
+                        $('#modelList').html(result); // Use the same container as loadPage
+                    },
+                    error: function () {
+                        alert('خطا در بارگذاری داده‌ها');
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+                $('.select2').select2({
+            placeholder: "یک گزینه را انتخاب کنید",
+            allowClear: true,
+        });
+    </script>
+}
+
+

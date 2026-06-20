@@ -1,0 +1,34 @@
+﻿@using System.Web
+
+@{
+    ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+@section Style
+{
+<title>پنل مدیریت </title>
+
+}
+@section ProfileName
+{
+
+}
+@section Body {
+    @if (TempData["TokenError"] != null)
+    {
+        <script>
+            alert('@Html.Raw(TempData["TokenError"])');
+        </script>
+    }
+    @if (TempData["NullSelectedSite"] != null)
+    {
+        <script>
+            alert('@Html.Raw(TempData["NullSelectedSite"])');
+        </script>
+    }
+}
+
+@section script{
+
+}
+

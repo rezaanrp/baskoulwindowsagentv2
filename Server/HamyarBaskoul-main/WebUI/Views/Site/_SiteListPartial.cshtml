@@ -1,0 +1,61 @@
+﻿@using Application.ViewModels
+@model ManageSiteViewModel
+
+@if (Model != null && Model.siteViews.Any())
+{
+    <table id="example2" class="table table-hover dataTable" role="grid">
+        <thead>
+            <tr>
+                <th>نام</th>
+                <th>وضعیت</th>
+                <th width="150px">عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var site in Model.siteViews)
+            {
+                <tr>
+                    <td>@site.name</td>
+                    @if (site.isActive)
+                    {
+                        <td>فعال</td>
+                    }
+                    else
+                    {
+                        <td>غیرفعال</td>
+                    }
+                    <td>
+                        <a class="btn btn-icon open-modal btn-outline-primary btn-sm _edit"
+                           href="@Url.Action("EditSite", "Site", new { id = site.ID })" style="margin-left: 2px;"
+                           title="ویرایش">
+                            <i class="fa fa-pencil fa-lg"></i>
+                        </a>
+                        <a class="btn btn-outline-primary  open-modal btn-sm _Add"
+                           href="@Url.Action("AddBaskoul", "BaskoulList", new { siteid = site.ID })"
+                           title="تعریف کفه‌ی جدید">
+                            <i class="fa fa-plus fa-lg"></i>
+                        </a>
+                        <a class="btn btn-outline-primary load-baskoul btn-sm"
+                           href="javascript:void(0);"
+                           data-siteid="@site.ID"
+                           title="نمایش لیست کفه‌های مرکز">
+                            <i class="fa fa-list fa-lg"></i>
+                        </a>
+                        <a class="btn btn-outline-primary load-users btn-sm"
+                           href="javascript:void(0);"
+                           data-siteid="@site.ID"
+                           title="نمایش لیست کاربران مرکز">
+                            <i class="fa fa-users fa-lg"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="text-center">
+        <p> سایتی تعریف نشده</p>
+    </div>
+}

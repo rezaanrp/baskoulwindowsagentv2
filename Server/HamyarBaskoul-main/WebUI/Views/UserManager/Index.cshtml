@@ -1,0 +1,223 @@
+﻿@{
+	ViewData["Title"] = "Home Page";
+	//Layout = ViewData["Layout"]?.ToString() ?? "_LayoutDefualt";
+	Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+@model Application.ViewModels.Users.ObjectFormListViewModel
+
+@section Style
+	{
+	<title>لیست کاربران</title>
+
+}
+@section ProfileName
+	{
+
+}
+@section Body{
+	@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+	{
+		<div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+	}
+	<div class="row justify-content-center mt-4">
+		<div class="col-lg-12">
+			<div class="card shadow-sm border-primary">
+				<div class="card-header bg-primary text-white d-flex align-items-center">
+					<h4 class="mb-0">لیست کاربران</h4>
+
+
+					<div class="card-tools">
+						<a asp-controller="UserManager" asp-action="Insert" class="btn btn-info btn-sm ml-auto">
+							<i class="fa fa-plus"></i> اضافه کردن کاربر جدید
+						</a>
+					</div>
+				</div>
+				<div class="card-body p-3">
+					<div class="table-responsive">
+						<table id="users_table1" class="table table-bordered table-hover dataTable dtr-inline w-100">
+							<thead class="thead-light">
+								<tr>
+									<th>کد</th>
+									<th>نام کاربری</th>
+									<th>نام</th>
+									<th>نام خانوادگی</th>
+									<th>شماره موبایل</th>
+									<th class="col-actions">عملیات</th>
+								</tr>
+							</thead>
+							<tbody>
+								<!-- داده‌ها اینجا پر می‌شوند -->
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+}
+
+@section script{
+	<link href="~/apl/swat/sweetalert2.min.css" rel="stylesheet" />
+	<script src="~/apl/swat/sweetalert2.all.min.js"></script>
+	<script>
+		var table;
+
+		// Base URLs from Razor
+		var editUrlBase = '@Url.Action("Edit", "UserManager")';
+		var resetPasswordUrlBase = '@Url.Action("ResetUserPassword", "UserManager")';
+		var accessUrlBase = '@Url.Action("Index", "UserManager")';
+		var deleteUserUrlBase = '@Url.Action("DeleteUser", "UserManager")';
+		var loadDataUrl = '@Url.Action("load_data_users", "UserManager")';
+
+		$(document).ready(function () {
+			load_data();
+		});
+
+		$('body').on('click', '._edit', function () {
+			var data = table.row($(this).parents('tr')).data();
+			window.location.href = editUrlBase + "?id=" + data.id;
+		});
+
+		$('body').on('click', '._change_pass', function () {
+			var data = table.row($(this).parents('tr')).data();
+			window.location.href = resetPasswordUrlBase + "?id=" + data.id;
+		});
+
+		$('body').on('click', '._access', function () {
+			var data = table.row($(this).parents('tr')).data();
+			window.location.href = accessUrlBase + "?id=" + data.id;
+		});
+
+		$('body #users_table1').on('click', '._delete', function () {
+			var data = table.row($(this).parents('tr')).data();
+
+			Swal.fire({
+				title: 'تایید عملیات',
+				text: 'آیا از حذف آیتم انتخاب شده اطمینان دارید ؟',
+				icon: "warning",
+				showCancelButton: true,
+				confirmButtonText: "تایید",
+				cancelButtonText: 'انصراف',
+				customClass: {
+					confirmButton: "btn btn-danger",
+					cancelButton: "btn btn-outline-danger ms-1"
+				},
+				buttonsStyling: false
+			}).then(function (t) {
+				if (t.isConfirmed) {
+					_delete(data.id);
+				}
+			});
+		});
+
+		function _delete(id) {
+			$.ajax({
+				url: deleteUserUrlBase + "?id=" + id,
+				datatype: 'json',
+				data: JSON.stringify(id),
+				type: 'POST',
+				contentType: 'application/json; charset=utf-8',
+				success: function (response) {
+					if (response.result) {
+						toastr.success(response.msg, "تایید", {
+							closeButton: true,
+							tapToDismiss: false,
+							showMethod: "slideDown",
+							hideMethod: "slideUp",
+							progressBar: true,
+							timeOut: 50000,
+							rtl: "rtl"
+						});
+					}
+					else {
+						toastr.error(response.msg, "خطا", {
+							closeButton: true,
+							tapToDismiss: false,
+							showMethod: "slideDown",
+							hideMethod: "slideUp",
+							progressBar: true,
+							timeOut: 50000,
+							rtl: "rtl"
+						});
+					}
+					table.ajax.reload();
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					console.log('jqXHR:', jqXHR);
+					console.log('textStatus:', textStatus);
+					console.log('errorThrown:', errorThrown);
+				}
+			});
+			Reload_data();
+		}
+
+		function Reload_data() {
+			location.reload();
+		}
+
+		function load_data() {
+			table = $('#users_table1').DataTable({
+				ajax: {
+					url: loadDataUrl,
+					datatype: 'json',
+					type: 'GET',
+				},
+		columnDefs: [
+			{
+				searchable: true,
+				targets: -1,
+				data: "id",
+				defaultContent: `
+					<div class="btn-group btn-group-sm" role="group">
+						<button type="button" class="btn btn-outline-primary _change_pass" title="تغییر رمز">
+							<i class="fa fa-lock"></i>
+						</button>
+						<button type="button" class="btn btn-outline-primary _edit" title="ویرایش">
+							<i class="fa fa-pencil"></i>
+						</button>
+						<button type="button" class="btn btn-outline-primary _delete" title="حذف">
+							<i class="fa fa-trash"></i>
+						</button>
+					</div>
+				`
+			}
+		],
+
+				columns: [
+					{ "data": "id", "autoWidth": true, "visible": false },
+					{ "data": "userName", "autoWidth": true },
+					{ "data": "name", "autoWidth": true },
+					{ "data": "family", "autoWidth": true },
+					{ "data": "mobile", "autoWidth": true },
+					{ "data": null, "searchable": false, orderable: false  },
+				],
+				paging: true,
+				filter: true,
+				ordering: false,
+				bInfo: false,
+				order: [[1, "asc"]],
+				dom: '<"top"f>rtp<"bottom"B><"clear">',
+				pageLength: 30,
+				pagingType: "full_numbers",
+
+				language: {
+					searchPlaceholder: "...",
+					search: "جستجو",
+					paginate: {
+						previous: "<",
+						next: ">",
+						last: ">>",
+						first: "<<",
+					}
+				},
+				fnDrawCallback: function () {
+					$("input[type='search']").attr("id", "searchBox");
+					$('#searchBox').addClass("input").focus();
+				},
+				scrollX: true,
+			});
+		}
+	</script>
+}
+

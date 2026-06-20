@@ -1,0 +1,290 @@
+﻿@model Application.ViewModels.Reports.SimpleReportViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style
+{
+    <title>چاپ برگه باسکول</title>
+    @Html.Raw(@"
+    <style>
+        @media print {
+            @page {
+                size: A5 portrait;
+                margin: 0; /* Remove all margins if desired */
+            }
+
+            body {
+                font-family: 'Tahoma', sans-serif;
+                font-size: 18px;
+                margin: 0;
+                padding: 0;
+                direction: rtl; /* Ensures right-to-left alignment if needed */
+            }
+
+            .wrapper {
+                width: 100%;
+                margin: 0 auto;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            .invoice {
+                margin-left: auto;
+                margin-right: 0; /* Aligns to right with no right margin */
+                width: 100%;
+            }
+
+            .card {
+                border: none;
+                box-shadow: none;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th, td {
+                padding: 4px;
+                font-size: 18px;
+                text-align: right;
+            }
+        }
+    </style>
+")
+}
+
+@section ProfileName
+{
+
+}
+@section Body
+{
+    <body onload="window.print();">
+        <div class="wrapper">
+            <!-- Main content -->
+            <!-- Main content -->
+            <div class="invoice">
+                <!-- title row -->
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <h3>
+                            @Model.TypeBarge
+                        </h3>
+                        <h4>
+                            @Model.CoName
+                        </h4>
+                    </div>
+                    <!-- /.col -->
+                </div>
+                <!-- info row -->
+                <div class="row invoice-info justify-content-center">
+                        <div class="col-sm-3 invoice-col">
+                            <b>
+                                <strong>شماره قبض باسکول: @Model.GhabzBaskoul</strong>
+                            </b>
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-3 invoice-col">
+                            <b>
+                                <strong>تاریخ برگه: @Model.DateBarge</strong>
+                            </b>
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-3 invoice-col">
+                            <b>
+                                <strong>ساعت باسکول: @Model.TimeBaskoul</strong>
+                            </b>
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-3 invoice-col">
+                            <b>
+                                <strong>تاریخ باسکول: @Model.DateBaskoul</strong>
+                            </b>
+                        </div>
+                </div>
+                <!-- /.row -->
+                <hr />
+                <div class="d-flex justify-content-center">
+                    <!-- نگهبانی -->
+                    <div class="col-5">
+                        <p class="lead">نگهبانی:</p>
+                        <div class="card">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tr>
+                                        <th>شماره قبض: </th>
+                                        <td>@Model.IdNegahbani</td>
+                                    </tr>
+                                    <tr>
+                                        <th>تاریخ: </th>
+                                        <td>@Model.DateNegahbani</td>
+                                    </tr>
+                                    <tr>
+                                        <th>ساعت: </th>
+                                        <td>@Model.TimeNegahbani</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- تخلیه / بارگیری -->
+                    <div class="col-5 mx-2">
+                        @if (Model.TypeBarge == "برگه باسکول ورود کالا")
+                        {
+                            <p class="lead">تخلیه:</p>
+                        }
+                        else
+                        {
+                            <p class="lead">بارگیری:</p>
+                        }
+                        <div class="card">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tr>
+                                        <th>شماره قبض: </th>
+                                        <td>@Model.IdBargiri</td>
+                                        <td>@Model.IdTakhlie</td>
+                                    </tr>
+                                    <tr>
+                                        <th>تاریخ: </th>
+                                        <td>@Model.DateBargiri</td>
+                                        <td>@Model.DateTakhlie</td>
+                                    </tr>
+                                    <tr>
+                                        <th>ساعت: </th>
+                                        <td>@Model.TimeBargiri</td>
+                                        <td>@Model.TimeTakhlie</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <h5>مشخصات راننده و بار</h5>
+                <!-- /.row -->
+                <div class="d-flex justify-content-center">
+                    <div class="col-5">
+                        <div class="card">
+                             <table class="table">
+                                    <tr>
+                                        <th>راننده: </th>
+                                        <td>@Model.NameRanande</td>
+                                    </tr>
+                                    <tr>
+                                        <th>شخص: </th>
+                                        <td>@Model.NameShakhs</td>
+                                    </tr>
+                                    <tr>
+                                        <th>تفصیلی: </th>
+                                        <td>@Model.Taf</td>
+                                    </tr>
+                                <tr>
+                                    <th>نوع مرکز حمل: </th>
+                                    <td>@Model.TypeMarkazHaml</td>
+                                </tr>
+                             </table>
+                        </div>
+                    </div>
+                    <div class="col-5 mx-2">
+                        <div class="card">
+                            <table class="table">
+                                <tr>
+                                    <th>انبار: </th>
+                                    <td>@Model.Anbar</td>
+                                </tr>
+                                <tr>
+                                    <th>کالا: </th>
+                                    <td>@Model.Kala</td>
+                                </tr>
+                                <tr>
+                                    <th>نوع وسیله: </th>
+                                    <td>@Model.Vasile</td>
+                                </tr>
+                                <tr>
+                                    <th>جابه‌جایی: </th>
+                                    <td>@Model.TypeJabejaei</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <!-- /.row -->
+                <div class="d-flex justify-content-center">
+                        <div class="col-5">
+                        <div class="card">
+                            <table class="table">
+                                <tr>
+                                    <th>شماره ماشین: </th>
+                                    <td>@Model.ShomareMashin</td>
+                                </tr>
+                                <tr>
+                                    <th>وزن پر: </th>
+                                    <td>@Model.VaznPor</td>
+                                </tr>
+                                <tr>
+                                    <th>وزن خالی: </th>
+                                    <td>@Model.VaznKhali</td>
+                                </tr>
+                                <tr>
+                                    <th>وزن بسته‌بندی: </th>
+                                    <td>@Model.VazneBasteBandi</td>
+                                </tr>
+                                <tr>
+                                    <th>وزن خالص: </th>
+                                    <td>@Model.Vaznekhlaes</td>
+                                </tr>
+                            </table>
+                        </div>
+                        </div>
+
+                    <div class="col-5 mx-2">
+                        <div class="card">
+                            <table class="table">
+                                <tr>
+                                    <th>کرایه حمل: </th>
+                                    <td>@Model.KerayeHaml</td>
+                                </tr>
+                                <tr>
+                                    <th>ساعت: </th>
+                                    <td>@Model.TimeVaznePor</td>
+                                </tr>
+                                <tr>
+                                    <th>ساعت: </th>
+                                    <td>@Model.TimeVazneKhali</td>
+                                </tr>
+                                <tr>
+                                    <th>مبلغ باسکول: </th>
+                                    <td>@Model.MablaghBaskoul</td>
+                                </tr>
+                                <tr>
+                                    <th>توضیحات: </th>
+                                    <td>@Model.Tozihat</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- /.col -->
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col-sm-5">
+                        <b><strong>امضای راننده:</strong></b>
+                    </div>
+                    <div class="col-sm-5">
+                        <b><strong>امضای مسئول باسکول:</strong></b>
+                    </div>
+                </div>
+            </div>
+            <!-- /.content -->
+        </div>
+        <!-- ./wrapper -->
+    </body>
+}
+@section script {
+}
+

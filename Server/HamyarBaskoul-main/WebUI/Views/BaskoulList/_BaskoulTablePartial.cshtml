@@ -1,0 +1,59 @@
+﻿@model List<Application.ViewModels.Baskoul.BaskoulViewModel>
+
+@* <span id="hidden-site-name" data-name="@ViewBag.SiteName" style="display:none;"></span> *@
+@if (Model.Any())
+{
+    <table class="table table-hover dataTable">
+        <thead>
+            <tr>
+                <th>نام</th>
+                <th>کد باسکول</th>
+                <th>نوع باسکول</th>
+                <th width="150px">عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var baskoul in Model)
+            {
+                <tr>
+                    <td>@baskoul.Name</td>
+                    <td>@baskoul.ScaleCode</td>
+                    @if (baskoul.Type == 1)
+                    {
+                        <td>باسکول ورودی</td>
+                    }
+                    else if (baskoul.Type == 2)
+                    {
+                        <td>باسکول خروجی</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+                    <td>
+                        <a class="btn btn-icon open-modal btn-outline-primary _edit"
+                           href="@Url.Action("EditBaskoul", "BaskoulList", new { id = baskoul.Id })"
+                           style="margin-left: 2px;"
+                           title="ویرایش">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+                        <form asp-controller="BaskoulList" asp-action="DeleteBaskoul" method="post"
+                              onsubmit="return confirmDelete(event, this, @baskoul.Site)" class="d-inline m-0">
+                              @Html.AntiForgeryToken()
+                              <input type="hidden" name="Id" value="@baskoul.Id" />
+                            <button type="submit" class="btn btn-icon btn-outline-primary _delete" title="حذف">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="text-center">
+        <p>هیچ باسکولی یافت نشد</p>
+    </div>
+}

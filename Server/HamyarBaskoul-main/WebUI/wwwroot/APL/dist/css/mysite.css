@@ -1,0 +1,8 @@
+﻿
+.highlighteddatatables {
+    background-color: #f8d7da !important; /* رنگ قرمز کم‌رنگ */
+}
+.col-actions {
+    white-space: nowrap; /* نذار بره زیر هم */
+    width: 1%; /* همیشه کوچکترین عرض ممکن */
+}

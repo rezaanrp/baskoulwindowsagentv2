@@ -1,0 +1,137 @@
+﻿@using Application.ViewModels.APIs
+@model WindowsTokenViewModel
+
+@{
+    ViewData["Title"] = "دریافت توکن ارتباط با ویندوز";
+    //Layout = ViewData["Layout"]?.ToString() ?? "_LayoutDefault";
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style
+{
+    <title>دریافت توکن ارتباط با ویندوز</title>
+}
+
+@section ProfileName
+{}
+
+@section Body {
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">
+            @ViewBag.ErrorMessage
+        </div>
+    }
+    @if (ViewBag.Success != null)
+    {
+        <div class="success alert-success">
+            @ViewBag.Success
+        </div>
+    }
+      <div class="row justify-content-center mt-4">
+        <div class="col-md-10">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-gradient-primary ">
+                    <h4 class="mb-0 text-center">
+                        <i class="fa fa-user-edit me-2"></i> دریافت توکن ارتباط با ویندوز
+                    </h4>
+                </div>
+
+                <form id="get-win-token-form" method="post" class="p-3">
+                    @Html.AntiForgeryToken() <!-- جلوگیری از حملات CSRF -->
+
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="input-group ">
+                                    <div class="input-group-prepend">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="showPopupWin()">دریافت توکن برای ارسال وزن از ویندوز</button> <!-- btn-sm -->
+                                    </div>
+                                    <input asp-for="WindowsToken" class="form-control form-control-sm" id="WindowsToken" placeholder="دریافت توکن"> <!-- form-control-sm -->
+                                    <span asp-validation-for="WindowsToken" class="text-danger"></span>
+                                </div>
+                                <label class="form-label fw-bold">توکن</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-end gap-2 border-0">
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="fa fa-save me-1"></i> ذخیره
+                        </button>
+                        <a asp-controller="WindowsAPIs" asp-action="Index" class="btn btn-secondary px-4">
+                            <i class="fa fa-times me-1"></i> لغو
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="popupFormWin" style="display: none; position: fixed; top: 20%; left: 35%; width: 30%; background: white; border: 1px solid #ccc; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 9999;">
+        <h5>دریافت توکن برای ارسال وزن از ویندوز</h5>
+        <form id="tokenFormWin">
+            <div class="mb-3">
+                <label for="WinPassword" class="form-label">رمز عبور</label>
+                <input type="password" name="WinPassword" class="form-control" id="WinPassword" />
+            </div>
+            <button type="submit" class="btn btn-success">ارسال</button>
+            <button type="button" class="btn btn-secondary" onclick="hidePopupWin()">بستن</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("tokenFormWin");
+
+            form.addEventListener("submit", function (e) {
+                e.preventDefault(); // Prevent full-page post
+
+                const WinPassword = document.getElementById("WinPassword").value;
+
+                    const url = '@Url.Action("GetToken", "WindowsAPIs")';
+                console.log("Sending token request to:", url);
+
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ WinPassword })
+                })
+                .then(async response => {
+                    const raw = await response.text(); // Read raw response
+                    console.log("Raw response:", raw);
+
+                    try {
+                        const data = JSON.parse(raw); // Try to parse JSON
+
+                        if (!data.success) {
+                            alert(data.message || "دریافت توکن با خطا مواجه شد");
+                            return;
+                        }
+
+                        document.getElementById("WindowsToken").value = data.token;
+                        hidePopupWin();
+                    } catch (e) {
+                        console.error("خطا در تبدیل پاسخ به JSON:", e);
+                        alert("پاسخ نامعتبر از سرور دریافت شد.");
+                    }
+                })
+                .catch(error => {
+                    console.error("خطا در ارسال درخواست:", error);
+                    alert("درخواست با خطا مواجه شد");
+                });
+            });
+        });
+    </script>
+}
+
+@section script {
+    <script>
+        function showPopupWin() {
+            document.getElementById('popupFormWin').style.display = 'block';
+        }
+
+        function hidePopupWin() {
+            document.getElementById('popupFormWin').style.display = 'none';
+        }
+    </script>
+}

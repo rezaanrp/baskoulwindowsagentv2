@@ -1,0 +1,139 @@
+﻿@using Application.ViewModels
+@model PagedResultCodeMarkazList
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+@{
+    int pageSize = 10;
+    int currentPage = Convert.ToInt32(ViewContext.RouteData.Values["pageNumber"] ?? 1);
+    int totalPages = (int)Math.Ceiling((double)Model.TotalCount / pageSize);
+}
+@section Style
+{
+        <title>کد مراکز</title>
+
+}
+@section ProfileName
+{
+
+}
+@section Body
+{
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">لیست مراکز</h3>
+        </div>
+        <!-- /.card-header -->
+        <!-- form start -->
+       
+            <div class="card-body">
+            @if (Model != null && Model.Markazes.Any())
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>نام</th>
+                            <th>Connection URL</th>
+                            <th>API URL</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var markaz in Model.Markazes)
+                        {
+                            <tr>
+                                <td>@markaz.Id</td>
+                                <td>@markaz.CoName</td>
+                                <td>@markaz.MarkazURL</td>
+                                <td>@markaz.APIURL</td>
+                                <td>
+                                    <a class="btn btn-icon open-modal btn-outline-primary _edit" href="@Url.Action("Edit", "CodeMarkazForURL", new { id = markaz.Id })" style="margin-left: 2px;" title="ویرایش">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+                                    <!-- Delete Button with Confirmation -->
+                                    <form asp-controller="CodeMarkazForURL" asp-action="Delete" method="post"
+                                          onsubmit="return confirmDelete(event, this)" class="d-inline m-0">
+                                        <input type="hidden" name="Id" value="@markaz.Id" />
+                                        <button type="submit" class="btn btn-icon btn-outline-primary _delete" title="حذف">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="text-center">
+                    <p>هیچ مرکزی یافت نشد</p>
+                    <a class="btn btn-outline-primary me-2 open-modal _Add"
+                       href="@Url.Action("InsertURLMarkaz", "CodeMarkazForURL")">
+                        ایجاد
+                    </a>
+                </div>
+            }
+            </div>
+            <!-- /.card-body -->
+
+            <div class="card-footer">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.currentPageMarkaz ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("ListBargeAnbar", new { type = ViewBag.type, page = i })">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+            <a class="btn btn-primary me-2 open-modal _Add"
+               href="@Url.Action("InsertURLMarkaz", "CodeMarkazForURL")">
+                ایجاد
+            </a>
+            </div>
+    </div>
+
+    <div class="modal fade" id="MarkazModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <!-- Add modal-dialog-centered here -->
+            <div class="modal-content" id="MarkazModalContent">
+                <!-- Form content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+}
+@section script {
+    <script>
+        function confirmDelete(event, form) {
+            event.preventDefault(); // Stop the default form submission
+
+            if (confirm("آیا مطمئن هستید که می‌خواهید این مورد را حذف کنید؟")) {
+                form.submit(); // Submit the form if user confirms
+            }
+        }
+    </script>
+    <script>
+        $(document).on("click", ".open-modal", function (e) {
+            e.preventDefault();
+
+            var url = $(this).attr("href");
+
+            // Optional: loading spinner
+            $("#MarkazModal .modal-content").html('<div class="p-5 text-center">در حال بارگذاری...</div>');
+
+            $("#MarkazModal").modal("show");
+
+            $.get(url, function (html) {
+                $("#MarkazModal .modal-content").html(html);
+            }).fail(function () {
+                $("#MarkazModal .modal-content").html('<div class="p-5 text-danger text-center">خطا در بارگذاری فرم</div>');
+            });
+        });
+    </script>
+}
+

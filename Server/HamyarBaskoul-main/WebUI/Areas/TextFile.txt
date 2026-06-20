@@ -1,0 +1,53 @@
+﻿
+SELECT       bs_type, count(*) as cnt --تعداد کل فرم های تعریف شده
+FROM            RealEstateConsultantForms
+group by bs_type
+
+SELECT      bs_form_type,  sum(request_number) AS cnt -- تعداد کل فرم های درخواست شده
+FROM            RealEstateConsultantFormRequests
+group by bs_form_type
+
+SELECT      bs_form_type,  sum(request_number) AS cnt -- تعداد کل فرم های تایید شده 2
+FROM            RealEstateConsultantFormRequests
+where RealEstateConsultantFormRequests.manager_confirm = 1
+group by bs_form_type
+
+SELECT      bs_form_type,  sum(request_number) AS cnt -- تعداد کل فرم های صادر شده 11
+FROM            RealEstateConsultantFormRequests
+where RealEstateConsultantFormRequests.manager_confirm = 1 and RealEstateConsultantFormRequests.[issuance_of_papers_confirm] = 1
+group by bs_form_type
+
+
+
+
+SELECT r.bs_type, COUNT(r.id) AS UnusedCount -- باقیمانده
+FROM RealEstateConsultantForms r
+LEFT JOIN FilingUserDetails f ON r.Id = f.RealEstateConsultantFormId
+LEFT JOIN ApplicantDetails a ON r.Id = a.RealEstateConsultantFormId
+WHERE f.RealEstateConsultantFormId IS NULL 
+  AND a.RealEstateConsultantFormId IS NULL
+GROUP BY r.bs_type;
+
+
+SELECT r.bs_type, 
+    COUNT(r.Id) AS UsedCount
+FROM RealEstateConsultantForms r
+inner JOIN FilingUserDetails f ON r.Id = f.RealEstateConsultantFormId
+inner JOIN ApplicantDetails a ON r.Id = a.RealEstateConsultantFormId
+GROUP BY r.bs_type;
+
+SELECT r.bs_type, 
+    COUNT(DISTINCT r.Id) AS UsedCount
+FROM RealEstateConsultantForms r
+LEFT JOIN FilingUserDetails f ON r.Id = f.RealEstateConsultantFormId
+LEFT JOIN ApplicantDetails a ON r.Id = a.RealEstateConsultantFormId
+WHERE f.RealEstateConsultantFormId IS NOT NULL 
+   OR a.RealEstateConsultantFormId IS NOT NULL
+GROUP BY r.bs_type;
+
+
+SELECT       bs_type, count(*) as cnt --تعداد کل فرم های تعریف شده
+FROM            RealEstateConsultantForms
+where RealEstateConsultantForms.disannul = 1
+group by bs_type
+

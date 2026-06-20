@@ -1,0 +1,117 @@
+﻿@using Application.ViewModels.Baskoul
+@model BargeAnbarViewModel
+
+<style>
+    .table tbody tr:hover {
+        background-color: #c3c2cc;
+        cursor: pointer;
+    }
+
+    .table tbody tr {
+        position: relative;
+        z-index: 1;
+    }
+
+</style>
+
+@if (!Model.BargeBaskouls.Any())
+{
+    <li>برگه‌ای برای نمایش وجود ندارد</li>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                @* <th>ردیف</th> *@
+                <th>شماره قبض</th>
+                <th>شماره ماشین</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.BargeBaskouls)
+            {
+                <tr class="clickable-row" data-href="@Url.Action("EditBargeBaskoul", "BargeBaskoul", new { id = item.ID })">
+                    @* <td>@item.ID</td> *@
+                    <td>@item.GhabzBaskolID</td>
+                    <td>@item.ShomareMashin</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="row">
+        <div class="col-sm-12 col-md-5">
+            <div class="dataTables_info" id="example2_info" role="status" aria-live="polite">
+                نمایش @ViewBag.startEntry تا @ViewBag.endEntry از @ViewBag.totalEntries برگه
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-7">
+            <div class="dataTables_paginate paging_simple_numbers" id="example2_paginate">
+                <ul class="pagination justify-content-center">
+                    @if (ViewBag.currentPage > 1)
+                    {
+                        <li class="paginate_button page-item previous">
+                            <a href="javascript:void(0);" class="page-link" onclick="loadPage(@(ViewBag.currentPage - 1))">قبلی</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="paginate_button page-item previous disabled">
+                            <a href="#" class="page-link">قبلی</a>
+                        </li>
+                    }
+
+                    @for (int i = 1; i <= ViewBag.totalPages; i++)
+                    {
+                        <li class="paginate_button page-item @(i == ViewBag.currentPage ? "active" : "")">
+                            <a href="javascript:void(0);" class="page-link" onclick="loadPage(@i)">@i</a>
+                        </li>
+                    }
+
+                    @if (ViewBag.currentPage < ViewBag.totalPages)
+                    {
+                        <li class="paginate_button page-item next">
+                            <a href="javascript:void(0);" class="page-link" onclick="loadPage(@(ViewBag.currentPage + 1))">بعدی</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="paginate_button page-item next disabled">
+                            <a href="#" class="page-link">بعدی</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    document.addEventListener("click", function (event) {
+        // Check if the clicked element or its ancestor has the 'clickable-row' class
+        let row = event.target.closest(".clickable-row");
+        if (row) {
+            window.location = row.getAttribute("data-href");
+        }
+    });
+</script>
+@* <script>
+    let hoverTimer;
+
+    document.addEventListener("mouseover", function (event) {
+        const row = event.target.closest(".clickable-row");
+        if (!row) return;
+
+        hoverTimer = setTimeout(() => {
+            window.location = row.dataset.href;
+        }, 300); // 300ms delay
+    });
+
+    document.addEventListener("mouseout", function (event) {
+        const row = event.target.closest(".clickable-row");
+        if (row) {
+            clearTimeout(hoverTimer);
+        }
+    });
+</script> *@
+
+

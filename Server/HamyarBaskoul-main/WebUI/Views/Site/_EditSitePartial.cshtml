@@ -1,0 +1,43 @@
+﻿@using Application.ViewModels
+@model SiteViewModel
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+<div class="card-header  bg-info text-white">
+        <h3 class="card-title">ویرایش مرکز باسکول</h3>
+    </div>
+
+<form id="edit-site-form" method="post" action="@Url.Action("EditSite", "Site")">
+        @Html.AntiForgeryToken() <!-- اضافه کردن توکن ضد جعل برای امنیت بیشتر -->
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <label class="form-label">نام</label>
+                        <input asp-for="name" class="form-control" aria-required="true" />
+                        <span asp-validation-for="name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3 d-flex align-items-center mt-4">
+                    <div class="form-check">
+                        <input asp-for="isActive" class="form-check-input" type="checkbox" />
+                        <label class="form-check-label" asp-for="isActive">فعال</label>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" asp-for="CodeMarkaz" />
+            <input type="hidden" asp-for="ID" />
+            <br />
+            <hr />
+        </div>
+
+        <div class="card-footer text-end">
+            <button type="submit" class="btn btn-success px-4">ذخیره</button>
+            <button class="btn btn-secondary px-4" data-dismiss="modal">لغو</button>
+        </div>
+    </form>
+

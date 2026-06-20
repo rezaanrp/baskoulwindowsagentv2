@@ -1,0 +1,49 @@
+﻿@using Application.ViewModels.BaseData
+@model BaseDataViewModel
+
+<form id="editBaseDataForm" method="post" action="@Url.Action("EditBaseData", "BaseData")">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label>نام</label>
+        <input asp-for="Onvan" class="form-control" />
+        <span asp-validation-for="Onvan" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label>توضیحات</label>
+        <input asp-for="Tozihat" class="form-control" />
+        <span asp-validation-for="Tozihat" class="text-danger"></span>
+    </div>
+
+    <input type="hidden" asp-for="ID" />
+    <input type="hidden" asp-for="TableName" />
+
+    <div class="text-end mt-3">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">لغو</button>
+        <button type="submit" class="btn btn-success">ذخیره</button>
+    </div>
+</form>
+
+<script>
+$("#editBaseDataForm").on("submit", function (e) {
+    e.preventDefault();
+    $.ajax({
+        url: $(this).attr("action"),
+        type: "POST",
+        data: $(this).serialize(),
+        success: function (res) {
+            if (res.success) {
+                alert("ویرایش با موفقیت انجام شد.");
+                $("#editModal").modal("hide");
+                location.reload();
+            } else {
+                alert(res.message || "خطا در ویرایش.");
+            }
+        },
+        error: function () {
+            alert("خطا در ارسال داده‌ها.");
+        }
+    });
+});
+</script>

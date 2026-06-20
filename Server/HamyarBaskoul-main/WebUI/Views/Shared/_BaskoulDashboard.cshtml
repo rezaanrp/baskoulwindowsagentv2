@@ -1,0 +1,61 @@
+﻿@using Application.ViewModels.Baskoul
+@model List<BaskoulViewModel>
+
+<div class="row">
+    @foreach (var baskoul in Model)
+    {
+        <div class=" col-6">
+            <!-- small box -->
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <p>@baskoul.Name</p>
+                    @if (baskoul.Weight == null)
+                    {
+                        <h3 id="weight-@baskoul.ScaleCode">0 کیلوگرم</h3>
+                    }
+                    else
+                    {
+                        <h3 id="weight-@baskoul.ScaleCode">@baskoul.Weight</h3> <!-- Unique ID for each scale -->
+                    }
+                </div>
+                <div class="icon">
+                    <i class="fas fa-weight-hanging"></i>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<script src="~/apl/canvasjs/jquery-1.11.1.min.js"></script>
+<script src="~/apl/canvasjs/jquery.canvasjs.min.js"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+    // Connect to SignalR hub
+            var connection = new signalR.HubConnectionBuilder()
+        .withUrl("/ReceiveWeightFromScale") // Ensure URL is correct
+        .withAutomaticReconnect() // This ensures it auto-reconnects
+        .build();
+
+    // Automatically try to reconnect if the connection drops
+    connection.onclose(async () => {
+        console.log("Connection lost. Reconnecting...");
+        try {
+            await connection.start();
+            console.log("Reconnected.");
+        } catch (err) {
+            console.error("Reconnection failed:", err);
+        }
+    });
+
+    connection.start().catch(err => console.error(err.toString()));
+    console.log(connection.state);  // Should be "Connected" when the connection is active.
+
+    // Listen for weight updates from the server
+    connection.on("ReceiveWeightUpdate", function (scaleCode, weight) {
+        var weightElement = document.getElementById("weight-" + scaleCode);
+        if (weightElement) {
+            weightElement.textContent = weight; // Update the weight in the UI
+        }
+    });
+</script>

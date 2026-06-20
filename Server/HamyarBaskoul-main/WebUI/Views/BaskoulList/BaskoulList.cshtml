@@ -1,0 +1,115 @@
+﻿@using Application.ViewModels.Baskoul
+ 
+@model List<BaskoulViewModel>
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style
+{
+    <title>لیست باسکول</title>
+
+}
+@section ProfileName
+{
+
+}
+@section Body
+{
+    <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">لیست کفه‌ها</h3>
+              </div>
+              <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>نام</th>
+                            <th>نوع باسکول</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var baskoul in Model)
+                        {
+                            <tr>
+                                <td>@baskoul.Id</td>
+                                <td>@baskoul.Name</td>
+                                <td>@baskoul.Type</td>
+                                <td>
+                                    <a class="btn btn-warning open-modal" href="@Url.Action("EditBaskoul", "BaskoulList",  new { id = baskoul.Id })">ویرایش</a>
+                                    <!-- Delete Button with Confirmation -->
+                                    <form asp-controller="BaskoulList" asp-action="DeleteBaskoul" method="post"
+                                          onsubmit="return confirmDelete(event, this)" class="d-inline m-0">
+                                            @Html.AntiForgeryToken()
+                                          <input type="hidden" name="Id" value="@baskoul.Id" />
+                                        <button type="submit" class="btn btn-danger px-4">حذف</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="text-center">
+                    <p>هیچ باسکولی یافت نشد</p>
+                    <a class="btn btn-primary open-modal" href="@Url.Action("AddBaskoul", "BaskoulList")">ایجاد</a>
+                </div>
+            }
+
+                <!-- /input-group -->
+              </div>
+              <!-- /.card-body -->
+        <div class="card-footer">
+            <a class="btn btn-primary open-modal" href="@Url.Action("AddBaskoul", "BaskoulList")">ایجاد</a>
+        </div>
+    </div>
+
+    <div class="modal fade" id="siteModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <!-- Add modal-dialog-centered here -->
+            <div class="modal-content" id="siteModalContent">
+                <!-- Form content will be injected here -->
+            </div>
+        </div>
+    </div>
+}
+@section script{
+    <script>
+        function confirmDelete(event, form) {
+            event.preventDefault(); // Stop the default form submission
+
+            if (confirm("آیا مطمئن هستید که می‌خواهید این مورد را حذف کنید؟")) {
+                if (form.requestSubmit) {
+                    form.requestSubmit(); // Proper way to submit
+                } else {
+                    form.submit(); // Fallback
+                }
+            }
+        }
+    </script>
+
+    <script>
+        $(document).on("click", ".open-modal", function (e) {
+            e.preventDefault();
+
+            var url = $(this).attr("href");
+
+            // Optional: loading spinner
+            $("#siteModal .modal-content").html('<div class="p-5 text-center">در حال بارگذاری...</div>');
+
+            $("#siteModal").modal("show");
+
+            $.get(url, function (html) {
+                $("#siteModal .modal-content").html(html);
+            }).fail(function () {
+                $("#siteModal .modal-content").html('<div class="p-5 text-danger text-center">خطا در بارگذاری فرم</div>');
+            });
+        });
+    </script>
+}
+

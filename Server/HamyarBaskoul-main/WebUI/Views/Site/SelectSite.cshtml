@@ -1,0 +1,58 @@
+﻿@using Application.ViewModels
+@model List<SiteViewModel>
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style {
+        <title>انتخاب سایت</title>
+}
+@section ProfileName{}
+@section Body {
+<div class="row">
+        <div class="col-4">
+
+        </div> 
+        <div class="col-4">
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">مرکز باسکول پیش ‌فرض خود را انتخاب نمایید</h3>
+                </div>
+                <form asp-action="SaveSelectedSite" asp-controller="Site" method="post">
+                    <div class="card-body">
+                        <div class="form-group">
+                            @foreach (var site in Model)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio"
+                                           name="selectedSiteId"
+                                           id="site-@site.ID"
+                                           value="@site.ID"
+                                    @(site.ID == (int?)ViewBag.SelectedSiteId ? "checked" : "") />
+                                    <label class="form-check-label" for="site-@site.ID">
+                                        @site.name
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary mt-3">تأیید</button>
+                    </div>
+                </form>
+            </div>
+        </div>     
+        <div class="col-4">
+
+        </div>
+</div>
+}
+@section script {
+}

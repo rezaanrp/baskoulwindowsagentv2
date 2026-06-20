@@ -1,0 +1,104 @@
+﻿@using System.Web
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+@section Style
+{
+    <title>بارگذاری اکسل </title>
+}
+@section ProfileName
+{
+
+}
+@section Body {
+    <div class="callout callout-info">
+        <h5>تنها در صورت قطعی سیستم از این برگه استفاده شود!</h5>
+
+        <p>قالب ارائه شده در فرمت اکسل، تنها برای مواقع قطعی سیستم پیش‌بینی شده است. از طریق لینک دانلود این صفحه، قالب اکسل را دانلود کرده و در سیستم خود ذخیره کنید. در هنگام قطعی اینترنت یا سیستم باسکول، اطلاعات مربوط به راننده، ماشین و وزن بار را در فایل مذکور  ثبت کرده و پس از اتصال دوباره‌ی سیستم، فایل را از طریق همین صفحه بارگذاری کنید. توجه داشته باشید اطلاعاتی مانند شماه قبض باسکول پس از بارگذاری فایل، توسط سیستم به‌صورت خودکار ایجاد می‌شوند. برای ورود اطلاعات بیشتر مانند شخص، تفصیلی، انبار و... پس از بارگذاری فایل در سیستم می‌توانید از صفحه‌ی "لیست برگه باسکول" اقدام به ویرایش قبض باسکول نمایید.</p>
+    </div>
+    <div class="card card-info">
+        <div class="card-header">
+            <h3 class="card-title">سیستم فایل</h3>
+        </div>
+        <div class="card-body">
+    <div class="row">
+        <!-- دانلود قالب آماده -->
+        <div class="col-md-6 mb-3">
+            <div class="p-3 border rounded h-100">
+                <!-- Header Row -->
+                <div class="row mb-2">
+                    <div class="col">
+                        <h6 class="fw-bold">دریافت قالب اکسل</h6>
+                        <hr />
+                    </div>
+                </div>
+                        <a href="@Url.Content("~/ExcelTemplate/Book.xlsx")" download class="btn btn-primary col">
+                            <i class="fa fa-download"></i>
+                            <span>دانلود قالب آماده</span>
+                        </a>
+            </div>
+        </div>
+
+        <!-- بارگذاری فایل اکسل -->
+        <div class="col-md-6 mb-3">
+            <div class="p-3 border rounded h-100">
+                <!-- Header Row -->
+                <div class="row mb-2">
+                    <div class="col">
+                        <h6 class="fw-bold">بارگذاری فایل اکسل</h6>
+                        <hr />
+                    </div>
+                </div>
+                <div class="row">
+                    <form id="uploadForm" class="d-flex w-100 gap-2" enctype="multipart/form-data">
+                        <label class="btn btn-success flex-fill d-flex align-items-center justify-content-center m-0">
+                            <i class="fa fa-plus ms-1" style=" margin-left: 4px;"></i>
+                            <span>انتخاب فایل</span>
+                            <input type="file" name="uploadedFile" id="uploadedFile" style="display: none;" required>
+                        </label>
+
+                        <button type="submit" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center">
+                            <i class="fa fa-upload ms-1" style=" margin-left: 4px;"></i>
+                            <span>بارگذاری فایل</span>
+                        </button>
+
+                        <button type="reset" class="btn btn-warning flex-fill d-flex align-items-center justify-content-center">
+                            <i class="fa fa-times-circle" style=" margin-left: 4px;"></i>
+                            <span>انصراف</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <div class="card-footer">
+        </div>
+    </div>
+}
+
+@section script {
+    <script>
+        $('#uploadForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: '@Url.Action("UploadFile", "BargeBaskoul")',  
+                type: 'POST',
+                data: formData,
+                contentType: false,  // Required for FormData
+                processData: false,  // Required for FormData
+                success: function (response) {
+                    alert("فایل با موفقیت آپلود ");
+                },
+                error: function (xhr, status, error) {
+                    alert("خطا در اپلود فایل");
+                }
+            });
+        });
+    </script>
+}

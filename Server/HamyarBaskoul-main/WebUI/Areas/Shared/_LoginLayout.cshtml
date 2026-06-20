@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>@ViewData["Title"]</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Styles -->
+    <link type="text/css" href="~/LoginV4/css/bootstrap-rtl.min.css" rel="stylesheet" />
+    <link type="text/css" href="~/LoginV4/css/font-awesome.min.css" rel="stylesheet" />
+    <link type="text/css" href="~/LoginV4/css/animate.css" rel="stylesheet" />
+    <link type="text/css" href="~/LoginV4/css/hamburgers.min.css" rel="stylesheet" />
+    <link type="text/css" href="~/LoginV4/css/select2.min.css" rel="stylesheet" />
+    <link type="text/css" href="~/LoginV4/css/util.css" rel="stylesheet" />
+    <link type="text/css" href="~/LoginV4/css/style.css" rel="stylesheet" />
+</head>
+<body>
+
+                                    @RenderBody()
+
+
+
+    <script src="~/LoginV4/js/jquery-3.2.1.min.js"></script>
+    <script src="~/LoginV4/js/popper.min.js"></script>
+    <script src="~/LoginV4/js/bootstrap.min.js"></script>
+    <script src="~/LoginV4/js/select2.min.js"></script>
+    <script src="~/LoginV4/js/tilt.jquery.min.js"></script>
+    <script>
+        $('.js-tilt').tilt({
+            scale: 1.1
+        })
+    </script>
+    <script src="~/LoginV4/js/scripts.js"></script>
+
+</body>
+</html>
+
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
