@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ports>
+  <port DisplayName="ورودی" type="COM" name="COM4" baudrate="9600" stopbits="1" code="S1" codmarkaz="12273" siteCode="Site_1" appname="sanayeboresh" baseUrl="https://public.hamyarmsc.ir" />
+  <port DisplayName="خروجی" type="COM" name="COM3" baudrate="9600" stopbits="1" code="S2" codmarkaz="12273" siteCode="Site_1" appname="sanayeboresh" baseUrl="https://public.hamyarmsc.ir" />
+</ports>
