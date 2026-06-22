@@ -10,7 +10,10 @@
 
 @section Style
     {
-    <title>کاربر جدید</title>
+    @{
+    ViewData["Title"] = "تعریف کاربر جدید";
+}
+
 }
 
 @section ProfileName
@@ -316,7 +319,7 @@
     </script>
 }
 
-@section script {
+@section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.getElementById('change-password-form').addEventListener('submit', function (e) {
@@ -354,3 +357,5 @@
         }
     </script>
 }
+
+

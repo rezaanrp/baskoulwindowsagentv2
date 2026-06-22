@@ -7,13 +7,13 @@
 
 @section Style
 	{
-	<title>لیست کاربران</title>
+	@{
+    ViewData["Title"] = "مدیریت کاربران و دسترسی‌ها";
+}
+
 
 }
-@section ProfileName
-	{
 
-}
 @section Body{
 	@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
 	{
@@ -57,7 +57,7 @@
 
 }
 
-@section script{
+@section Scripts{
 	<link href="~/apl/swat/sweetalert2.min.css" rel="stylesheet" />
 	<script src="~/apl/swat/sweetalert2.all.min.js"></script>
 	<script>
@@ -220,4 +220,7 @@
 		}
 	</script>
 }
+
+
+
 

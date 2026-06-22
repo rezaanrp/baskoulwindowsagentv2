@@ -40,17 +40,15 @@
                 <span asp-validation-for="Input.Password" class="auth-validation"></span>
             </label>
 
+            <label class="auth-remember" asp-for="Input.RememberMe">
+                <input asp-for="Input.RememberMe" />
+                <span class="auth-checkmark"></span>
+                <span>مرا به خاطر بسپار</span>
+            </label>
+
             <button type="submit" class="auth-submit">ورود</button>
         </form>
     </section>
-
-    <aside class="auth-side" aria-label="معرفی سامانه">
-        <span class="auth-badge">همیار باسکول</span>
-        <h2>کنترل زنده وزن، اتصال سیستم ERP همیار</h2>
-        <p>از اتصال باسکول تا ثبت نهایی، همه چیز در یک جریان سریع، شفاف و قابل پیگیری انجام می‌شود.</p>
-
-
-    </aside>
 </div>
 
 @section Scripts {

@@ -6,12 +6,12 @@
 
 @section Style
 {
-<title>برگه‌های باسکول</title>
+@{
+    ViewData["Title"] = "لیست برگه‌های باسکول";
 }
-@section ProfileName
-{
 
 }
+
 @section Body
 {
     @if (!string.IsNullOrEmpty(ViewBag.ReportError))
@@ -87,7 +87,7 @@
         </div>
     </div>
 }
-@section script {
+@section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             document.querySelectorAll(".clickable-row").forEach(row => {
@@ -160,4 +160,7 @@
         });
 </script>
 }
+
+
+
 

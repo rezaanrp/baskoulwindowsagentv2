@@ -5,12 +5,12 @@
 }
 @section Style
 {
-<title>برگه بارنامه</title>
+@{
+    ViewData["Title"] = "ثبت برگه باسکول";
 }
-@section ProfileName
-{
 
 }
+
 @section Body {
 
     <style>
@@ -131,7 +131,7 @@
         <!-- /.card-body -->
     </div>
 }
-@section script {
+@section Scripts {
     <script src="~/lib/signalr/signalr.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
     <script>
@@ -310,3 +310,6 @@
         });
     </script>
 }
+
+
+

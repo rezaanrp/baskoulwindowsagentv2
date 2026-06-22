@@ -6,7 +6,10 @@
 
 @section Style
 {
-    <title>چاپ برگه باسکول</title>
+    @{
+    ViewData["Title"] = "چاپ برگه باسکول";
+}
+
     @Html.Raw(@"
     <style>
         @media print {
@@ -56,10 +59,7 @@
 ")
 }
 
-@section ProfileName
-{
 
-}
 @section Body
 {
     <body onload="window.print();">
@@ -285,6 +285,9 @@
         <!-- ./wrapper -->
     </body>
 }
-@section script {
+@section Scripts {
 }
+
+
+
 

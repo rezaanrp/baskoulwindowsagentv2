@@ -1,34 +1,157 @@
-﻿@using System.Web
-
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "داشبورد سیستم باسکول";
     Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
 }
+
 @section Style
 {
-<title>پنل مدیریت </title>
+    <style>
+        .home-dashboard {
+            direction: rtl;
+            display: grid;
+            gap: 22px;
+        }
 
+        .home-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            padding: 28px;
+            color: #123027;
+            background:
+                radial-gradient(circle at 12% 12%, rgba(15, 122, 90, .18), transparent 28rem),
+                linear-gradient(135deg, #ffffff 0%, #eef8f4 54%, #dceee7 100%);
+            border: 1px solid #d9e8e2;
+            box-shadow: 0 18px 50px rgba(18, 48, 39, .08);
+        }
+
+        .home-hero h1 {
+            margin: 0 0 10px;
+            font-size: clamp(24px, 3vw, 34px);
+            font-weight: 800;
+        }
+
+        .home-hero p {
+            max-width: 760px;
+            margin: 0;
+            color: #5c7069;
+            line-height: 2;
+            font-size: 15px;
+        }
+
+        .home-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .home-action-card {
+            min-height: 132px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 20px;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #e2ebe7;
+            color: #18352c;
+            text-decoration: none;
+            box-shadow: 0 14px 34px rgba(18, 48, 39, .06);
+            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        }
+
+        .home-action-card:hover {
+            color: #0f7a5a;
+            text-decoration: none;
+            transform: translateY(-3px);
+            border-color: rgba(15, 122, 90, .35);
+            box-shadow: 0 20px 42px rgba(18, 48, 39, .10);
+        }
+
+        .home-action-card i {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            color: #fff;
+            background: linear-gradient(135deg, #0f7a5a, #095d44);
+            font-size: 18px;
+        }
+
+        .home-action-card strong {
+            display: block;
+            margin-top: 18px;
+            font-size: 17px;
+        }
+
+        .home-action-card span {
+            color: #6a7b75;
+            line-height: 1.9;
+            font-size: 13px;
+        }
+
+        .home-alert {
+            border-radius: 16px;
+            border: 1px solid #ffd7a6;
+            background: #fff8ed;
+            color: #8a4b00;
+            padding: 14px 16px;
+            line-height: 1.9;
+            font-weight: 700;
+        }
+    </style>
 }
-@section ProfileName
+
+@section Body
 {
+    <div class="home-dashboard">
+        @if (TempData["TokenError"] != null)
+        {
+            <div class="home-alert">@TempData["TokenError"]</div>
+        }
 
+        @if (TempData["NullSelectedSite"] != null)
+        {
+            <div class="home-alert">@TempData["NullSelectedSite"]</div>
+        }
+
+        <section class="home-hero">
+            <h1>داشبورد سیستم باسکول</h1>
+            <p>
+                از این بخش می‌توانید عملیات اصلی باسکول، ثبت برگه، مشاهده لیست برگه‌ها،
+                تنظیمات پایه و گزارش‌های سیستم را مدیریت کنید.
+            </p>
+        </section>
+
+        <section class="home-actions" aria-label="دسترسی سریع">
+            <a class="home-action-card" asp-controller="BargeBaskoul" asp-action="BargeAnbar">
+                <i class="fa fa-plus"></i>
+                <strong>ثبت برگه باسکول</strong>
+                <span>شروع سریع فرآیند ثبت وزن و اطلاعات برگه باسکول.</span>
+            </a>
+
+            <a class="home-action-card" asp-controller="BargeBaskoul" asp-action="ListBargeAnbar">
+                <i class="fa fa-list"></i>
+                <strong>لیست برگه‌ها</strong>
+                <span>جستجو، مشاهده و پیگیری برگه‌های ثبت‌شده.</span>
+            </a>
+
+            <a class="home-action-card" >
+                <i class="fa fa-balance-scale"></i>
+                <strong>مدیریت باسکول‌ها</strong>
+                <span>تعریف و مدیریت باسکول‌ها و محل‌های فعال.</span>
+            </a>
+
+            <a class="home-action-card" >
+                <i class="fa fa-print"></i>
+                <strong>گزارش‌ها و چاپ</strong>
+                <span>دسترسی به گزارش‌ها و تنظیمات چاپ برگه باسکول.</span>
+            </a>
+        </section>
+    </div>
 }
-@section Body {
-    @if (TempData["TokenError"] != null)
-    {
-        <script>
-            alert('@Html.Raw(TempData["TokenError"])');
-        </script>
-    }
-    @if (TempData["NullSelectedSite"] != null)
-    {
-        <script>
-            alert('@Html.Raw(TempData["NullSelectedSite"])');
-        </script>
-    }
+
+@section Scripts
+{
 }
-
-@section script{
-
-}
-

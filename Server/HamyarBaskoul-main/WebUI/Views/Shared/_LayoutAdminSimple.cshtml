@@ -22,22 +22,109 @@
 	
 	<!-- AdminLTE for demo purposes -->
 	<link href="~/css/loader.css" rel="stylesheet" />
-	@RenderSection("Style")
+	<style>
+		.app-topbar {
+			min-height: 58px;
+			padding: 8px 14px;
+		}
+
+		.app-topbar-row {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			width: 100%;
+			min-width: 0;
+		}
+
+		.app-topbar-group {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			min-width: 0;
+		}
+
+		.app-topbar-link,
+		.app-topbar-button {
+			display: inline-flex !important;
+			align-items: center;
+			justify-content: center;
+			gap: 7px;
+			min-height: 38px;
+			padding: 8px 12px !important;
+			border-radius: 12px;
+			color: #254038 !important;
+			background: #f5faf8;
+			border: 1px solid #e0ece7 !important;
+			line-height: 1.4;
+			white-space: nowrap;
+			transition: background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+		}
+
+		.app-topbar-link:hover,
+		.app-topbar-button:hover {
+			color: #0f7a5a !important;
+			background: #edf8f4;
+			border-color: rgba(15, 122, 90, .28) !important;
+			box-shadow: 0 8px 18px rgba(15, 122, 90, .08);
+			text-decoration: none;
+		}
+
+		.app-topbar-button {
+			cursor: pointer;
+			font: inherit;
+		}
+
+		.app-topbar-extra {
+			margin-right: 8px;
+		}
+
+		@@media (max-width: 576px) {
+			.app-topbar {
+				padding: 8px;
+			}
+
+			.app-topbar-row {
+				gap: 8px;
+			}
+
+			.app-topbar-group {
+				gap: 6px;
+			}
+
+			.app-topbar-link,
+			.app-topbar-button {
+				width: 40px;
+				height: 40px;
+				min-height: 40px;
+				padding: 0 !important;
+				border-radius: 13px;
+			}
+
+			.app-topbar-text {
+				display: none;
+			}
+		}
+	</style>
+	@RenderSection("Style", required: false)
 </head>
 <body class="sidebar-mini ">
 	<div class="wrapper">
 		<!-- Navbar -->
-		<nav class="main-header navbar navbar-expand border-bottom navbar-light bg-white">
+		<nav class="main-header navbar navbar-expand border-bottom navbar-light bg-white app-topbar">
 
 			<!-- Left navbar links -->
-			<div class="d-flex justify-content-between align-items-center w-100">
+			<div class="app-topbar-row">
 				<!-- Left part -->
-				<ul class="nav">
+				<ul class="nav app-topbar-group">
 					<li class="nav-item">
-						<a class="nav-link" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
+						<a class="nav-link app-topbar-link" data-widget="pushmenu" href="#" aria-label="باز و بسته کردن منو"><i class="fa fa-bars"></i></a>
 					</li>
-					<li class="nav-item d-none d-sm-inline-block">
-                        <a asp-controller="Home" asp-action="Index" class="nav-link">صفحه اصلی <i class="fa fa-home"></i></a>
+					<li class="nav-item">
+                        <a asp-controller="Home" asp-action="Index" class="nav-link app-topbar-link"><span class="app-topbar-text">صفحه اصلی</span> <i class="fa fa-home"></i></a>
 					</li>
 				</ul>
 
@@ -47,18 +134,18 @@
 				</div> *@
 
 				<!-- Right part -->
-				<ul class="nav">
-					<li class="nav-item d-none d-sm-inline-block">
+				<ul class="nav app-topbar-group">
+					<li class="nav-item">
 						<form asp-area="Identity" asp-page="/Account/Logout"
 							  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-							<button type="submit" class="nav-link btn"><i class="fa fa-arrow-up"></i> خروج</button>
+							<button type="submit" class="nav-link btn app-topbar-button"><i class="fa fa-arrow-up"></i> <span class="app-topbar-text">خروج</span></button>
 						</form>
 					</li>
 				</ul>
 			</div>
 
 
-			<ul class="navbar-nav mr-auto">
+			<ul class="navbar-nav mr-auto app-topbar-extra">
 				<!-- Messages Dropdown Menu -->
 				<li class="nav-item dropdown">
 
@@ -67,7 +154,7 @@
 
 
 				<li class="nav-item">
-					<a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#"><i class="fa fa-th-large"></i></a>
+					<a class="nav-link app-topbar-link" data-widget="control-sidebar" data-slide="true" href="#" aria-label="پنل کناری"><i class="fa fa-th-large"></i></a>
 				</li>
 			</ul>
 		</nav>
@@ -88,7 +175,7 @@
 						</div>
 						
 						<div class="info">
-							@RenderSection("ProfileName")
+							@RenderSection("ProfileName", required: false)
 							<a href="#" class="d-block"> @await Component.InvokeAsync("UserName")   </a>
 						</div>
 					</div>
@@ -179,7 +266,7 @@
 @* 	<script>
 		$.widget.bridge('uibutton', $.ui.button)
 	</script> *@
-	@RenderSection("script")
+	@RenderSection("Scripts", required: false)
 	<script src="~/js/easy-number-separator.js"></script>
 	<script>
 		easyNumberSeparator({
@@ -191,3 +278,4 @@
 	</script>
 </body>
 </html>
+

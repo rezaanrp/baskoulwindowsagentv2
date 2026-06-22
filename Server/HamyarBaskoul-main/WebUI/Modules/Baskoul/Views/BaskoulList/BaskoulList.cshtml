@@ -7,13 +7,13 @@
 
 @section Style
 {
-    <title>لیست باسکول</title>
+    @{
+    ViewData["Title"] = "مدیریت کفه‌های باسکول";
+}
+
 
 }
-@section ProfileName
-{
 
-}
 @section Body
 {
     <div class="card">
@@ -78,7 +78,7 @@
         </div>
     </div>
 }
-@section script{
+@section Scripts{
     <script>
         function confirmDelete(event, form) {
             event.preventDefault(); // Stop the default form submission
@@ -112,4 +112,7 @@
         });
     </script>
 }
+
+
+
 

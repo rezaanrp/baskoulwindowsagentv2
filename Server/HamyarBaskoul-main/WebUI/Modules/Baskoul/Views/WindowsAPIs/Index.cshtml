@@ -9,11 +9,13 @@
 
 @section Style
 {
-    <title>دریافت توکن ارتباط با ویندوز</title>
+    @{
+    ViewData["Title"] = "توکن ارتباط با نمایشگر وزن";
 }
 
-@section ProfileName
-{}
+}
+
+
 
 @section Body {
     @if (ViewBag.ErrorMessage != null)
@@ -124,7 +126,7 @@
     </script>
 }
 
-@section script {
+@section Scripts {
     <script>
         function showPopupWin() {
             document.getElementById('popupFormWin').style.display = 'block';
@@ -135,3 +137,5 @@
         }
     </script>
 }
+
+

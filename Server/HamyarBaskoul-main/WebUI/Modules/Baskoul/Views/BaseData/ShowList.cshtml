@@ -7,13 +7,13 @@
 
 @section Style
 {
-    <title>ایجاد اطلاعات پایه </title>
+    @{
+    ViewData["Title"] = "مدیریت اطلاعات پایه باسکول";
+}
+
 
 }
-@section ProfileName
-{
 
-}
 @section Body
 {
     <style>
@@ -219,7 +219,7 @@
     </div>
 
 }
-@section script {
+@section Scripts {
     <script>
         function saveEntity() {
             const form = $("#createEntityForm");
@@ -332,3 +332,6 @@
         });
     </script>
 }
+
+
+

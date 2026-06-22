@@ -7,13 +7,13 @@
 
 @section Style
 {
-    <title>مدیریت مرکز باسکول</title>
+    @{
+    ViewData["Title"] = "مدیریت محل‌های باسکول";
+}
+
 
 }
-@section ProfileName
-{
 
-}
 @section Body
 {
     @if (TempData["ErrorMessage"] != null)
@@ -62,7 +62,7 @@
         </div>
     </div>
 }
-@section script {
+@section Scripts {
     <style>
         .table tbody tr:hover {
             background-color: #dcdcdc; 
@@ -266,3 +266,6 @@
         });
     </script>
 }
+
+
+

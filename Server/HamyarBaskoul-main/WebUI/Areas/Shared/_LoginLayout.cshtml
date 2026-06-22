@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"]</title>
+    <title>@(string.IsNullOrWhiteSpace(ViewData["Title"]?.ToString()) ? "سیستم باسکول همیار" : ViewData["Title"] + " - سیستم باسکول همیار")</title>
     <style>
         @@font-face {
             font-family: 'Vazir';
@@ -44,8 +44,8 @@
         .auth-shell {
             min-height: 100vh;
             display: grid;
-            grid-template-columns: minmax(320px, 460px) minmax(280px, 1fr);
-            gap: 32px;
+            grid-template-columns: minmax(320px, 460px);
+            justify-content: center;
             align-items: center;
             padding: 48px clamp(18px, 5vw, 80px);
         }
@@ -99,6 +99,53 @@
         }
         .auth-field input:focus {
             border-color: var(--auth-primary);
+            box-shadow: 0 0 0 4px rgba(15,122,90,.14);
+        }
+        .auth-remember {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            width: fit-content;
+            color: var(--auth-muted);
+            font-weight: 700;
+            line-height: 1.8;
+            cursor: pointer;
+            user-select: none;
+        }
+        .auth-remember input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .auth-checkmark {
+            width: 22px;
+            height: 22px;
+            border-radius: 8px;
+            border: 1px solid var(--auth-line);
+            background: #fff;
+            display: inline-grid;
+            place-items: center;
+            transition: border-color .2s, background .2s, box-shadow .2s;
+        }
+        .auth-checkmark::after {
+            content: "";
+            width: 10px;
+            height: 6px;
+            border-right: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+            transform: rotate(45deg) translate(-1px, -1px);
+            opacity: 0;
+            transition: opacity .2s;
+        }
+        .auth-remember input:checked + .auth-checkmark {
+            border-color: var(--auth-primary);
+            background: linear-gradient(135deg, var(--auth-primary), var(--auth-primary-dark));
+            box-shadow: 0 8px 18px rgba(15,122,90,.20);
+        }
+        .auth-remember input:checked + .auth-checkmark::after {
+            opacity: 1;
+        }
+        .auth-remember input:focus + .auth-checkmark {
             box-shadow: 0 0 0 4px rgba(15,122,90,.14);
         }
         .auth-submit {
@@ -200,5 +247,6 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
 
 
