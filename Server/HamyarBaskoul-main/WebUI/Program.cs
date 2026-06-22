@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Razor;
 using WebUI.Controllers;
 using Infra.Data.Classes;
 
@@ -35,7 +36,13 @@ builder.Services.AddProjectServices(builder.Configuration);
 
 builder.Services.AddSignalR();
 
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+builder.Services.AddControllersWithViews()
+    .AddRazorOptions(options =>
+    {
+        options.ViewLocationFormats.Insert(0, "/Modules/Baskoul/Views/{1}/{0}.cshtml");
+        options.ViewLocationFormats.Insert(1, "/Modules/Baskoul/Views/Shared/{0}.cshtml");
+    })
+    .AddRazorRuntimeCompilation();
 
 builder.Services.AddCors(options =>
 {
@@ -196,6 +203,7 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
+
 
 
 
