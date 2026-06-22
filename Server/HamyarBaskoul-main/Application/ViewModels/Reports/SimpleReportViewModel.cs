@@ -43,3 +43,4 @@ namespace Application.ViewModels.Reports
         public string? Tozihat { get; set; }
     }
 }
+

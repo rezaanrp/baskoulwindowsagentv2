@@ -1,5 +1,4 @@
-﻿using Domain.Models.DesignExecution;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Models
 {
@@ -14,7 +13,8 @@ namespace Domain.Models
         [MaxLength(100)]
 		public string? Description { get; set; }
         public bool IsDeleted { get; set; }
-        public ICollection<DesignExecutionEmployer>? DesignExecutionEmployerTypeOfAdmissionBaseTable { get; set; }
 
 	}
 }
+
+

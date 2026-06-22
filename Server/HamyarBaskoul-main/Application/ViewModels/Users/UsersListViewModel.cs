@@ -40,3 +40,4 @@ namespace Application.ViewModels.Users
         public string? WindowsToken { get; set; } 
     }
 }
+

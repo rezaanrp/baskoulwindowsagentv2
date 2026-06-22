@@ -2,7 +2,7 @@
 using Application.ViewModels.Users;
 using Domain.Models;
 using Domain.ViewModels;
-using Domain.ViewModels.FilingUserDetail;
+using Domain.ViewModels.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,3 +41,5 @@ namespace Application.Interfaces
 		Task<ObjectFormListViewModel?> GetUserFormAccessListAsync(string id);
 	}
 }
+
+

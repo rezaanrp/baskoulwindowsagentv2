@@ -4,11 +4,9 @@ using AutoMapper;
 using Domain.Models;
 using Application.ViewModels.Baskoul;
 using Domain.ViewModels.Baskoul;
-using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata.Ecma335;
 using Application.Tools;
 using Application.Classes;
-using DocumentFormat.OpenXml.Vml.Office;
 using ClosedXML.Excel;
 
 namespace Application.Services
@@ -207,3 +205,5 @@ namespace Application.Services
 
     }
 }
+
+

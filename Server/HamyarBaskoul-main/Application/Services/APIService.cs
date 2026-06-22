@@ -5,7 +5,7 @@ using AutoMapper;
 using Domain.Interfaces;
 using Domain.Classes;
 using Microsoft.AspNetCore.Identity;
-using Infra.Data.Classes;
+using Domain.Classes;
 
 namespace Application.Services
 {
@@ -128,3 +128,5 @@ namespace Application.Services
         }
     }
 }
+
+

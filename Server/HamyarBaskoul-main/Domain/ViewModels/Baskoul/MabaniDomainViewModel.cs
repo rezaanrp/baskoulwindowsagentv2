@@ -21,3 +21,4 @@ namespace Domain.ViewModels.Baskoul
         public string? CodMarkaz { get; set; }
     }
 }
+

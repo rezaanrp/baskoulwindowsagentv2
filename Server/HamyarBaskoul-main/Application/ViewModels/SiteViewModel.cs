@@ -14,3 +14,4 @@ namespace Application.ViewModels
         public bool isActive { get; set; } = true;
     }
 }
+

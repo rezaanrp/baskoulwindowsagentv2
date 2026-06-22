@@ -15,3 +15,4 @@ namespace Domain.Models
         public ICollection<UserSite> UserSites { get; set; } = new List<UserSite>();
     }
 }
+

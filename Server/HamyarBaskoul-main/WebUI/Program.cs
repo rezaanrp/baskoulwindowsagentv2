@@ -181,7 +181,7 @@ app.Use(async (context, next) =>
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Map hub after path rewrite
+app.MapHub<ReceiveWeightFromScale>("/{appName}/hubs/weight");
 app.MapHub<ReceiveWeightFromScale>("/hubs/weight");
 
 
@@ -196,3 +196,6 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
+
+
+

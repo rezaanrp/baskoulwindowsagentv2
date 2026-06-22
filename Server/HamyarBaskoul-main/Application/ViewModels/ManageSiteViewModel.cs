@@ -14,3 +14,4 @@ namespace Application.ViewModels
         public string SiteName { get; set; }
     }
 }
+

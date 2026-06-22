@@ -15,3 +15,4 @@ namespace Domain.ViewModels.APIs
         public int? Data { get; set; } = null;
     }
 }
+

@@ -13,3 +13,4 @@ namespace Application.ViewModels
         public int TotalCount { get; set; }
     }
 }
+

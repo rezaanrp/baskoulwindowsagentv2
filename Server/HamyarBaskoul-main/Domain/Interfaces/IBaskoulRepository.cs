@@ -20,3 +20,4 @@ namespace Domain.Interfaces
         Task RemoveAsync(BaskoulDomainViewModel entity);
     }
 }
+

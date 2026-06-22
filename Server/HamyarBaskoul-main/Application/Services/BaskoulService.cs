@@ -1,5 +1,4 @@
 ﻿using Application.Interfaces;
-using Application.ViewModels.BuilderProfile;
 using AutoMapper;
 using Domain.Models;
 using Application.Tools;
@@ -53,3 +52,5 @@ namespace Application.Services
         }
     }
 }
+
+

@@ -19,3 +19,4 @@ namespace Domain.Interfaces
         Task<bool> IsActive(int id);
     }
 }
+

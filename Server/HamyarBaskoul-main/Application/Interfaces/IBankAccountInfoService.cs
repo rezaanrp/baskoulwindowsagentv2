@@ -19,3 +19,4 @@ namespace Application.Interfaces
         public Task DeleteAsync(int id);
     }
 }
+

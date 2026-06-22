@@ -96,3 +96,4 @@ namespace Infra.Data.Migrations
         }
     }
 }
+

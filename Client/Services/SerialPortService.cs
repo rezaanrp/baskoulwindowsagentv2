@@ -48,7 +48,7 @@ namespace MyWinformsApp.Services
                 }
                 catch (Exception ex) 
                 {
-                    throw new InvalidOperationException($"Failed to open {_serialPort.PortName}: {ex.Message}");
+                    throw new InvalidOperationException($"خواندن داده از پورت {_serialPort.PortName} ناموفق بود: {ex.Message}", ex);
                 }
             };
         }

@@ -23,7 +23,8 @@ namespace Application.Tools
         public override async Task OnConnectedAsync()
         {
             var httpContext = Context.GetHttpContext();
-            var appName = httpContext?.Items["AppName"]?.ToString();
+            var appName = httpContext?.Request.RouteValues["appName"]?.ToString()
+                ?? httpContext?.Items["AppName"]?.ToString();
             var codmarkaz = await codeMarkaz.GetCodMarkazByUrl(appName);
 
             if (!string.IsNullOrEmpty(codmarkaz))
@@ -55,7 +56,8 @@ namespace Application.Tools
         private async Task<string> getCodmarkaz()
         {
             var httpContext = Context.GetHttpContext();
-            var appname = httpContext?.Items["AppName"]?.ToString();
+            var appname = httpContext?.Request.RouteValues["appName"]?.ToString()
+                ?? httpContext?.Items["AppName"]?.ToString();
             return await codeMarkaz.GetCodMarkazByUrl(appname);
         }
 
@@ -93,3 +95,4 @@ namespace Application.Tools
     }
 
 }
+

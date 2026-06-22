@@ -17,3 +17,4 @@ namespace Domain.Models
         public bool? AutoAsync { get; set; } = true;
     } 
 }
+

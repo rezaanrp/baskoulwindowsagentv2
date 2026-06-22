@@ -3,6 +3,7 @@ using Domain.Interfaces;
 using Domain.Models;
 using Domain.ViewModels.BaseData;
 using Domain.ViewModels.Baskoul;
+using Domain.Classes;
 using Infra.Data.Classes;
 using Infra.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -89,3 +90,6 @@ namespace Infra.Data.Repository
 
     }
 }
+
+
+

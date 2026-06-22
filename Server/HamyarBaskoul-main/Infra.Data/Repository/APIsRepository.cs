@@ -3,11 +3,13 @@ using Domain.Interfaces;
 using Domain.Models;
 using Domain.ViewModels.APIs;
 using Domain.ViewModels.Baskoul;
+using Domain.Classes;
 using Infra.Data.Classes;
 using Infra.Data.Context;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Domain.Classes;
+using Infra.Data.Classes;
 using System.Xml;
 
 namespace Infra.Data.Repository
@@ -168,7 +170,7 @@ namespace Infra.Data.Repository
             //Logger.LogToFile($"Token API url: {url}");
             if (string.IsNullOrEmpty(url)) return new ReturnType<string>
             {
-                type = Classes.Type.Error,
+                type = Domain.Classes.Type.Error,
                 message = "لینک API یافت نشد."
             };
 
@@ -191,7 +193,7 @@ namespace Infra.Data.Repository
                 var xmlDoc = await SoapServiceHelper.SendSoapRequestAsync(url, soapAction, soapBody);
                 if (xmlDoc == null) return new ReturnType<string>
                 {
-                    type = Classes.Type.Error,
+                    type = Domain.Classes.Type.Error,
                     message = "اتصال به سرور با خطا مواجه شد"
                 };
 
@@ -200,7 +202,7 @@ namespace Infra.Data.Repository
                 Logger.LogToFile($"Token API innertext: {dataNode?.InnerText}");
                 return new ReturnType<string>
                 {
-                    type = Classes.Type.Success,
+                    type = Domain.Classes.Type.Success,
                     message = dataNode?.InnerText
                 };
             }
@@ -209,7 +211,7 @@ namespace Infra.Data.Repository
                 Logger.LogToFile($"Exception during SOAP request: {ex.Message}");
                 return new ReturnType<string>
                 {
-                    type = Classes.Type.Error,
+                    type = Domain.Classes.Type.Error,
                     message = ex.Message
                 }; 
             }
@@ -556,3 +558,6 @@ namespace Infra.Data.Repository
         }
     }
 }
+
+
+

@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Application.ViewModels.Users
@@ -45,3 +44,5 @@ namespace Application.ViewModels.Users
 		public List<SiteViewModel> AvailableSites { get; set; } = new List<SiteViewModel>();
     }
 }
+
+

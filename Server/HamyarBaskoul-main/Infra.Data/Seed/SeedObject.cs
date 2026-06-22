@@ -17,17 +17,8 @@ namespace Infra.Data.Seed
         }
         public void Seed()
         {
-            modelBuilder.Entity<ObjectForm>().HasData(
-                new ObjectForm { Id = 1,Name = "Applicant", NameFarsi = "مشاهده متقاضی" ,GroupName = "Applicant", GroupNameFarsi= "متقاضی" , Departement = "realestate" , UserName = "user1"},
-             
-				new ObjectForm { Id = 2, Name = "FileRebuildability", NameFarsi = "پروفایل بازسازی", GroupName = "Form", GroupNameFarsi = "فرم", Departement = "design" , UserName = "user2" }
-
-
-			);
-           
-
-
-
-        }
+}
     }
 }
+
+

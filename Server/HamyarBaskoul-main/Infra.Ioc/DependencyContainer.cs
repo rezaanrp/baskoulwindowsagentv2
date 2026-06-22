@@ -4,14 +4,10 @@ using Application.Profiles;
 using Application.Services;
 using AutoMapper;
 using Domain.Interfaces;
-using Domain.Interfaces.DesignExecution;
-using Domain.Interfaces.RealEstate;
 using Domain.Models;
 using FluentValidation;
 using Infra.Data.Context;
 using Infra.Data.Repository;
-using Infra.Data.Repository.DesignExecution;
-using Infra.Data.Repository.RealEstate;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +31,7 @@ namespace Infra.Ioc
 			// -------------------------------
 			// AutoMapper
 			// -------------------------------
-			services.AddAutoMapper(typeof(MappingProfile).Assembly);
+			services.AddAutoMapper(_ => { }, typeof(MappingProfile).Assembly);
 
 			// -------------------------------
 			// MediatR + FluentValidation + Behaviors (برای CQRS)
@@ -45,24 +41,6 @@ namespace Infra.Ioc
 			services.AddValidatorsFromAssembly(typeof(MappingProfile).Assembly);
 			services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
-
-
-
-			services.AddScoped<IBuilderProfileFollowUpResultRepository, BuilderProfileFollowUpResultRepository>();
-			services.AddScoped<IBuilderProfileFollowUpResultService, BuilderProfileFollowUpResultService>();
-
-
-			services.AddScoped<IBuilderProfileEstimatedNeedRepository, BuilderProfileEstimatedNeedRepository>();
-			services.AddScoped<IBuilderProfileEstimatedNeedService, BuilderProfileEstimatedNeedService>();
-
-
-			services.AddScoped<IBuilderProfileOngoingAndUpcomingProjectRepository, BuilderProfileOngoingAndUpcomingProjectRepository>();
-			services.AddScoped<IBuilderProfileOngoingAndUpcomingProjectService, BuilderProfileOngoingAndUpcomingProjectService>();
-
-
-			services.AddScoped<IBuilderProfileCompletedProjectsRepository, BuilderProfileCompletedProjectsRepository>();
-			services.AddScoped<IBuilderProfileCompletedProjectsService, BuilderProfileCompletedProjectsService>();
-
 			services.AddScoped<IBaseTableService, BaseTableService>();
 			services.AddScoped<IUsersRepository, UsersRepository>();
 			services.AddScoped<IBaseTableRepository, BaseTableRepository>();
@@ -71,7 +49,6 @@ namespace Infra.Ioc
 			services.AddScoped<IBaskoulRepository, BaskoulRepository>();
 
 			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-			services.AddScoped<IBuilderProfileService, BuilderProfileService>();
 
 			//Application LAYER
 			services.AddScoped<IUsersService, UsersService>();
@@ -107,3 +84,5 @@ namespace Infra.Ioc
 		}
 	}
 }
+
+

@@ -15,3 +15,4 @@ namespace Domain.ViewModels.APIs
         public string Tozihat { get; set; }
     }
 }
+

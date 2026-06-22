@@ -16,3 +16,4 @@ namespace Domain.ViewModels
         public bool? AutoAsync { get; set; }
     }
 }
+

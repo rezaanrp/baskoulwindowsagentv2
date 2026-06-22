@@ -15,3 +15,4 @@ namespace Domain.ViewModels.BaseData
         public string TableName { get; set; }
     }
 }
+

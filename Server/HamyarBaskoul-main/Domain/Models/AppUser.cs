@@ -39,3 +39,4 @@ namespace Domain.Models
         public int? SelectedSiteId { get; set; }
     }
 }
+

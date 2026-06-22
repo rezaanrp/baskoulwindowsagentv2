@@ -13,3 +13,4 @@ namespace Application
         public bool IsChecked { get; set; }
     }
 }
+

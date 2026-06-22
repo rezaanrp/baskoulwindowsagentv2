@@ -54,3 +54,4 @@ namespace Application.ViewModels.BankAccount
         public bool IsDeleted { get; set; } = false;
     }
 }
+

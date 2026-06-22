@@ -135,55 +135,45 @@
     <script src="~/lib/signalr/signalr.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // Connect to SignalR hub
-        // Get the current pathname, e.g., "/appname/somepage"
-        const pathSegments = window.location.pathname.split('/').filter(Boolean);
-        const appname = pathSegments[0]; // First part of the path
-        const codmarkaz = document.getElementById("codmarkaz").value;
+        const codmarkaz = document.getElementById("codmarkaz")?.value || "";
+        const hubUrl = "@Url.Content("~/hubs/weight")";
 
-        const hubUrl = `/${appname}/hubs/weight`;
-
+        function setHubStatus(text, state) {
+            console.log(`SignalR status: ${text}`, state || "");
+        }
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl(hubUrl)
             .withAutomaticReconnect()
             .build();
 
-        // Handle full reconnect scenario
-        connection.onreconnected(async () => {
-            console.log("Reconnected. Rejoining group:", codmarkaz);
-            if (codmarkaz) {
-                try {
-                    await connection.invoke("JoinGroup", codmarkaz);
-                    console.log("Successfully rejoined group:", codmarkaz);
-                } catch (err) {
-                    console.error("Failed to rejoin group:", err);
-                }
-            }
+        connection.onreconnecting(err => {
+            setHubStatus("در حال اتصال مجدد", "error");
+            console.warn("SignalR reconnecting:", err);
         });
 
-        // Automatically try to reconnect if the connection drops
-        connection.onclose(async () => {
-            console.log("Connection lost. Reconnecting...");
-            try {
-                await connection.start();
-                console.log("Reconnected.");
-            } catch (err) {
-                console.error("Reconnection failed:", err);
-            }
+        connection.onreconnected(connectionId => {
+            setHubStatus("وصل است", "connected");
+            console.log("SignalR reconnected:", connectionId);
         });
 
-               connection.start()
-           .then(() => {
-               console.log("Connected to SignalR hub.");
-               console.log("Connection state:", connection.state);
-           })
-           .catch(err => console.log("Connection failed:", err.toString()));
-        // Should be "Connected" when the connection is active.
+        connection.onclose(err => {
+            setHubStatus("قطع است", "error");
+            console.error("SignalR closed:", err);
+        });
 
-        // Listen for weight updates from the server
-                    connection.on("ReceiveWeightUpdate", function (siteId, codmarkazServer, scaleCode, weight) {
-            const codmarkazPage = document.getElementById("codmarkaz").value;
+        connection.start()
+            .then(() => {
+                setHubStatus("وصل است", "connected");
+                console.log("Connected to SignalR hub:", hubUrl);
+            })
+            .catch(err => {
+                setHubStatus("خطا در اتصال", "error");
+                console.error("Connection failed:", err.toString());
+            });
+
+        connection.on("ReceiveWeightUpdate", function (siteId, codmarkazServer, scaleCode, weight) {
+            const codmarkazPage = document.getElementById("codmarkaz")?.value || "";
 
             console.log("Received from hub:");
             console.log("siteId:", siteId);
@@ -192,14 +182,9 @@
             console.log("weight:", weight);
             console.log("codmarkaz (view):", codmarkazPage);
 
-            // Validate codmarkaz match
-            if (codmarkazPage !== codmarkazServer) {
-                console.log("Codemarkaz mismatch. Skipping update.");
-                return;
-            }
-
-            // Build the ID selector based on how you structured it in the view
-            const weightElementId = `weight-${siteId}-${scaleCode}`;
+            const normalizedSiteId = String(siteId).replace(/^Site_/i, "");
+            const normalizedScaleCode = String(scaleCode).replace(/^S/i, "");
+            const weightElementId = `weight-${normalizedSiteId}-${normalizedScaleCode}`;
             const weightElement = document.getElementById(weightElementId);
 
             if (!weightElement) {
@@ -207,7 +192,6 @@
                 return;
             }
 
-            // Set the new weight
             weightElement.textContent = weight;
         });
 
@@ -326,5 +310,3 @@
         });
     </script>
 }
-
-

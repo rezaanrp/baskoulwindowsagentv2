@@ -25,3 +25,4 @@ namespace Application.ViewModels.Baskoul
         public int? Type { get; set; }
     }
 }
+

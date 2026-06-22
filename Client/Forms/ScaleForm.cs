@@ -76,17 +76,21 @@ namespace MyWinformsApp.Forms
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("SignalR ERROR: " + ex.Message);
+                    MessageBox.Show(
+                        $"ساخت اتصال به سرور ناموفق بود.\n\nجزئیات خطا:\n{ex.Message}",
+                        "خطای اتصال به سرور",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
 
                 try
                 {
                     await _signalR.StartAsync();
-                    Console.WriteLine($"SignalR connected for {_config.Name}.");
+                    Console.WriteLine($"اتصال به سرور برای {_config.Name} برقرار شد.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"SignalR start failed: {ex.Message}");
+                    Console.WriteLine($"اتصال به سرور ناموفق بود: {ex.Message}");
                 }
 
                 // Serial or HID
@@ -101,7 +105,11 @@ namespace MyWinformsApp.Forms
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Failed to start serial port {_config.Name}: {ex.Message}");
+                        MessageBox.Show(
+                            $"شروع پورت سریال {_config.Name} ناموفق بود.\n\nجزئیات خطا:\n{ex.Message}",
+                            "خطای پورت باسکول",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
                     }
                 }
                 else if (string.Equals(_config.Type, "USB", StringComparison.OrdinalIgnoreCase))
@@ -111,7 +119,7 @@ namespace MyWinformsApp.Forms
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"StartSystemAsync error: {ex.Message}");
+                Console.WriteLine($"خطا هنگام شروع سیستم باسکول: {ex.Message}");
             }
         }
 

@@ -4,7 +4,8 @@ using Domain.Interfaces;
 using Domain.Models;
 using Domain.ViewModels;
 using Domain.ViewModels.Baskoul;
-using Domain.ViewModels.FilingUserDetail;
+using Domain.ViewModels.Users;
+using Domain.Classes;
 using Infra.Data.Classes;
 using Infra.Data.Context;
 using Microsoft.AspNetCore.Identity;
@@ -401,4 +402,8 @@ namespace Infra.Data.Repository
         }
     }
 }
+
+
+
+
 

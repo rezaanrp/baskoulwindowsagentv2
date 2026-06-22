@@ -9,3 +9,4 @@ namespace Application.ViewModels.FileUpload
 		public IFormFile Image { get; set; }
 	}
 }
+

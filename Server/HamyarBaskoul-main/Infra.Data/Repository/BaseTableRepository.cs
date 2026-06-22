@@ -2,7 +2,6 @@
 using Domain.Interfaces;
 using Domain.Models;
 using Domain.ViewModels.BaseTable;
-using Domain.ViewModels.FilingUserDetail;
 using Infra.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -69,3 +68,5 @@ namespace Infra.Data.Repository
 		}
 	}
 }
+
+

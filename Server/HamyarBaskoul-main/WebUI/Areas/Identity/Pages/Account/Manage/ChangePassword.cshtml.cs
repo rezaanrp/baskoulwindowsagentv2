@@ -86,16 +86,7 @@ namespace WebUI.Areas.Identity.Pages.Account.Manage
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
-
-			var department = user.Departments;
-
-			// تنظیم لایوت بر اساس دپارتمان
-			Layout = department switch
-			{
-				"realestate" => "~/Views/Shared/_LayoutAdminSimple.cshtml",
-				"design" => "~/Views/Shared/_LayoutDesignExecution.cshtml",
-
-			};
+			Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
 			var hasPassword = await _userManager.HasPasswordAsync(user);
             if (!hasPassword)
             {
@@ -136,3 +127,5 @@ namespace WebUI.Areas.Identity.Pages.Account.Manage
         }
     }
 }
+
+

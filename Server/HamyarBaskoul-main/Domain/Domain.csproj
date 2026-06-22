@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -7,22 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Interfaces\IApplicantRepository.cs1" />
-    <None Remove="Interfaces\IFilingUserRepository.cs1" />
-    <None Remove="Models\Applicant.cs1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ClosedXML" Version="0.105.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.11" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Stimulsoft.Reports.Web.NetCore" Version="2019.2.1" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="9.0.0" />
   </ItemGroup>
 
 </Project>

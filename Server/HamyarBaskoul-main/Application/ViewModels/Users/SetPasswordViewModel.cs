@@ -27,3 +27,4 @@ namespace Application.ViewModels.Users
         public string RepeatePassword { get; set; }
     }
 }
+

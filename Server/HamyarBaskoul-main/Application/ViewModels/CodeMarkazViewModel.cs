@@ -16,3 +16,4 @@ namespace Application.ViewModels
         public bool AutoAsync { get; set; }
     }
 }
+

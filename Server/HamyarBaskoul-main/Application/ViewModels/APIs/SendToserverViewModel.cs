@@ -13,3 +13,4 @@ namespace Application.ViewModels.APIs
         public int? Data { get; set; } = null;
     }
 }
+

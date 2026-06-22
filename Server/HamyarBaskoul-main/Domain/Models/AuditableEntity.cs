@@ -12,3 +12,4 @@ namespace Domain.Models
         public string? ModifyIp { get; set; }
     }
 }
+

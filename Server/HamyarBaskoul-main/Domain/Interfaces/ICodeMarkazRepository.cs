@@ -23,3 +23,4 @@ namespace Domain.Interfaces
         public Task<string> GetAppNameByCode(string codemarkaz);
     }
 }
+

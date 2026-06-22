@@ -8,3 +8,4 @@ namespace Domain.Classes
         public int TotalCount { get; set; }
     }
 }
+

@@ -52,3 +52,4 @@ namespace Infra.Data.Classes
         }
     }
 }
+

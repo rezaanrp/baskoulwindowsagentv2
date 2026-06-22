@@ -23,3 +23,4 @@ namespace Domain.ViewModels.Baskoul
         public int? Type { get; set; }
     }
 }
+

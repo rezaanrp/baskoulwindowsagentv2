@@ -22,3 +22,4 @@ namespace Application.ViewModels.Baskoul
         public int? SiteId { get; set; }
     }
 }
+

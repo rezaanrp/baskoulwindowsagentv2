@@ -2,9 +2,7 @@
 using Application.Interfaces;
 using Application.Services;
 using Application.ViewModels.Users;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Domain.Models;
-using Infra.Data.Classes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
@@ -222,7 +220,7 @@ namespace WebUI.Controllers
                     var errors = entry.Value.Errors;
                     foreach (var error in errors)
                     {
-                        Logger.LogToFile($"reset password falied: {error}");
+                        Infra.Data.Classes.Logger.LogToFile($"reset password falied: {error}");
                     }
                 }
 
@@ -287,3 +285,6 @@ namespace WebUI.Controllers
         }
     }
 }
+
+
+

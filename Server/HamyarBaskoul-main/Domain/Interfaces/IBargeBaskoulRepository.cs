@@ -22,3 +22,4 @@ namespace Domain.Interfaces
         Task<bool> SabtBargeAnbar(int bargId, string userId);
     }
 }
+

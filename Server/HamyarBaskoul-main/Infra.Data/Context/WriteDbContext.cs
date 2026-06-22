@@ -1,6 +1,4 @@
 ﻿using Domain.Models;
-using Domain.Models.BuilderProfile;
-using Domain.Models.DesignExecution;
 using Domain.ViewModels.Baskoul;
 using Infra.Data.Seed;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
@@ -29,15 +27,6 @@ namespace Infra.Data.Context
         public DbSet<ObjectForm> ObjectForms { get; set; }
         public DbSet<ObjectFormUser> ObjectFormUsers { get; set; }
         public DbSet<ObjectTransactionTypeUser> ObjectTransactionTypeUsers { get; set; }
-        public DbSet<BuilderProfile> BuilderProfiles { get; set; }
-        public DbSet<RebuildAbility> RebuildAbilities { get; set; }
-        public DbSet<DesignExecutionEmployer> DesignExecutionEmployers { get; set; }
-        public DbSet<DesignExecutionEmployerVisit> DesignExecutionEmployerVisits { get; set; }
-        public DbSet<DesignExecutionEmployerFollowUp> DesignExecutionEmployerFollowUps { get; set; }
-        public DbSet<BuilderProfileCompletedProject> BuilderProfileCompletedProjects { get; set; }
-        public DbSet<BuilderProfileOngoingAndUpcomingProject> BuilderProfileOngoingAndUpcomingProjects { get; set; }
-        public DbSet<BuilderProfileEstimatedNeed> BuilderProfileEstimatedNeeds { get; set; }
-        public DbSet<BuilderProfileFollowUpResult> BuilderProfileFollowUpResults { get; set; }
         public DbSet<Site> Sites { get; set; }
         public DbSet<UserSite> UserSites { get; set; }
         public DbSet<GhabzSerialTracker> GhabzSerialTrackers { get; set; }
@@ -67,11 +56,6 @@ namespace Infra.Data.Context
         .HasOne(b => b.User)
         .WithMany() 
         .HasForeignKey(b => b.UserID);
-
-            modelBuilder.Entity<DesignExecutionEmployer>()
-                            .HasOne(o => o.TypeOfAdmissionBaseTable)
-                            .WithMany(u => u.DesignExecutionEmployerTypeOfAdmissionBaseTable)
-                            .HasForeignKey(o => o.TypeOfAdmissionBaseTableId);
 
             modelBuilder.Entity<DataProtectionKey>().ToTable("DataProtectionKeys");
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -281,3 +265,5 @@ namespace Infra.Data.Context
         }
     }
 }
+
+

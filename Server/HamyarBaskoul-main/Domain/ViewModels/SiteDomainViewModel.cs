@@ -14,3 +14,4 @@ namespace Domain.ViewModels
         public bool isActive { get; set; } = true;
     }
 }
+

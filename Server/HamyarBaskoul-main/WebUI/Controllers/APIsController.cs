@@ -2,7 +2,7 @@
 using Application.Services;
 using Application.ViewModels.APIs;
 using DataTables;
-using Infra.Data.Classes;
+using Domain.Classes;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -33,7 +33,7 @@ namespace WebUI.Controllers
 
             var codmarkaz = _userservice.GetCodMarkazById(OnGetUserId());
             var returnedMessage = await _apiservice.GetToken(model.HamUsername, model.HamPassword, codmarkaz);
-            if (returnedMessage.type == Infra.Data.Classes.Type.Error)
+            if (returnedMessage.type == Domain.Classes.Type.Error)
                 return Json(new { success = false, message = returnedMessage.message });
             return Json(new { success = true, token = returnedMessage.message });
         }
@@ -90,3 +90,5 @@ namespace WebUI.Controllers
         }
     }
 }
+
+

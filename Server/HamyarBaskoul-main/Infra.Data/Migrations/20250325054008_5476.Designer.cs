@@ -1942,3 +1942,4 @@ namespace Infra.Data.Migrations
         }
     }
 }
+

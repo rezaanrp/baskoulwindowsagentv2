@@ -14,3 +14,4 @@ namespace Application.ViewModels.BaseData
         public List<BaseDataViewModel>? data { get; set; }
     }
 }
+

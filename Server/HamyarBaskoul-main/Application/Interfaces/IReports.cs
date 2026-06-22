@@ -16,3 +16,4 @@ namespace Application.Interfaces
         Task<TripleReportViewModel> GetTripleleReportViewModel(int id, string username);
     }
 }
+

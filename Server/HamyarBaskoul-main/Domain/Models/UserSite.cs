@@ -22,3 +22,4 @@ namespace Domain.Models
         public DateTime AssignedAt { get; set; } = DateTime.Now;
     }
 }
+

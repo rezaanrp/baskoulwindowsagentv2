@@ -84,3 +84,4 @@ namespace Domain.Models
         public int? siteId { get; set; }
     }
 }
+

@@ -1,5 +1,4 @@
 ﻿using Application.ViewModels.Baskoul;
-using Application.ViewModels.BuilderProfile;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,3 +16,5 @@ namespace Application.Interfaces
         Task DeleteAsync(BaskoulViewModel entity);
     }
 }
+
+

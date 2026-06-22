@@ -21,3 +21,4 @@ namespace Domain.Models
         public virtual AppUser User { get; set; }
     }
 }
+

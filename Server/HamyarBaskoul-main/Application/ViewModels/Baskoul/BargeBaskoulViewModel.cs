@@ -78,3 +78,4 @@ namespace Application.ViewModels.Baskoul
         public bool SubmitFinal { get; set; }
     }
 }
+

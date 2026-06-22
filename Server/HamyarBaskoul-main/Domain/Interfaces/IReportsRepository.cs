@@ -16,3 +16,4 @@ namespace Domain.Interfaces
         Task<TripleReportDomainViewModel> GetTripleReportViewModel(int id, string username);
     }
 }
+

@@ -26,3 +26,4 @@ namespace Domain.Models
 		public ICollection<ObjectFormUser> ObjectFormUsers { get; set; }
 	}
 }
+

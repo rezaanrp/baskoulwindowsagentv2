@@ -14,3 +14,4 @@ namespace Application.ViewModels.BaseData
         public string? TableName { get; set; }
     }
 }
+

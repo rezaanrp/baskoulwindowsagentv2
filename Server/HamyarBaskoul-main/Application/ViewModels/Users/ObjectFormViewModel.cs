@@ -25,3 +25,4 @@ namespace Application.ViewModels.Users
 		public bool IsAccess { get; set; } = false;
 	}
 }
+

@@ -43,3 +43,4 @@ namespace Domain.ViewModels.Reports
         public string? Tozihat { get; set; }
     }
 }
+

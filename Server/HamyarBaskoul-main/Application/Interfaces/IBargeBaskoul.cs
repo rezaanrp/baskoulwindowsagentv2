@@ -23,3 +23,4 @@ namespace Application.Interfaces
         Task<bool> SaveToDBFromExcelFile(Stream fileStream, string fileName, string codemarkaz);
     }
 }
+

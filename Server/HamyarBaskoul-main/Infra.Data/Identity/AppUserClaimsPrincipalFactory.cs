@@ -22,3 +22,4 @@ public class AppUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<AppUser,
 		return identity;
 	}
 }
+

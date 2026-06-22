@@ -16,16 +16,21 @@ static class Program
         // هندل کردن خطاهای عمومی
         Application.ThreadException += (sender, args) =>
         {
-            AppLogger.Error("UI Thread exception", args.Exception);
+            AppLogger.Error("خطای غیرمنتظره در رابط کاربری برنامه.", args.Exception);
+            MessageBox.Show(
+                $"خطای غیرمنتظره در برنامه رخ داد.\n\nجزئیات خطا:\n{args.Exception.Message}",
+                "خطای برنامه",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
         };
 
         AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
         {
             var ex = args.ExceptionObject as Exception;
-            AppLogger.Error("Unhandled exception (non-UI thread)", ex);
+            AppLogger.Error("خطای غیرمنتظره در پردازش پس‌زمینه برنامه.", ex);
         };
 
-        AppLogger.Info("Application starting...");
+        AppLogger.Info("برنامه شروع شد.");
 
         string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.xml");
 
@@ -44,7 +49,7 @@ static class Program
                         new XAttribute("codmarkaz", "12273"),
                         new XAttribute("siteCode", "Site_1"),
                         new XAttribute("appname", "sanayeboresh"),
-                        new XAttribute("baseUrl", "https://public.hamyarmsc.ir")
+                        new XAttribute("baseUrl", "http://localhost:5263")
                     ),
                     new XElement("port",
                         new XAttribute("DisplayName", "خروجی"),
@@ -56,7 +61,7 @@ static class Program
                         new XAttribute("codmarkaz", "12273"),
                         new XAttribute("siteCode", "Site_1"),
                         new XAttribute("appname", "sanayeboresh"),
-                        new XAttribute("baseUrl", "https://public.hamyarmsc.ir")
+                        new XAttribute("baseUrl", "http://localhost:5263")
                     )
                 )
             );
@@ -68,7 +73,7 @@ static class Program
 
         if (portElements.Count == 0)
         {
-            MessageBox.Show("No port configuration found.");
+            MessageBox.Show("هیچ تنظیمات پورتی در فایل config.xml پیدا نشد.", "خطای تنظیمات", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
 
@@ -84,6 +89,6 @@ static class Program
         }
 
         Application.Run(forms[0]);
-        AppLogger.Info("Application exiting...");
+        AppLogger.Info("برنامه بسته شد.");
     }
 }

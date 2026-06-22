@@ -19,3 +19,4 @@ namespace Application.Interfaces
         Task<bool> IsActive(int id);
     }
 }
+

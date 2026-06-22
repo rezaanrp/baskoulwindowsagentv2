@@ -16,3 +16,4 @@ namespace Application.ViewModels.Baskoul
         public string? Codemarkaz { get; set; }
     }
 }
+

@@ -12,3 +12,4 @@ namespace Application.ViewModels.APIs
         public string HamPassword { get; set; }
     }
 }
+

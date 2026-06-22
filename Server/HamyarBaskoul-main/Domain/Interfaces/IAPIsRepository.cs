@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection.Metadata.Ecma335;
-using Infra.Data.Classes;
+using Domain.Classes;
 
 namespace Domain.Interfaces
 {
@@ -27,3 +27,5 @@ namespace Domain.Interfaces
         Task<string?> GetSelectedCycle(string codmarkaz);
     }
 }
+
+

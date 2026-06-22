@@ -2,79 +2,58 @@
 @model LoginModel
 
 @{
-    ViewData["Title"] = "صفحه ورود";
+    ViewData["Title"] = "ورود به سامانه";
     Layout = "~/Areas/Shared/_LoginLayout.cshtml";
 }
 
-<div class="limiter">
-	<div class="container-login100">
-		<div class="wrap-login100">
-			<!-- input form -->
-			<form id="account" method="post" class="login100-form validate-form">
+<div class="auth-shell">
+    <section class="auth-card" aria-label="فرم ورود">
+        <div class="auth-brand">
+            <div class="auth-logo-wrap">
+                <img src="@Url.Content("~/APL/dist/img/logo2.png")" alt="لوگو" class="auth-logo" />
+            </div>
+            <div>
+                <h1>ورود به سامانه همیار باسکول</h1>
+                <p>برای ادامه، نام کاربری و رمز عبور خود را وارد کنید.</p>
+            </div>
+        </div>
 
-				<span class="login100-form-title">ورود به ناحیه کاربری</span>
-				@if (TempData["LoginError"] != null)
-				{
-					<div class="alert alert-danger text-center fw-bold">
-						@TempData["LoginError"]
-					</div>
-				}
-				<!-- enter username-->
-				<div class="wrap-input100 validate-input" data-validate=" نام کاربری خود را وارد کنید!">
-					<input asp-for="Input.Email" class="input100" autocomplete="username" aria-required="true" placeholder="نام کاربری">
-					<span class="focus-input100"></span>
-					<span class="symbol-input100">
-						<i class="fa fa-envelope" aria-hidden="true"></i>
-					</span>
-					<span asp-validation-for="Input.Email" class="text-danger"></span>
-				</div>
-				<!-- / enter username -->
-				<!-- enter password-->
-				<div class="wrap-input100 validate-input" data-validate=" رمز عبور را وارد کنید!">
-					<input asp-for="Input.Password" class="input100" autocomplete="current-password" aria-required="true" placeholder="رمز عبور">
-					<span class="focus-input100"></span>
-					<span class="symbol-input100">
-						<i class="fa fa-lock" aria-hidden="true"></i>
-					</span>
-					<span asp-validation-for="Input.Password" class="text-danger"></span>
-				</div>
-				<!-- / enter password-->
-				<!-- login button-->
-				<div class="container-login100-form-btn">
-					<button class="login100-form-btn">ورود</button>
-				</div>
-				<!-- / login button -->
-				<!-- restore password -->
+        <form id="account" method="post" class="auth-form" novalidate>
+            @if (TempData["LoginError"] != null)
+            {
+                <div class="auth-alert auth-alert-danger">
+                    @TempData["LoginError"]
+                </div>
+            }
 
-				<!-- / restore password-->
-				<!-- register-->
-				<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="auth-validation"></div>
 
-				<div class="text-center p-t-80">
-					<div class="checkbox">
-						@* <label asp-for="Input.RememberMe">
-							@Html.DisplayNameFor(m => m.Input.RememberMe)
+            <label class="auth-field" asp-for="Input.Email">
+                <span>نام کاربری</span>
+                <input asp-for="Input.Email" autocomplete="username" aria-required="true" placeholder="نام کاربری" />
+                <span asp-validation-for="Input.Email" class="auth-validation"></span>
+            </label>
 
-							<input asp-for="Input.RememberMe" checked />
-						</label> *@
-					</div>
-				</div>
-				<!-- / register-->
+            <label class="auth-field" asp-for="Input.Password">
+                <span>رمز عبور</span>
+                <input asp-for="Input.Password" autocomplete="current-password" aria-required="true" placeholder="رمز عبور" />
+                <span asp-validation-for="Input.Password" class="auth-validation"></span>
+            </label>
 
-			</form>
-			<!-- / input form -->
-			<!-- form image -->
-			<div class="login100-pic js-tilt" data-tilt>
-				<img src="@Url.Content("~/APL/dist/img/logo2.png")" alt="IMG">
-				<p class="subtitle">
-					پورتال نرم افزار سازمانی مراکز خدماتی
-				</p>
-			</div>
-			<!-- / form image -->
+            <button type="submit" class="auth-submit">ورود</button>
+        </form>
+    </section>
 
-		</div>
-	</div>
+    <aside class="auth-side" aria-label="معرفی سامانه">
+        <span class="auth-badge">همیار باسکول</span>
+        <h2>کنترل زنده وزن، اتصال سیستم ERP همیار</h2>
+        <p>از اتصال باسکول تا ثبت نهایی، همه چیز در یک جریان سریع، شفاف و قابل پیگیری انجام می‌شود.</p>
+
+
+    </aside>
 </div>
 
-
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
 

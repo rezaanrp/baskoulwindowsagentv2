@@ -5,14 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Repository\ApplicantRepository.cs1" />
-    <None Remove="Repository\FilingUserRepository.cs1" />
-  </ItemGroup>
-
-  <ItemGroup>
-	  <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+<ItemGroup>
+	  <PackageReference Include="AutoMapper" Version="16.1.1" />
 	  <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.11" />
@@ -34,3 +28,4 @@
   </ItemGroup>
 
 </Project>
+

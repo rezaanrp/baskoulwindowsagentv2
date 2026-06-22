@@ -20,3 +20,4 @@ namespace Domain.ViewModels.BaseTable
 		public bool IsDeleted { get; set; }
 	}
 }
+

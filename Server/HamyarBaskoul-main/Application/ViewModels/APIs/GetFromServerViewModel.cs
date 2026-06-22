@@ -12,3 +12,4 @@ namespace Application.ViewModels.APIs
         public List<string> SelectedEnums { get; set; }
     }
 }
+

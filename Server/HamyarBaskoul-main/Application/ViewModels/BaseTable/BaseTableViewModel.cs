@@ -20,3 +20,4 @@ namespace Application.ViewModels.BaseTable
 		public bool IsDeleted { get; set; }
 	}
 }
+

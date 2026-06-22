@@ -34,3 +34,4 @@ namespace Domain.ViewModels.Reports
         public string? LogoPath { get; set; }
     }
 }
+

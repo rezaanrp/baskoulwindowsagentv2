@@ -16,3 +16,4 @@ namespace Domain.Interfaces
         public Task UpdateAsync(BaseDataDmainViewModel entity);
     }
 }
+

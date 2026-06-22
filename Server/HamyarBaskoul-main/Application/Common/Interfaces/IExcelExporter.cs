@@ -15,3 +15,4 @@ namespace Application.Common.Interfaces
             List<Func<T, object>> valueSelectors);
     }
 }
+

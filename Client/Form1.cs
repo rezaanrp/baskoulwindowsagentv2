@@ -1,4 +1,5 @@
 ﻿using HidSharp;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using MyWinformsApp.Models;
 using System.IO.Ports;
@@ -57,8 +58,8 @@ namespace MyWinformsApp
 
             if (port == null)
             {
-                AppLogger.Error("StartSystem called but _portElement is null.");
-                MessageBox.Show("No port configuration found.");
+                AppLogger.Error("تنظیمات پورت برای شروع برنامه پیدا نشد.");
+                MessageBox.Show("هیچ تنظیماتی برای پورت پیدا نشد.", "خطای تنظیمات", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -73,38 +74,43 @@ namespace MyWinformsApp
                 .WithUrl(hubUrl, options =>
                 {
                     options.AccessTokenProvider = () => Task.FromResult<string?>(GetSavedToken());
+                    options.Transports = HttpTransportType.LongPolling;
                 })
                 .WithAutomaticReconnect()
                 .Build();
 
-            connection.HandshakeTimeout = TimeSpan.FromSeconds(10);
-            connection.ServerTimeout = TimeSpan.FromSeconds(30);
+            connection.HandshakeTimeout = TimeSpan.FromSeconds(30);
+            connection.ServerTimeout = TimeSpan.FromSeconds(60);
             connection.Reconnecting += ex =>
             {
-                AppLogger.Error($"[{Text}] SignalR reconnecting.", ex);
+                AppLogger.Error($"[{Text}] اتصال به سرور قطع شده و برنامه در حال تلاش برای اتصال مجدد است.", ex);
                 return Task.CompletedTask;
             };
             connection.Reconnected += connectionId =>
             {
-                AppLogger.Info($"[{Text}] SignalR reconnected. connectionId={connectionId}");
+                AppLogger.Info($"[{Text}] اتصال به سرور دوباره برقرار شد. connectionId={connectionId}");
                 return Task.CompletedTask;
             };
             connection.Closed += ex =>
             {
-                AppLogger.Error($"[{Text}] SignalR closed.", ex);
+                AppLogger.Error($"[{Text}] اتصال به سرور بسته شد.", ex);
                 return Task.CompletedTask;
             };
 
             try
             {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
                 await connection.StartAsync(cts.Token);
-                AppLogger.Info($"[{Text}] SignalR connected.");
+                AppLogger.Info($"[{Text}] اتصال به سرور برقرار شد.");
             }
             catch (Exception ex)
             {
-                AppLogger.Error($"[{Text}] SignalR connection failed. hubUrl={hubUrl}", ex);
-                MessageBox.Show("SignalR connection failed: " + ex.Message);
+                AppLogger.Error($"[{Text}] اتصال به سرور برقرار نشد. آدرس سرور: {hubUrl}", ex);
+                MessageBox.Show(
+                    $"اتصال به سرور برقرار نشد.\n\nآدرس سرور:\n{hubUrl}\n\nجزئیات خطا:\n{ex.Message}",
+                    "خطای اتصال به سرور",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
 
             string type = port.Attribute("type")?.Value;
@@ -142,7 +148,7 @@ namespace MyWinformsApp
                 string? tokenFilePath = candidatePaths.FirstOrDefault(File.Exists);
                 if (tokenFilePath == null)
                 {
-                    AppLogger.Error($"[{Text}] Token file not found. Checked: {string.Join(", ", candidatePaths)}");
+                    AppLogger.Error($"[{Text}] فایل توکن پیدا نشد. مسیرهای بررسی شده: {string.Join(", ", candidatePaths)}");
                     return string.Empty;
                 }
 
@@ -152,7 +158,7 @@ namespace MyWinformsApp
             }
             catch (Exception ex)
             {
-                AppLogger.Error($"[{Text}] Error reading token.", ex);
+                AppLogger.Error($"[{Text}] خطا در خواندن فایل توکن.", ex);
             }
 
             return string.Empty;
@@ -176,13 +182,13 @@ namespace MyWinformsApp
 
                 var expiresAt = DateTimeOffset.FromUnixTimeSeconds(expElement.GetInt64()).LocalDateTime;
                 if (expiresAt <= DateTime.Now)
-                    AppLogger.Error($"[{Text}] Token is expired. path={tokenFilePath}, expiredAt={expiresAt:yyyy-MM-dd HH:mm:ss}");
+                    AppLogger.Error($"[{Text}] توکن منقضی شده است. مسیر={tokenFilePath}, زمان انقضا={expiresAt:yyyy-MM-dd HH:mm:ss}");
                 else
-                    AppLogger.Info($"[{Text}] Token loaded. path={tokenFilePath}, expiresAt={expiresAt:yyyy-MM-dd HH:mm:ss}");
+                    AppLogger.Info($"[{Text}] توکن خوانده شد. مسیر={tokenFilePath}, زمان انقضا={expiresAt:yyyy-MM-dd HH:mm:ss}");
             }
             catch (Exception ex)
             {
-                AppLogger.Error($"[{Text}] Could not inspect token expiry.", ex);
+                AppLogger.Error($"[{Text}] امکان بررسی تاریخ انقضای توکن وجود ندارد.", ex);
             }
         }
 
@@ -206,7 +212,7 @@ namespace MyWinformsApp
                     }
                     catch (Exception ex)
                     {
-                        AppLogger.Error("Error while closing existing serial port.", ex);
+                        AppLogger.Error("خطا هنگام بستن پورت سریال قبلی.", ex);
                     }
                 }
 
@@ -226,8 +232,12 @@ namespace MyWinformsApp
             }
             catch (Exception ex)
             {
-                AppLogger.Error($"Failed to open {portName}.", ex);
-                MessageBox.Show($"Failed to open {portName}: {ex.Message}");
+                AppLogger.Error($"باز کردن پورت {portName} ناموفق بود.", ex);
+                MessageBox.Show(
+                    $"باز کردن پورت {portName} ناموفق بود.\n\nلطفاً مطمئن شوید دستگاه وصل است و پورت توسط برنامه دیگری اشغال نشده است.\n\nجزئیات خطا:\n{ex.Message}",
+                    "خطای پورت باسکول",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
         private async void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -249,7 +259,7 @@ namespace MyWinformsApp
 
                 if (string.IsNullOrWhiteSpace(digitsOnly))
                 {
-                    AppLogger.Info($"[{Text}] No digits found, skipping frame.");
+                    AppLogger.Info($"[{Text}] عددی در داده دریافتی پیدا نشد؛ این فریم نادیده گرفته شد.");
                     return;
                 }
 
@@ -262,7 +272,7 @@ namespace MyWinformsApp
 
                 if (!int.TryParse(digitsOnly, out int weight))
                 {
-                    AppLogger.Error($"[{Text}] Failed to parse digits '{digitsOnly}' to int.");
+                    AppLogger.Error($"[{Text}] تبدیل عدد دریافتی '{digitsOnly}' به وزن ناموفق بود.");
                     return;
                 }
 
@@ -274,7 +284,7 @@ namespace MyWinformsApp
             }
             catch (Exception ex)
             {
-                AppLogger.Error($"[{Text}] Exception in SerialPort_DataReceived.", ex);
+                AppLogger.Error($"[{Text}] خطا هنگام خواندن داده از پورت سریال.", ex);
             }
         }
 
@@ -293,13 +303,13 @@ namespace MyWinformsApp
         {
             if ((DateTime.Now - _lastReceivedTime).TotalSeconds > 5)
             {
-                Console.WriteLine("⚠️ No data for 5s → Restarting Serial Port...");
+                Console.WriteLine("بیش از ۵ ثانیه داده‌ای از باسکول نرسیده است؛ پورت سریال دوباره راه‌اندازی می‌شود...");
                 RestartSerialPort();
             }
         }
         private void RestartSerialPort()
         {
-            AppLogger.Info("RestartSerialPort called.");
+            AppLogger.Info("راه‌اندازی مجدد پورت سریال شروع شد.");
             try
             {
                 _serial.DataReceived -= SerialPort_DataReceived;
@@ -308,7 +318,7 @@ namespace MyWinformsApp
             }
             catch (Exception ex)
             {
-                AppLogger.Error("Error while closing serial port in RestartSerialPort.", ex);
+                AppLogger.Error("خطا هنگام بستن پورت سریال در راه‌اندازی مجدد.", ex);
             }
 
             string portName = _portElement.Attribute("name")?.Value;
@@ -340,7 +350,11 @@ namespace MyWinformsApp
                 var device = DeviceList.Local.GetHidDevices(vid, pid).FirstOrDefault();
                 if (device == null)
                 {
-                    MessageBox.Show($"No HID device found for VID={vid:X4} PID={pid:X4}");
+                    MessageBox.Show(
+                        $"دستگاه USB باسکول پیدا نشد.\n\nVID={vid:X4}\nPID={pid:X4}",
+                        "خطای دستگاه USB",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                     return;
                 }
 
@@ -420,7 +434,7 @@ namespace MyWinformsApp
             }
             catch (Exception ex)
             {
-                AppLogger.Error("Exception in ScheduleWeightUpdate/BeginInvoke.", ex);
+                AppLogger.Error("خطا هنگام به‌روزرسانی نمایشگر وزن.", ex);
             }
         }
 
@@ -436,8 +450,8 @@ namespace MyWinformsApp
             }
             catch (Exception ex)
             {
-                AppLogger.Error($"Error sending weight to server. weight={weight}, scaleCode={scaleCode}, siteCode={siteCode}", ex);
-                Console.WriteLine($"Error sending weight: {ex.Message}");
+                AppLogger.Error($"ارسال وزن به سرور ناموفق بود. وزن={weight}, کد باسکول={scaleCode}, کد سایت={siteCode}", ex);
+                Console.WriteLine($"ارسال وزن به سرور ناموفق بود: {ex.Message}");
             }
         }
 
@@ -547,4 +561,6 @@ public class SevenSegmentRenderer
 		g.FillEllipse(seg[6] ? on : off, x + thickness, (h / 2) - (thickness / 2), length, thickness);
 	}
 }
+
+
 

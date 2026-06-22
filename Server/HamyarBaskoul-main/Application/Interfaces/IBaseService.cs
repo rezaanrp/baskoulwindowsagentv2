@@ -16,3 +16,4 @@ namespace Application.Interfaces
         public Task UpdateAsync(BaseDataViewModel entity, string codmarkaz);
     }
 }
+

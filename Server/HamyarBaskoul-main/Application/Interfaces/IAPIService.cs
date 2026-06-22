@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Infra.Data.Classes;
+using Domain.Classes;
 
 namespace Application.Interfaces
 {
@@ -24,3 +24,5 @@ namespace Application.Interfaces
         public Task<SendToserverViewModel> AutoUpdate(string codmarkaz, string userid);
     }
 }
+
+

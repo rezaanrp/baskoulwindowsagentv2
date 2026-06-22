@@ -1,44 +1,204 @@
 ﻿<!DOCTYPE html>
-
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"]</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Styles -->
-    <link type="text/css" href="~/LoginV4/css/bootstrap-rtl.min.css" rel="stylesheet" />
-    <link type="text/css" href="~/LoginV4/css/font-awesome.min.css" rel="stylesheet" />
-    <link type="text/css" href="~/LoginV4/css/animate.css" rel="stylesheet" />
-    <link type="text/css" href="~/LoginV4/css/hamburgers.min.css" rel="stylesheet" />
-    <link type="text/css" href="~/LoginV4/css/select2.min.css" rel="stylesheet" />
-    <link type="text/css" href="~/LoginV4/css/util.css" rel="stylesheet" />
-    <link type="text/css" href="~/LoginV4/css/style.css" rel="stylesheet" />
+    <style>
+        @@font-face {
+            font-family: 'Vazir';
+            src: url('@Url.Content("~/APL/dist/fonts/Vazir.woff2")') format('woff2'),
+                 url('@Url.Content("~/APL/dist/fonts/Vazir.woff")') format('woff');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        @@font-face {
+            font-family: 'Vazir';
+            src: url('@Url.Content("~/APL/dist/fonts/Vazir-Bold.woff2")') format('woff2'),
+                 url('@Url.Content("~/APL/dist/fonts/Vazir-Bold.woff")') format('woff');
+            font-weight: 700 900;
+            font-style: normal;
+            font-display: swap;
+        }        :root {
+            color-scheme: light;
+            --auth-bg: #eef4f2;
+            --auth-ink: #17211d;
+            --auth-muted: #62736c;
+            --auth-card: rgba(255,255,255,.92);
+            --auth-line: #d8e4df;
+            --auth-primary: #0f7a5a;
+            --auth-primary-dark: #095d44;
+            --auth-danger: #b42318;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Vazir', Tahoma, 'Segoe UI', sans-serif;
+            background:
+                radial-gradient(circle at 20% 10%, rgba(15,122,90,.20), transparent 28rem),
+                linear-gradient(135deg, #f7fbf9 0%, var(--auth-bg) 48%, #dcebe5 100%);
+            color: var(--auth-ink);
+        }
+        .auth-shell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: minmax(320px, 460px) minmax(280px, 1fr);
+            gap: 32px;
+            align-items: center;
+            padding: 48px clamp(18px, 5vw, 80px);
+        }
+        .auth-card {
+            background: var(--auth-card);
+            border: 1px solid var(--auth-line);
+            border-radius: 28px;
+            box-shadow: 0 28px 90px rgba(23,33,29,.16);
+            padding: clamp(24px, 4vw, 42px);
+            backdrop-filter: blur(14px);
+        }
+        .auth-brand {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .auth-logo-wrap {
+            width: 72px;
+            height: 72px;
+            border-radius: 22px;
+            display: grid;
+            place-items: center;
+            background: #fff;
+            border: 1px solid var(--auth-line);
+            flex: 0 0 auto;
+        }
+        .auth-logo { max-width: 54px; max-height: 54px; }
+        .auth-brand h1 {
+            margin: 0 0 8px;
+            font-size: clamp(22px, 3vw, 30px);
+            line-height: 1.35;
+        }
+        .auth-brand p, .auth-side p {
+            margin: 0;
+            color: var(--auth-muted);
+            line-height: 1.9;
+        }
+        .auth-form { display: grid; gap: 18px; }
+        .auth-field { display: grid; gap: 8px; font-weight: 700; }
+        .auth-field input {
+            width: 100%;
+            border: 1px solid var(--auth-line);
+            border-radius: 16px;
+            padding: 14px 16px;
+            font: inherit;
+            color: var(--auth-ink);
+            background: #fff;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .auth-field input:focus {
+            border-color: var(--auth-primary);
+            box-shadow: 0 0 0 4px rgba(15,122,90,.14);
+        }
+        .auth-submit {
+            border: 0;
+            border-radius: 16px;
+            padding: 15px 18px;
+            font: inherit;
+            font-weight: 800;
+            color: #fff;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--auth-primary), var(--auth-primary-dark));
+            box-shadow: 0 16px 34px rgba(15,122,90,.28);
+        }
+        .auth-alert {
+            border-radius: 14px;
+            padding: 12px 14px;
+            line-height: 1.8;
+            font-weight: 700;
+        }
+        .auth-alert-danger {
+            color: var(--auth-danger);
+            background: #fff0ee;
+            border: 1px solid #ffd3cc;
+        }
+        .auth-validation {
+            color: var(--auth-danger);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        .auth-side {
+            min-height: 420px;
+            border-radius: 34px;
+            padding: clamp(28px, 6vw, 64px);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            color: #fff;
+            background:
+                linear-gradient(160deg, rgba(9,93,68,.92), rgba(23,33,29,.92)),
+                repeating-linear-gradient(45deg, rgba(255,255,255,.08) 0 2px, transparent 2px 16px);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 28px 90px rgba(23,33,29,.18);
+            overflow: hidden;
+        }
+        .auth-badge {
+            width: fit-content;
+            border: 1px solid rgba(255,255,255,.34);
+            border-radius: 999px;
+            padding: 8px 14px;
+            margin-bottom: 18px;
+            color: rgba(255,255,255,.86);
+            font-weight: 700;
+        }
+        .auth-side h2 {
+            margin: 0 0 14px;
+            max-width: 720px;
+            font-size: clamp(30px, 5vw, 58px);
+            line-height: 1.25;
+        }
+        .auth-side p {
+            max-width: 620px;
+            color: rgba(255,255,255,.78);
+            font-size: 17px;
+        }
+        @@        .auth-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 34px;
+        }
+        .auth-metrics div {
+            border: 1px solid rgba(255,255,255,.24);
+            border-radius: 20px;
+            padding: 16px 14px;
+            background: rgba(255,255,255,.10);
+            backdrop-filter: blur(10px);
+        }
+        .auth-metrics strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 22px;
+            letter-spacing: .03em;
+        }
+        .auth-metrics span {
+            color: rgba(255,255,255,.78);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        @@media (max-width: 520px) {
+            .auth-metrics { grid-template-columns: 1fr; }
+        }
+        @@media (max-width: 880px) {
+            .auth-shell { grid-template-columns: 1fr; padding: 22px; }
+            .auth-side { min-height: auto; padding: 28px; }
+        }
+    </style>
 </head>
 <body>
-
-                                    @RenderBody()
-
-
-
-    <script src="~/LoginV4/js/jquery-3.2.1.min.js"></script>
-    <script src="~/LoginV4/js/popper.min.js"></script>
-    <script src="~/LoginV4/js/bootstrap.min.js"></script>
-    <script src="~/LoginV4/js/select2.min.js"></script>
-    <script src="~/LoginV4/js/tilt.jquery.min.js"></script>
-    <script>
-        $('.js-tilt').tilt({
-            scale: 1.1
-        })
-    </script>
-    <script src="~/LoginV4/js/scripts.js"></script>
-
+    @RenderBody()
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
 
 
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

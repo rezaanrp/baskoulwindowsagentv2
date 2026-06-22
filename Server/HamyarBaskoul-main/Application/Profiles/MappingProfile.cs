@@ -1,16 +1,10 @@
 ﻿using AutoMapper;
 using Domain.Models;
 using Application.ViewModels.Users;
-using Application.ViewModels.Applicant;
-using Domain.ViewModels.FilingUserDetail;
-using Application.ViewModels.FilingUser;
+using Domain.ViewModels.Users;
 using Domain.ViewModels.BaseTable;
 using Application.ViewModels.BaseTable;
-using Domain.ViewModels.Applicant;
-using Application.ViewModels.RebuildAbility;
-using Domain.Models.BuilderProfile;
 using Domain.ViewModels.Baskoul;
-using Application.ViewModels.BuilderProfile;
 using Application.ViewModels.Baskoul;
 using Domain.ViewModels;
 using Application.ViewModels;
@@ -26,34 +20,6 @@ namespace Application.Profiles
     {
         public MappingProfile()
         {
-			#region BuilderProfile
-
-
-			CreateMap<BuilderProfileFollowUpResultViewModels, BuilderProfileFollowUpResult>();
-            CreateMap<BuilderProfileFollowUpResult, BuilderProfileFollowUpResultViewModels>();
-
-
-            CreateMap<BuilderProfileEstimatedNeedViewModels, BuilderProfileEstimatedNeed>();
-            CreateMap<BuilderProfileEstimatedNeed, BuilderProfileEstimatedNeedViewModels>();
-
-
-            CreateMap<BuilderProfileOngoingAndUpcomingProjectViewModels, BuilderProfileOngoingAndUpcomingProject>();
-            CreateMap<BuilderProfileOngoingAndUpcomingProject, BuilderProfileOngoingAndUpcomingProjectViewModels>();
-
-            CreateMap<BuilderProfileCompletedProjectViewModels, BuilderProfileCompletedProject>();
-            CreateMap<BuilderProfileCompletedProject, BuilderProfileCompletedProjectViewModels>();
-
-            CreateMap<BuilderProfileViewModel, BuilderProfile>();
-            CreateMap<BuilderProfile, BuilderProfileViewModel>();
-
-            #endregion
-
-			#region RebuildAbility
-			CreateMap<RebuildAbilityViewModel, RebuildAbility>();
-            CreateMap<RebuildAbility, RebuildAbilityViewModel>();
-
-            #endregion
-
 			#region BaseTable
 			CreateMap<BaseTableViewModel, BaseTable>();
 				CreateMap<BaseTable, BaseTableViewModel>();
@@ -75,22 +41,6 @@ namespace Application.Profiles
             CreateMap<BaskoulDomainViewModel, BaskoulViewModel>();
             CreateMap<BaskoulViewModel, BaskoulDomainViewModel>();
             #endregion
-
-            #region FilingUser
-
-            CreateMap<FilingUserDetailViewModel, CreateFilingUserDetailViewModels>();
-			CreateMap<CreateFilingUserDetailViewModels, FilingUserDetailViewModel>();
-
-			//.ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
-			//		CreateMap<FilingUserDetail, FilingUserDetailListViewModels>()
-			//			.ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
-
-			CreateMap<FilingUserViewModel, FilingUserDetailListViewModels>();
-			CreateMap<FilingUserDetailListViewModels, FilingUserViewModel>();
-
-
-            #endregion
-
             #region BargeBaskoul
 
             CreateMap<BargeBaskoulViewModel, BargeBaskoulDomainViewModel>();
@@ -116,14 +66,6 @@ namespace Application.Profiles
             CreateMap<Mabani, MabaniViewModel>();
 
             #endregion
-
-            #region Applicant
-            CreateMap<ApplicantDetailForDrapDownViewModels, ApplicantDetailForDrapDownViewModel>();
-			CreateMap<ApplicantDetailForDrapDownViewModel, ApplicantDetailForDrapDownViewModels>();
-
-			
-			#endregion
-
 			#region Users
 			CreateMap<AppUser, UsersListViewModel>();
 			CreateMap<UsersListDomainViewModel, UsersListViewModel>();
@@ -209,3 +151,8 @@ namespace Application.Profiles
         }
     }
 }
+
+
+
+
+

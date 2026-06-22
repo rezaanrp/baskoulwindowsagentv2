@@ -22,3 +22,4 @@ namespace Domain.Models
         public string? CodMarkaz { get; set; }
     }
 }
+

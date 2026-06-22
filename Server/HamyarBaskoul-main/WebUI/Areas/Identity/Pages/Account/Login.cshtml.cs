@@ -109,11 +109,6 @@ namespace WebUI.Areas.Identity.Pages.Account
 					{
 						return Redirect("~/Sale");
 					}
-                    if(user.Departments == "TARAHI")
-                    {
-                        return Redirect("~/DesignExecution");
-
-                    }
                     if (!isCodmarkazValid)
                     {
                         await _signInManager.SignOutAsync();
@@ -168,3 +163,5 @@ namespace WebUI.Areas.Identity.Pages.Account
         }
     }
 }
+
+

@@ -7,3 +7,4 @@ namespace WebUI.Interfaces
         Task<bool> UploadFile(MultipartReader reader, MultipartSection section);
     }
 }
+

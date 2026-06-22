@@ -16,3 +16,4 @@ namespace Application.ViewModels.Users
         public List<CheckBoxItem> TransactionType { get; set; }
 	}
 }
+

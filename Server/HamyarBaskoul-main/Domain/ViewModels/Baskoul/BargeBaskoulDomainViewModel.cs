@@ -76,3 +76,4 @@ namespace Domain.ViewModels.Baskoul
         public int? siteId { get; set; }
     }
 }
+

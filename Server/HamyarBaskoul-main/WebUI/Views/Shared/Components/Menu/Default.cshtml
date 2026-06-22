@@ -1,136 +1,120 @@
 ﻿@model List<string>
 
-
-
 <ul class="nav nav-treeview">
 	<li class="nav-item has-treeview">
 		<a href="#" class="nav-link">
-			<i class="nav-icon fa fa-truck"></i>
+			<i class="nav-icon fa fa-balance-scale"></i>
 			<p>
-				لوجستیک
+				سیستم باسکول
 				<i class="fa fa-angle-left right"></i>
 			</p>
 		</a>
-		<ul class="nav nav-treeview">
+		<ul class="nav nav-treeview" style="display: none;">
 			<li class="nav-item has-treeview">
-				<a href="#" class="nav-link">
-					<i class="nav-icon fa fa-balance-scale"></i>
+				<a class="nav-link" href="#">
+					<i class="nav-icon fa fa-truck"></i>
 					<p>
-						سیستم باسکول
+						عملیات باسکول
 						<i class="fa fa-angle-left right"></i>
 					</p>
 				</a>
-
 				<ul class="nav nav-treeview" style="display: none;">
-					<!-- عملیات -->
-					<li class="nav-item has-treeview">
-						<a class="nav-link" href="#">
-							<i class="nav-icon fa fa-cogs"></i>
-							<p>
-								عملیات
-								<i class="fa fa-angle-left right"></i>
-							</p>
+					<li class="nav-item">
+						<a class="nav-link" asp-controller="BargeBaskoul" asp-action="BargeAnbar">
+							<i class="fa fa-circle-o nav-icon"></i>
+							<p>ثبت برگه باسکول</p>
 						</a>
-						<ul class="nav nav-treeview" style="display: none;">
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="BargeBaskoul" asp-action="BargeAnbar">
-									<i class="fa fa-circle-o nav-icon"></i>
-									<p>برگه ورود/خروج کالا</p>
-								</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="BargeBaskoul" asp-action="ListBargeAnbar" asp-route-type="3">
-									<i class="fa fa-circle-o nav-icon"></i>
-									<p>لیست برگه‌ باسکول</p>
-								</a>
-							</li>
-							@if (User.Identity.IsAuthenticated && !User.IsInRole("NONHAMYAADMIN") && !User.IsInRole("NONHAMYARUSER"))
-							{
-								<li class="nav-item">
-									<a class="nav-link" asp-controller="APIs" asp-action="SyncServer">
-										<i class="fa fa-circle-o nav-icon"></i>
-										<p>همگام‌سازی با سرور</p>
-									</a>
-								</li>
-							}
-							@if (User.Identity.IsAuthenticated && !User.IsInRole("User") && !User.IsInRole("Administrator"))
-							{
-								<li class="nav-item">
-									<a class="nav-link" asp-controller="BaseData" asp-action="DataList">
-										<i class="fa fa-circle-o nav-icon"></i>
-										<p>ایجاد اطلاعات پایه</p>
-									</a>
-								</li>
-							}
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="BargeBaskoul" asp-action="UploadExcel">
-									<i class="fa fa-upload nav-icon"></i>
-									<p>بارگذاری فایل اکسل</p>
-								</a>
-							</li>
-						</ul>
 					</li>
-
-					<!-- مبانی -->
-					<li class="nav-item has-treeview">
-						<a href="#" class="nav-link">
-							<i class="nav-icon fa fa-database"></i>
-							<p>
-								مبانی
-								<i class="fa fa-angle-left right"></i>
-							</p>
+					<li class="nav-item">
+						<a class="nav-link" asp-controller="BargeBaskoul" asp-action="ListBargeAnbar" asp-route-type="3">
+							<i class="fa fa-circle-o nav-icon"></i>
+							<p>لیست برگه‌های باسکول</p>
 						</a>
-						<ul class="nav nav-treeview" style="display: none;">
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="Site" asp-action="SiteList">
-									<i class="fa fa-circle-o nav-icon"></i>
-									<p>مدیریت مراکز باسکول</p>
-								</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="Site" asp-action="SelectSite">
-									<i class="fa fa-circle-o nav-icon"></i>
-									<p>انتخاب مرکز باسکول پیش‌فرض</p>
-								</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="WindowsAPIs" asp-action="Index">
-									<i class="fa fa-circle-o nav-icon"></i>
-									<p>دریافت توکن ارتباط با ویندوز</p>
-								</a>
-							</li>
-						</ul>
 					</li>
-
-					<!-- تنظیمات گزارشات -->
-					<li class="nav-item has-treeview">
-						<a href="#" class="nav-link">
-							<i class="nav-icon fa fa-file-text-o"></i>
-							<p>
-								تنظیمات گزارشات
-								<i class="right fa fa-angle-left"></i>
-							</p>
+					<li class="nav-item">
+						<a class="nav-link" asp-controller="BargeBaskoul" asp-action="UploadExcel">
+							<i class="fa fa-upload nav-icon"></i>
+							<p>ورود اطلاعات از اکسل</p>
 						</a>
-						<ul class="nav nav-treeview">
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="Reports" asp-action="ReportSetting">
-									<i class="fa fa-circle-o nav-icon"></i>
-									<p>تنظیمات چاپ</p>
-								</a>
-							</li>
-						</ul>
+					</li>
+					@if (User.Identity.IsAuthenticated && !User.IsInRole("NONHAMYAADMIN") && !User.IsInRole("NONHAMYARUSER"))
+					{
+						<li class="nav-item">
+							<a class="nav-link" asp-controller="APIs" asp-action="SyncServer">
+								<i class="fa fa-refresh nav-icon"></i>
+								<p>همگام‌سازی اطلاعات باسکول</p>
+							</a>
+						</li>
+					}
+				</ul>
+			</li>
+
+			<li class="nav-item has-treeview">
+				<a href="#" class="nav-link">
+					<i class="nav-icon fa fa-file-text-o"></i>
+					<p>
+						گزارش‌ها
+						<i class="right fa fa-angle-left"></i>
+					</p>
+				</a>
+				<ul class="nav nav-treeview" style="display: none;">
+					<li class="nav-item">
+						<a class="nav-link" asp-controller="Reports" asp-action="ReportSetting">
+							<i class="fa fa-circle-o nav-icon"></i>
+							<p>تنظیمات چاپ برگه باسکول</p>
+						</a>
+					</li>
+				</ul>
+			</li>
+
+			<li class="nav-item has-treeview">
+				<a href="#" class="nav-link">
+					<i class="nav-icon fa fa-database"></i>
+					<p>
+						تنظیمات پایه
+						<i class="fa fa-angle-left right"></i>
+					</p>
+				</a>
+				<ul class="nav nav-treeview" style="display: none;">
+					<li class="nav-item">
+						<a class="nav-link" asp-controller="Site" asp-action="SiteList">
+							<i class="fa fa-circle-o nav-icon"></i>
+							<p>مدیریت محل‌های باسکول</p>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" asp-controller="Site" asp-action="SelectSite">
+							<i class="fa fa-circle-o nav-icon"></i>
+							<p>انتخاب باسکول پیش‌فرض</p>
+						</a>
+					</li>
+					@if (User.Identity.IsAuthenticated && !User.IsInRole("User") && !User.IsInRole("Administrator"))
+					{
+						<li class="nav-item">
+							<a class="nav-link" asp-controller="BaseData" asp-action="DataList">
+								<i class="fa fa-circle-o nav-icon"></i>
+								<p>اطلاعات پایه باسکول</p>
+							</a>
+						</li>
+					}
+					<li class="nav-item">
+						<a class="nav-link" asp-controller="WindowsAPIs" asp-action="Index">
+							<i class="fa fa-key nav-icon"></i>
+							<p>توکن ارتباط با نمایشگر وزن</p>
+						</a>
 					</li>
 				</ul>
 			</li>
 		</ul>
 	</li>
+
 	@if (User.IsInRole("SuperAdmin") || User.IsInRole("Administrator") || User.IsInRole("NonHamyarAdmin"))
 	{
 		<li class="nav-item has-treeview">
 			<a href="#" class="nav-link">
 				<i class="nav-icon fa fa-cogs"></i>
 				<p>
-					مدیریت
+					مدیریت سیستم
 					<i class="fa fa-angle-left right"></i>
 				</p>
 			</a>
@@ -138,7 +122,7 @@
 				<li class="nav-item">
 					<a class="nav-link" asp-controller="UserManager" asp-action="Index">
 						<i class="fa fa-users-cog nav-icon"></i>
-						<p>تنظیمات کاربران</p>
+						<p>کاربران و دسترسی‌ها</p>
 					</a>
 				</li>
 				@if (User.IsInRole("SuperAdmin"))
@@ -146,7 +130,7 @@
 					<li class="nav-item">
 						<a class="nav-link" asp-controller="CodeMarkazForURL" asp-action="CodeURLList">
 							<i class="fa fa-building nav-icon"></i>
-							<p>مدیریت تنظیمات مرکز</p>
+							<p>تنظیمات مرکز باسکول</p>
 						</a>
 					</li>
 				}
