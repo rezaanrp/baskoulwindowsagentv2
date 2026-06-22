@@ -1,7 +1,6 @@
 ﻿using Application.Classes;
 using Application.Interfaces;
 using Application.ViewModels;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Application.Tools
@@ -95,4 +94,6 @@ namespace Application.Tools
     }
 
 }
+
+
 

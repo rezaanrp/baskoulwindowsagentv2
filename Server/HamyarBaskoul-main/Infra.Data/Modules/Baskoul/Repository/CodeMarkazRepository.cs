@@ -1,13 +1,10 @@
 ﻿using AutoMapper;
-using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Domain.Classes;
 using Domain.Interfaces;
 using Domain.Models;
 using Domain.ViewModels;
 using Infra.Data.Context;
 using Infra.Data.Migrations;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System;
 using static Dapper.SqlMapper;
@@ -108,4 +105,6 @@ namespace Infra.Data.Repository
         }
     }
 }
+
+
 

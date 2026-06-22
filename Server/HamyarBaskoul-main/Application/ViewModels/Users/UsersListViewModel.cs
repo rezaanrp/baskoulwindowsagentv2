@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.ViewModels;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Application.ViewModels.Users
 {
@@ -40,4 +39,5 @@ namespace Application.ViewModels.Users
         public string? WindowsToken { get; set; } 
     }
 }
+
 

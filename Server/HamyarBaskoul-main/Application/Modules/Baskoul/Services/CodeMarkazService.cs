@@ -4,7 +4,6 @@ using AutoMapper;
 using Domain.Interfaces;
 using Domain.Models;
 using Domain.ViewModels;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,4 +86,5 @@ namespace Application.Services
         }
     }
 }
+
 

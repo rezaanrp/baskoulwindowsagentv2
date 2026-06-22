@@ -41,6 +41,11 @@
             display: flex;
             align-items: center;
         }
+        .small-box.weight-updated {
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, .8), 0 0 0 8px rgba(40, 167, 69, .45);
+            transform: scale(1.015);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
     </style>
     <div class="card card-secondary">
         <div class="card-header">
@@ -67,11 +72,19 @@
                                         <p>@baskoul.Name</p>
                                         @if (baskoul.Weight == null)
                                         {
-                                            <h3 id="weight-@baskoul.Site-@baskoul.ScaleCode" style="display: inline;">0</h3>
+                                            <h3 id="weight-@baskoul.Site-@baskoul.ScaleCode"
+                                                data-site="@baskoul.Site"
+                                                data-scale="@baskoul.ScaleCode"
+                                                class="live-weight"
+                                                style="display: inline;">0</h3>
                                         }
                                         else
                                         {
-                                            <h3 id="weight-@baskoul.Site-@baskoul.ScaleCode" style="display: inline;">@baskoul.Weight</h3> <!-- Unique ID for each scale -->
+                                            <h3 id="weight-@baskoul.Site-@baskoul.ScaleCode"
+                                                data-site="@baskoul.Site"
+                                                data-scale="@baskoul.ScaleCode"
+                                                class="live-weight"
+                                                style="display: inline;">@baskoul.Weight</h3>
                                         }
                                         <span style="margin-right: 5px;">کیلوگرم</span>
                                     </div>
@@ -162,15 +175,39 @@
             console.error("SignalR closed:", err);
         });
 
-        connection.start()
-            .then(() => {
-                setHubStatus("وصل است", "connected");
-                console.log("Connected to SignalR hub:", hubUrl);
-            })
-            .catch(err => {
-                setHubStatus("خطا در اتصال", "error");
-                console.error("Connection failed:", err.toString());
-            });
+        function normalizeWeightKey(value) {
+            return String(value ?? "")
+                .trim()
+                .replace(/^Site_/i, "")
+                .replace(/^S/i, "")
+                .toLowerCase();
+        }
+
+        function findWeightElement(siteId, scaleCode) {
+            const exactId = `weight-${siteId}-${scaleCode}`;
+            const exactElement = document.getElementById(exactId);
+            if (exactElement) {
+                return exactElement;
+            }
+
+            const normalizedSite = normalizeWeightKey(siteId);
+            const normalizedScale = normalizeWeightKey(scaleCode);
+
+            return Array.from(document.querySelectorAll(".live-weight")).find(element =>
+                normalizeWeightKey(element.dataset.site) === normalizedSite &&
+                normalizeWeightKey(element.dataset.scale) === normalizedScale
+            );
+        }
+
+        function updateWeightCard(weightElement, weight) {
+            weightElement.textContent = weight ?? 0;
+
+            const card = weightElement.closest(".small-box");
+            if (card) {
+                card.classList.add("weight-updated");
+                setTimeout(() => card.classList.remove("weight-updated"), 500);
+            }
+        }
 
         connection.on("ReceiveWeightUpdate", function (siteId, codmarkazServer, scaleCode, weight) {
             const codmarkazPage = document.getElementById("codmarkaz")?.value || "";
@@ -182,18 +219,25 @@
             console.log("weight:", weight);
             console.log("codmarkaz (view):", codmarkazPage);
 
-            const normalizedSiteId = String(siteId).replace(/^Site_/i, "");
-            const normalizedScaleCode = String(scaleCode).replace(/^S/i, "");
-            const weightElementId = `weight-${normalizedSiteId}-${normalizedScaleCode}`;
-            const weightElement = document.getElementById(weightElementId);
+            const weightElement = findWeightElement(siteId, scaleCode);
 
             if (!weightElement) {
-                console.log(`No element found with ID: ${weightElementId}`);
+                console.warn("No weight element found for received weight.", { siteId, scaleCode });
                 return;
             }
 
-            weightElement.textContent = weight;
+            updateWeightCard(weightElement, weight);
         });
+
+        connection.start()
+            .then(() => {
+                setHubStatus("وصل است", "connected");
+                console.log("Connected to SignalR hub:", hubUrl);
+            })
+            .catch(err => {
+                setHubStatus("خطا در اتصال", "error");
+                console.error("Connection failed:", err.toString());
+            });
 
     </script>
     <script>
