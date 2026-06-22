@@ -1,4 +1,5 @@
 ﻿using Application.Common.Behaviors;
+using Application.Common.Interfaces;
 using Application.Interfaces;
 using Application.Profiles;
 using Application.Services;
@@ -27,6 +28,8 @@ namespace Infra.Ioc
 			// -------------------------------
 			services.AddDbContext<WriteDbContext>(opt =>
 				opt.UseSqlServer(configuration.GetConnectionString("WriteConnection")));
+			services.AddScoped<IReadDbContext>(provider => provider.GetRequiredService<WriteDbContext>());
+			services.AddScoped<IWriteDbContext>(provider => provider.GetRequiredService<WriteDbContext>());
 
 			// -------------------------------
 			// AutoMapper
@@ -84,5 +87,6 @@ namespace Infra.Ioc
 		}
 	}
 }
+
 
 

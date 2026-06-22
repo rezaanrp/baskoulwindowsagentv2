@@ -271,38 +271,6 @@ namespace Infra.Data.Repository
 			return false;
 		}
 
-
-
-		public IEnumerable<ObjectTransactionTypeUser> get_all_object_transaction_user_access(string UserId)
-		{
-			return _Context.ObjectTransactionTypeUsers.AsQueryable().Where(x => x.UserId == UserId );
-		}
-
-		public bool delete_all_object_transaction_for_user(string UserId)
-		{
-
-			_Context.ObjectTransactionTypeUsers.RemoveRange(_Context.ObjectTransactionTypeUsers.Where(x => x.UserId == UserId));
-			_Context.SaveChanges();
-			return true;
-		}
-
-		public bool add_object_transaction_for_user(List<ObjectTransactionTypeUser> objectForm)
-		{
-			_Context.ObjectTransactionTypeUsers.AddRange(objectForm);
-			_Context.SaveChanges();
-			return true;
-		}
-		public bool user_access_transaction(int id, string UserId)
-		{
-				var ofu = _Context.ObjectTransactionTypeUsers.FirstOrDefault(x => x.ObjectId == id && x.UserId == UserId);
-				if (ofu != null)
-				{
-					return true;
-				}
-
-	
-			return false;
-		}
 		public IEnumerable<ObjectForm> GetObjectFormByDepartement(string Departement)
 		{
 			return _Context.ObjectForms.Where(x => x.Departement  == Departement).ToList();

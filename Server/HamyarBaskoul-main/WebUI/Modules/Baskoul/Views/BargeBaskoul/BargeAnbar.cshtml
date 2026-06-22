@@ -41,11 +41,6 @@
             display: flex;
             align-items: center;
         }
-        .small-box.weight-updated {
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, .8), 0 0 0 8px rgba(40, 167, 69, .45);
-            transform: scale(1.015);
-            transition: transform .2s ease, box-shadow .2s ease;
-        }
     </style>
     <div class="card card-secondary">
         <div class="card-header">
@@ -196,33 +191,26 @@
             return Array.from(document.querySelectorAll(".live-weight")).find(element =>
                 normalizeWeightKey(element.dataset.site) === normalizedSite &&
                 normalizeWeightKey(element.dataset.scale) === normalizedScale
+            ) || Array.from(document.querySelectorAll(".live-weight")).find(element =>
+                normalizeWeightKey(element.dataset.scale) === normalizedScale
             );
         }
 
         function updateWeightCard(weightElement, weight) {
             weightElement.textContent = weight ?? 0;
-
-            const card = weightElement.closest(".small-box");
-            if (card) {
-                card.classList.add("weight-updated");
-                setTimeout(() => card.classList.remove("weight-updated"), 500);
-            }
         }
 
+        let lastMissingWeightElementLogAt = 0;
+
         connection.on("ReceiveWeightUpdate", function (siteId, codmarkazServer, scaleCode, weight) {
-            const codmarkazPage = document.getElementById("codmarkaz")?.value || "";
-
-            console.log("Received from hub:");
-            console.log("siteId:", siteId);
-            console.log("codmarkaz (server):", codmarkazServer);
-            console.log("scaleCode:", scaleCode);
-            console.log("weight:", weight);
-            console.log("codmarkaz (view):", codmarkazPage);
-
             const weightElement = findWeightElement(siteId, scaleCode);
 
             if (!weightElement) {
-                console.warn("No weight element found for received weight.", { siteId, scaleCode });
+                const now = Date.now();
+                if (now - lastMissingWeightElementLogAt > 5000) {
+                    console.warn("No weight element found for received weight.", { siteId, scaleCode });
+                    lastMissingWeightElementLogAt = now;
+                }
                 return;
             }
 

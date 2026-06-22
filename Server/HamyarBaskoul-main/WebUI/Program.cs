@@ -16,9 +16,7 @@ using Infra.Data.Classes;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var WriteConnection = builder.Configuration.GetConnectionString("WriteConnection");
-builder.Services.AddDbContext<WriteDbContext>(options =>
-	options.UseSqlServer(WriteConnection));
+builder.Services.AddProjectServices(builder.Configuration);
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
@@ -32,7 +30,14 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 	.AddDefaultUI()
 	.AddRoles<IdentityRole>();
 
-builder.Services.AddProjectServices(builder.Configuration);
+builder.Services.ConfigureApplicationCookie(options =>
+{
+	options.LoginPath = "/Identity/Account/Login";
+	options.LogoutPath = "/Identity/Account/Logout";
+	options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+	options.SlidingExpiration = true;
+	options.ExpireTimeSpan = TimeSpan.FromDays(14);
+});
 
 builder.Services.AddSignalR();
 
@@ -73,8 +78,8 @@ builder.Services.AddAuthorization(options =>
 
 	options.AddPolicy("ExcludeNonHamayars", policy =>
 		policy.RequireAssertion(context =>
-			!context.User.IsInRole("NONHAMYARUSER") &&
-			!context.User.IsInRole("NONHAMYAADMIN")));
+			!context.User.IsInRole("NonHamyarUser") &&
+			!context.User.IsInRole("NonHamyarAdmin")));
 
 	options.AddPolicy("ExcludeHamayars", policy =>
 		policy.RequireAssertion(context =>
@@ -104,7 +109,7 @@ if (string.IsNullOrWhiteSpace(jwtKey))
 var key = Encoding.UTF8.GetBytes(jwtKey);
 
 
-builder.Services.AddAuthentication("Bearer")
+builder.Services.AddAuthentication()
     .AddJwtBearer("Bearer", options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -137,8 +142,6 @@ builder.Services.AddAuthentication("Bearer")
             }
         };
     });
-
-builder.Services.AddAuthorization();
 
 
 var app = builder.Build();

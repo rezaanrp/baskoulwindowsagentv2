@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using Application.Common.Interfaces;
+using Domain.Models;
 using Domain.ViewModels.Baskoul;
 using Infra.Data.Seed;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
@@ -10,7 +11,7 @@ using System.Linq.Expressions;
 
 namespace Infra.Data.Context
 {
-    public class WriteDbContext : IdentityDbContext<AppUser>, IDataProtectionKeyContext
+    public class WriteDbContext : IdentityDbContext<AppUser>, IDataProtectionKeyContext, IReadDbContext, IWriteDbContext
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         public WriteDbContext(DbContextOptions options, IHttpContextAccessor httpContextAccessor) 
@@ -26,7 +27,6 @@ namespace Infra.Data.Context
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
         public DbSet<ObjectForm> ObjectForms { get; set; }
         public DbSet<ObjectFormUser> ObjectFormUsers { get; set; }
-        public DbSet<ObjectTransactionTypeUser> ObjectTransactionTypeUsers { get; set; }
         public DbSet<Site> Sites { get; set; }
         public DbSet<UserSite> UserSites { get; set; }
         public DbSet<GhabzSerialTracker> GhabzSerialTrackers { get; set; }
@@ -127,7 +127,7 @@ namespace Infra.Data.Context
               {
                   Id = "abc12def-1234-2548-89ab-1234567890ab",
                   Name = "NonHamyarAdmin",
-                  NormalizedName = "NONHAMYAADMIN",
+                  NormalizedName = "NONHAMYARADMIN",
                   ConcurrencyStamp = "55a33924-8173-4f79-b41e-d438d1eada2a"
 			  }
         );
@@ -265,5 +265,6 @@ namespace Infra.Data.Context
         }
     }
 }
+
 
 

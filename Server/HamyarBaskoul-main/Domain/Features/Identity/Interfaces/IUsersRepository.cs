@@ -35,10 +35,6 @@ namespace Domain.Interfaces
         bool delete_all_object_for_user(string UserId);
         bool add_objectform_for_user(List<ObjectFormUser > objectForm);
         public bool user_access_form(string from, string UserId);
-        public IEnumerable<ObjectTransactionTypeUser> get_all_object_transaction_user_access(string UserId);
-        public bool delete_all_object_transaction_for_user(string UserId);
-        public bool add_object_transaction_for_user(List<ObjectTransactionTypeUser> objectForm);
-        public bool user_access_transaction(int id, string UserId);
         public void UpdateUserRole(string user_id, string new_role_id);
         public string GetRole_id_by_name(string role_name);
 

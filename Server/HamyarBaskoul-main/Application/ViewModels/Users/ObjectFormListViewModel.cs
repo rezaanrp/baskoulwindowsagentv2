@@ -13,7 +13,6 @@ namespace Application.ViewModels.Users
 	{
         public string  UserId { get; set; }
         public List<ObjectFormViewModel>  objectFormViews { get; set; }
-        public List<CheckBoxItem> TransactionType { get; set; }
 	}
 }
 

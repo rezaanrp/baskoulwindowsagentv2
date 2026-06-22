@@ -17,13 +17,11 @@ namespace Application.Services
 	public class UsersService : IUsersService
 	{
 		private readonly IUsersRepository _usersRepository;
-		private readonly IBaseTableRepository _baseTableRepository;
 		private readonly IMapper mapper;
-		public UsersService(IUsersRepository UsersRepository, IMapper mapper, IBaseTableRepository baseTableRepository)
+		public UsersService(IUsersRepository UsersRepository, IMapper mapper)
 		{
 			this._usersRepository = UsersRepository;
 			this.mapper = mapper;
-			_baseTableRepository = baseTableRepository;
 		}
 
 		public UsersListViewModel Get(string Id)
@@ -137,12 +135,6 @@ namespace Application.Services
 			}
 			m.objectFormViews = mmm;
 			m.UserId = id;
-			m.TransactionType = _baseTableRepository.GetAll().Where(x =>x.GroupName == "TransactionType").Select(vm => new CheckBoxItem()
-			{
-				Id = vm.Id,
-				Title = vm.ValueFarsi??"",
-				IsChecked = _usersRepository.user_access_transaction(vm.Id, id)
-			} ).ToList();
 			return m;
 		}
 		public string get_name_and_family_by_id(string id)
@@ -184,21 +176,6 @@ namespace Application.Services
 				}
 			}
 			_usersRepository.add_objectform_for_user(ob);
-
-			_usersRepository.delete_all_object_transaction_for_user(objectForm.UserId);
-			List<ObjectTransactionTypeUser> ob1 = new List<ObjectTransactionTypeUser>();
-			foreach (var item in objectForm.TransactionType)
-			{
-				if (item.IsChecked)
-				{
-					ObjectTransactionTypeUser objectTransaction   = new ObjectTransactionTypeUser();
-					objectTransaction.UserId = objectForm.UserId;
-					objectTransaction.ObjectId = item.Id;
-					objectTransaction.SupplierId = supplier_;
-					ob1.Add(objectTransaction);
-				}
-			}
-			_usersRepository.add_object_transaction_for_user(ob1);
 
 			return true;
 		}
