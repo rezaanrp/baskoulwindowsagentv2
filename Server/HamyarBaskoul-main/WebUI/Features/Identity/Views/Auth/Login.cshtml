@@ -1,0 +1,88 @@
+@model WebUI.Features.Identity.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "ورود به سامانه";
+    Layout = "~/Areas/Shared/_LoginLayout.cshtml";
+}
+
+<div id="loginApp" class="auth-shell" v-cloak>
+    <section class="auth-card" aria-label="فرم ورود">
+        <div class="auth-brand">
+            <div class="auth-logo-wrap">
+                <img src="@Url.Content("~/APL/dist/img/logo2.png")" alt="لوگو" class="auth-logo" />
+            </div>
+            <div>
+                <h1>ورود به سامانه همیار باسکول</h1>
+                <p>برای ادامه، نام کاربری و رمز عبور خود را وارد کنید.</p>
+            </div>
+        </div>
+
+        <form id="account" method="post" class="auth-form" asp-action="Login" asp-controller="Auth" v-on:submit="submit">
+            @Html.AntiForgeryToken()
+            <input asp-for="ReturnUrl" type="hidden" />
+
+            <div asp-validation-summary="ModelOnly" class="auth-validation"></div>
+
+            <div class="auth-alert auth-alert-danger" v-if="clientError">
+                {{ clientError }}
+            </div>
+
+            <label class="auth-field" asp-for="Email">
+                <span>نام کاربری</span>
+                <input asp-for="Email" autocomplete="username" aria-required="true" placeholder="نام کاربری" v-model.trim="form.email" />
+                <span asp-validation-for="Email" class="auth-validation"></span>
+            </label>
+
+            <label class="auth-field" asp-for="Password">
+                <span>رمز عبور</span>
+                <input asp-for="Password" type="password" autocomplete="current-password" aria-required="true" placeholder="رمز عبور" v-model="form.password" />
+                <span asp-validation-for="Password" class="auth-validation"></span>
+            </label>
+
+            <label class="auth-remember" asp-for="RememberMe">
+                <input asp-for="RememberMe" v-model="form.rememberMe" />
+                <span class="auth-checkmark"></span>
+                <span>مرا به خاطر بسپار</span>
+            </label>
+
+            <button type="submit" class="auth-submit" v-bind:disabled="isSubmitting">
+                {{ isSubmitting ? 'در حال ورود...' : 'ورود' }}
+            </button>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="@Url.Content("~/lib/vue/vue.global.prod.js")"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    isSubmitting: false,
+                    clientError: '',
+                    form: {
+                        email: '@(Model.Email ?? string.Empty)',
+                        password: '',
+                        rememberMe: @Model.RememberMe.ToString().ToLowerInvariant()
+                    }
+                };
+            },
+            methods: {
+                submit(event) {
+                    this.clientError = '';
+
+                    if (!this.form.email || !this.form.password) {
+                        event.preventDefault();
+                        this.clientError = 'نام کاربری و رمز عبور را وارد نمایید';
+                        return;
+                    }
+
+                    this.isSubmitting = true;
+                }
+            }
+        }).mount('#loginApp');
+    </script>
+}
