@@ -1,226 +1,841 @@
-﻿@{
-	ViewData["Title"] = "Home Page";
-	//Layout = ViewData["Layout"]?.ToString() ?? "_LayoutDefualt";
-	Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
-}
 @model Application.ViewModels.Users.ObjectFormListViewModel
+@{
+    ViewData["Title"] = "مدیریت کاربران";
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+
+    var errorMessage = ViewBag.ErrorMessage?.ToString() ?? TempData["InvalidCodMrakaz"]?.ToString() ?? string.Empty;
+    var activeSitesJson = ViewBag.ActiveSitesJson?.ToString() ?? "[]";
+    var roleOptionsJson = ViewBag.RoleOptionsJson?.ToString() ?? "[]";
+}
 
 @section Style
-	{
-	@{
-    ViewData["Title"] = "مدیریت کاربران و دسترسی‌ها";
+{
+    <link href="~/apl/swat/sweetalert2.min.css" rel="stylesheet" />
+    <style>
+        [v-cloak] { display: none; }
+
+        .users-page {
+            --users-ink: #172d25;
+            --users-muted: #687a74;
+            --users-line: #dce9e3;
+            --users-green: #0f7a5a;
+            --users-green-dark: #084f3b;
+            direction: rtl;
+            display: grid;
+            gap: 18px;
+        }
+
+        .users-hero,
+        .users-toolbar,
+        .users-card,
+        .users-form-panel {
+            border: 1px solid var(--users-line);
+            background: #fff;
+            box-shadow: 0 14px 36px rgba(18, 48, 39, .06);
+        }
+
+        .users-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 26px;
+            padding: 24px;
+            color: var(--users-ink);
+            background:
+                radial-gradient(circle at 12% 14%, rgba(15, 122, 90, .18), transparent 22rem),
+                linear-gradient(135deg, #ffffff 0%, #eef8f4 58%, #dfeee8 100%);
+        }
+
+        .users-hero h1 {
+            margin: 0 0 8px;
+            font-size: clamp(23px, 3vw, 34px);
+            font-weight: 900;
+        }
+
+        .users-hero p {
+            margin: 0;
+            max-width: 760px;
+            color: var(--users-muted);
+            line-height: 2;
+        }
+
+        .users-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 16px;
+            border-radius: 22px;
+        }
+
+        .users-search {
+            position: relative;
+            flex: 1 1 300px;
+            max-width: 520px;
+        }
+
+        .users-search i {
+            position: absolute;
+            top: 50%;
+            inset-inline-start: 14px;
+            color: var(--users-muted);
+            transform: translateY(-50%);
+        }
+
+        .users-search input,
+        .users-field input,
+        .users-field select {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 14px;
+            border: 1px solid var(--users-line);
+            border-radius: 15px;
+            color: var(--users-ink);
+            background: #fff;
+            outline: none;
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .users-search input {
+            padding-inline-start: 42px;
+        }
+
+        .users-search input:focus,
+        .users-field input:focus,
+        .users-field select:focus {
+            border-color: rgba(15, 122, 90, .45);
+            box-shadow: 0 0 0 4px rgba(15, 122, 90, .10);
+        }
+
+        .users-add-btn,
+        .users-submit-btn,
+        .users-cancel-btn,
+        .users-token-btn {
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 15px;
+            border: 0;
+            font-weight: 900;
+            text-decoration: none;
+        }
+
+        .users-add-btn,
+        .users-submit-btn {
+            color: #fff;
+            background: linear-gradient(135deg, var(--users-green), var(--users-green-dark));
+            box-shadow: 0 12px 26px rgba(15, 122, 90, .22);
+        }
+
+        .users-cancel-btn {
+            color: var(--users-ink);
+            background: #f4f8f6;
+            border: 1px solid var(--users-line);
+        }
+
+        .users-token-btn {
+            min-height: 38px;
+            color: var(--users-green-dark);
+            background: #eef8f4;
+            border: 1px solid #d5e9e0;
+            font-size: 13px;
+        }
+
+        .users-card {
+            overflow: hidden;
+            border-radius: 22px;
+        }
+
+        .users-table-wrap { overflow-x: auto; }
+
+        .users-table {
+            width: 100%;
+            min-width: 820px;
+            margin: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #edf3f0;
+            text-align: right;
+        }
+
+        .users-table th {
+            color: var(--users-muted);
+            background: #f8fbfa;
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .users-name { display: grid; gap: 3px; }
+        .users-name strong { color: var(--users-ink); font-weight: 900; }
+        .users-name span { color: var(--users-muted); font-size: 12px; direction: ltr; text-align: right; }
+        .users-mobile { direction: ltr; display: inline-block; color: var(--users-ink); font-weight: 700; }
+        .users-actions { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+
+        .users-action-btn {
+            width: 36px;
+            height: 36px;
+            display: inline-grid;
+            place-items: center;
+            border-radius: 12px;
+            border: 1px solid #d9e7e1;
+            color: var(--users-green-dark);
+            background: #fff;
+            transition: transform .2s ease, background .2s ease, border-color .2s ease;
+        }
+
+        .users-action-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(15, 122, 90, .35);
+            background: #f0faf6;
+        }
+
+        .users-action-btn.danger { color: #b42318; }
+        .users-action-btn.danger:hover { border-color: rgba(180, 35, 24, .28); background: #fff5f4; }
+
+        .users-empty,
+        .users-loading {
+            padding: 34px 18px;
+            color: var(--users-muted);
+            text-align: center;
+            line-height: 2;
+        }
+
+        .users-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 14px 16px;
+            color: var(--users-muted);
+            background: #fbfefd;
+        }
+
+        .users-pagination { display: inline-flex; align-items: center; gap: 6px; }
+
+        .users-page-btn {
+            min-width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            border: 1px solid var(--users-line);
+            color: var(--users-ink);
+            background: #fff;
+            font-weight: 800;
+        }
+
+        .users-page-btn:disabled { opacity: .45; cursor: not-allowed; }
+        .users-page-btn.active { color: #fff; background: var(--users-green); border-color: var(--users-green); }
+
+        .users-alert {
+            border-radius: 18px;
+            border: 1px solid #ffc9c9;
+            background: #fff5f5;
+            color: #a50000;
+            padding: 13px 15px;
+            line-height: 1.9;
+            font-weight: 800;
+        }
+
+        .users-form-panel {
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        .users-form-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 18px;
+            background: #f8fbfa;
+            border-bottom: 1px solid #edf3f0;
+        }
+
+        .users-form-head h2 {
+            margin: 0;
+            color: var(--users-ink);
+            font-size: 19px;
+            font-weight: 900;
+        }
+
+        .users-form {
+            display: grid;
+            gap: 18px;
+            padding: 18px;
+        }
+
+        .users-form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .users-field {
+            display: grid;
+            gap: 7px;
+        }
+
+        .users-field label,
+        .users-sites-title {
+            color: var(--users-ink);
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .users-sites {
+            display: grid;
+            gap: 8px;
+            padding: 13px;
+            border: 1px solid var(--users-line);
+            border-radius: 16px;
+            background: #fbfefd;
+        }
+
+        .users-site-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--users-ink);
+            font-weight: 700;
+        }
+
+        .users-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding-top: 4px;
+        }
+
+        .users-token-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .users-token-row input { flex: 1; }
+
+        .users-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(9, 20, 17, .42);
+        }
+
+        .users-modal {
+            width: min(460px, 100%);
+            border-radius: 22px;
+            background: #fff;
+            box-shadow: 0 22px 60px rgba(0, 0, 0, .25);
+            overflow: hidden;
+        }
+
+        .users-modal form {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+        }
+
+        .users-modal h3 {
+            margin: 0;
+            padding: 16px 18px;
+            color: var(--users-ink);
+            background: #f8fbfa;
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        @@media (max-width: 991.98px) {
+            .users-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @@media (max-width: 575.98px) {
+            .users-toolbar { align-items: stretch; flex-direction: column; }
+            .users-search { max-width: none; }
+            .users-add-btn { width: 100%; }
+            .users-form-grid { grid-template-columns: 1fr; }
+            .users-form-actions { flex-direction: column; }
+            .users-form-actions button { width: 100%; }
+        }
+    </style>
 }
 
+@section Body
+{
+    <div id="userManagerApp" class="users-page" v-cloak>
+        <div v-if="serverError" class="users-alert">{{ serverError }}</div>
 
+        <section class="users-hero">
+            <h1>مدیریت کاربران</h1>
+            <p>کاربران سیستم باسکول را مشاهده، ایجاد و ویرایش کنید؛ تغییر رمز و حذف دسترسی هم از همین صفحه انجام می‌شود.</p>
+        </section>
+
+        <section class="users-form-panel" v-if="form.visible">
+            <div class="users-form-head">
+                <h2>{{ form.mode === 'create' ? 'افزودن کاربر جدید' : 'ویرایش کاربر' }}</h2>
+                <button type="button" class="users-cancel-btn" v-on:click="closeForm">
+                    <i class="fa fa-times"></i>
+                    بستن فرم
+                </button>
+            </div>
+
+            <form class="users-form" method="post" :action="form.mode === 'create' ? urls.insert : urls.edit">
+                @Html.AntiForgeryToken()
+                <input v-if="form.mode === 'edit'" type="hidden" name="Id" :value="form.model.id" />
+
+                <div class="users-form-grid">
+                    <div class="users-field">
+                        <label>نام کاربری</label>
+                        <input name="UserName" v-model.trim="form.model.userName" required />
+                    </div>
+                    <div class="users-field">
+                        <label>نام</label>
+                        <input name="Name" v-model.trim="form.model.name" />
+                    </div>
+                    <div class="users-field">
+                        <label>نام خانوادگی</label>
+                        <input name="Family" v-model.trim="form.model.family" />
+                    </div>
+                    <div class="users-field">
+                        <label>شماره موبایل</label>
+                        <input name="Mobile" v-model.trim="form.model.mobile" maxlength="11" inputmode="numeric" />
+                    </div>
+
+                    <template v-if="form.mode === 'create'">
+                        <div class="users-field">
+                            <label>رمز عبور</label>
+                            <input name="Password" v-model="form.model.password" type="password" autocomplete="new-password" required />
+                        </div>
+                        <div class="users-field">
+                            <label>تکرار رمز عبور</label>
+                            <input name="RepeatePassword" v-model="form.model.repeatePassword" type="password" autocomplete="new-password" required />
+                        </div>
+                    </template>
+
+                    <div class="users-field">
+                        <label>نقش کاربر</label>
+                        <select name="Role" v-model="form.model.role" required>
+                            <option value="">انتخاب نقش</option>
+                            <option v-for="role in roleOptions" :key="role.value" :value="role.value">{{ role.label }}</option>
+                        </select>
+                    </div>
+
+                    <div class="users-field">
+                        <label>توکن همیار</label>
+                        <div class="users-token-row">
+                            <button type="button" class="users-token-btn" v-on:click="openTokenModal('hamyar')">دریافت</button>
+                            <input name="Token" v-model.trim="form.model.token" placeholder="توکن" />
+                        </div>
+                    </div>
+
+                    <div class="users-field" v-if="form.mode === 'edit'">
+                        <label>توکن ویندوز</label>
+                        <div class="users-token-row">
+                            <button type="button" class="users-token-btn" v-on:click="openTokenModal('windows')">دریافت</button>
+                            <input name="WindowsToken" v-model.trim="form.model.windowsToken" placeholder="توکن ویندوز" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="users-sites">
+                    <div class="users-sites-title">سایت‌های مجاز</div>
+                    <label class="users-site-option" v-for="site in sites" :key="site.id">
+                        <input type="checkbox" name="SelectedSiteIds" :value="site.id" v-model="form.model.selectedSiteIds" />
+                        <span>{{ site.name }}</span>
+                    </label>
+                    <span v-if="!sites.length">سایت فعالی برای انتخاب وجود ندارد.</span>
+                </div>
+
+                <div class="users-form-actions">
+                    <button type="submit" class="users-submit-btn">
+                        <i class="fa fa-save"></i>
+                        ذخیره
+                    </button>
+                    <button type="button" class="users-cancel-btn" v-on:click="closeForm">
+                        انصراف
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="users-toolbar" aria-label="ابزارهای مدیریت کاربران">
+            <div class="users-search">
+                <i class="fa fa-search"></i>
+                <input v-model.trim="search"
+                       type="search"
+                       autocomplete="off"
+                       placeholder="جستجو بر اساس نام کاربری، نام، نام خانوادگی یا موبایل" />
+            </div>
+
+            <button type="button" class="users-add-btn" v-on:click="openCreateForm">
+                <i class="fa fa-plus"></i>
+                <span>اضافه کردن کاربر جدید</span>
+            </button>
+        </section>
+
+        <section class="users-card">
+            <div v-if="loading" class="users-loading">در حال دریافت لیست کاربران...</div>
+
+            <template v-else>
+                <div class="users-table-wrap" v-if="pagedUsers.length">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>نام کاربری</th>
+                                <th>نام</th>
+                                <th>نام خانوادگی</th>
+                                <th>شماره موبایل</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="user in pagedUsers" :key="user.id">
+                                <td>
+                                    <div class="users-name">
+                                        <strong>{{ user.userName || '-' }}</strong>
+                                        <span>{{ user.id }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ user.name || '-' }}</td>
+                                <td>{{ user.family || '-' }}</td>
+                                <td><span class="users-mobile">{{ user.mobile || '-' }}</span></td>
+                                <td>
+                                    <div class="users-actions">
+                                        <button type="button" class="users-action-btn" title="تغییر رمز" v-on:click="goToResetPassword(user)">
+                                            <i class="fa fa-lock"></i>
+                                        </button>
+                                        <button type="button" class="users-action-btn" title="ویرایش" v-on:click="openEditForm(user)">
+                                            <i class="fa fa-pencil"></i>
+                                        </button>
+                                        <button type="button" class="users-action-btn danger" title="حذف" v-on:click="confirmDelete(user)">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div v-else class="users-empty">کاربری برای نمایش پیدا نشد.</div>
+
+                <footer class="users-footer">
+                    <span>نمایش {{ pageStart }} تا {{ pageEnd }} از {{ filteredUsers.length }} کاربر</span>
+                    <div class="users-pagination" v-if="totalPages > 1">
+                        <button type="button" class="users-page-btn" :disabled="page === 1" v-on:click="page--">&lt;</button>
+                        <button type="button"
+                                v-for="item in visiblePages"
+                                :key="item"
+                                class="users-page-btn"
+                                :class="{ active: item === page }"
+                                v-on:click="page = item">
+                            {{ item }}
+                        </button>
+                        <button type="button" class="users-page-btn" :disabled="page === totalPages" v-on:click="page++">&gt;</button>
+                    </div>
+                </footer>
+            </template>
+        </section>
+
+        <div class="users-modal-backdrop" v-if="tokenModal.visible" v-on:click.self="closeTokenModal">
+            <div class="users-modal">
+                <h3>{{ tokenModal.type === 'windows' ? 'دریافت توکن ویندوز' : 'دریافت توکن همیار' }}</h3>
+                <form v-on:submit.prevent="requestToken">
+                    <div class="users-field" v-if="tokenModal.type === 'hamyar'">
+                        <label>نام کاربری</label>
+                        <input v-model.trim="tokenModal.hamUsername" />
+                    </div>
+                    <div class="users-field">
+                        <label>رمز عبور</label>
+                        <input v-model="tokenModal.password" type="password" />
+                    </div>
+                    <div class="users-form-actions">
+                        <button type="submit" class="users-submit-btn">دریافت توکن</button>
+                        <button type="button" class="users-cancel-btn" v-on:click="closeTokenModal">بستن</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 }
 
-@section Body{
-	@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
-	{
-		<div class="alert alert-danger">@ViewBag.ErrorMessage</div>
-	}
-	<div class="row justify-content-center mt-4">
-		<div class="col-lg-12">
-			<div class="card shadow-sm border-primary">
-				<div class="card-header bg-primary text-white d-flex align-items-center">
-					<h4 class="mb-0">لیست کاربران</h4>
+@section Scripts
+{
+    <script src="~/apl/swat/sweetalert2.all.min.js"></script>
+    <script src="@Url.Content("~/lib/vue/vue.global.prod.js")"></script>
+    <script>
+        (() => {
+            const serverError = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(errorMessage));
+            const initialSites = @Html.Raw(activeSitesJson);
+            const roleOptions = @Html.Raw(roleOptionsJson);
 
+            const emptyForm = () => ({
+                id: '',
+                userName: '',
+                name: '',
+                family: '',
+                mobile: '',
+                password: '',
+                repeatePassword: '',
+                role: roleOptions.length ? roleOptions[0].value : '',
+                token: '',
+                windowsToken: '',
+                selectedSiteIds: []
+            });
 
-					<div class="card-tools">
-						<a asp-controller="UserManager" asp-action="Insert" class="btn btn-info btn-sm ml-auto">
-							<i class="fa fa-plus"></i> اضافه کردن کاربر جدید
-						</a>
-					</div>
-				</div>
-				<div class="card-body p-3">
-					<div class="table-responsive">
-						<table id="users_table1" class="table table-bordered table-hover dataTable dtr-inline w-100">
-							<thead class="thead-light">
-								<tr>
-									<th>کد</th>
-									<th>نام کاربری</th>
-									<th>نام</th>
-									<th>نام خانوادگی</th>
-									<th>شماره موبایل</th>
-									<th class="col-actions">عملیات</th>
-								</tr>
-							</thead>
-							<tbody>
-								<!-- داده‌ها اینجا پر می‌شوند -->
-							</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+            Vue.createApp({
+                data() {
+                    return {
+                        users: [],
+                        sites: initialSites,
+                        roleOptions,
+                        loading: true,
+                        search: '',
+                        page: 1,
+                        pageSize: 20,
+                        serverError,
+                        form: {
+                            visible: false,
+                            mode: 'create',
+                            model: emptyForm()
+                        },
+                        tokenModal: {
+                            visible: false,
+                            type: 'hamyar',
+                            hamUsername: '',
+                            password: ''
+                        },
+                        urls: {
+                            load: '@Url.Action("load_data_users", "UserManager")',
+                            insert: '@Url.Action("Insert", "UserManager")',
+                            edit: '@Url.Action("Edit", "UserManager")',
+                            getForEdit: '@Url.Action("GetUserForEdit", "UserManager")',
+                            resetPassword: '@Url.Action("ResetUserPassword", "UserManager")',
+                            deleteUser: '@Url.Action("DeleteUser", "UserManager")',
+                            hamyarToken: '@Url.Action("GetToken", "APIs")',
+                            windowsToken: '@Url.Action("GetToken", "WindowsAPIs")'
+                        }
+                    };
+                },
+                computed: {
+                    filteredUsers() {
+                        const term = this.search.toLowerCase();
+                        const source = Array.isArray(this.users) ? this.users : [];
+                        if (!term) return source;
 
+                        return source.filter(user => [
+                            user.userName,
+                            user.name,
+                            user.family,
+                            user.mobile
+                        ].some(value => String(value || '').toLowerCase().includes(term)));
+                    },
+                    totalPages() {
+                        return Math.max(1, Math.ceil(this.filteredUsers.length / this.pageSize));
+                    },
+                    pagedUsers() {
+                        const start = (this.page - 1) * this.pageSize;
+                        return this.filteredUsers.slice(start, start + this.pageSize);
+                    },
+                    pageStart() {
+                        return this.filteredUsers.length ? ((this.page - 1) * this.pageSize) + 1 : 0;
+                    },
+                    pageEnd() {
+                        return Math.min(this.page * this.pageSize, this.filteredUsers.length);
+                    },
+                    visiblePages() {
+                        const pages = [];
+                        const start = Math.max(1, this.page - 2);
+                        const end = Math.min(this.totalPages, this.page + 2);
+                        for (let item = start; item <= end; item++) pages.push(item);
+                        return pages;
+                    }
+                },
+                watch: {
+                    search() { this.page = 1; },
+                    filteredUsers() {
+                        if (this.page > this.totalPages) this.page = this.totalPages;
+                    }
+                },
+                mounted() {
+                    this.loadUsers();
+                },
+                methods: {
+                    async loadUsers() {
+                        this.loading = true;
+                        try {
+                            const response = await fetch(this.urls.load, { headers: { 'Accept': 'application/json' } });
+                            const result = await response.json();
+                            if (result.success === false) {
+                                this.serverError = result.message || 'دریافت کاربران با خطا مواجه شد.';
+                                this.users = [];
+                                return;
+                            }
+                            this.users = Array.isArray(result.data) ? result.data : [];
+                        } catch (error) {
+                            this.serverError = 'ارتباط با سرور برای دریافت کاربران برقرار نشد.';
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+                    openCreateForm() {
+                        this.form.mode = 'create';
+                        this.form.model = emptyForm();
+                        this.form.visible = true;
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    },
+                    async openEditForm(user) {
+                        this.serverError = '';
+                        try {
+                            const response = await fetch(`${this.urls.getForEdit}?id=${encodeURIComponent(user.id)}`, {
+                                headers: { 'Accept': 'application/json' }
+                            });
+                            const result = await response.json();
+                            if (!result.success) {
+                                this.serverError = result.message || 'دریافت اطلاعات کاربر با خطا مواجه شد.';
+                                return;
+                            }
+
+                            const item = result.user;
+                            this.sites = Array.isArray(result.sites) ? result.sites : this.sites;
+                            this.form.mode = 'edit';
+                            this.form.model = {
+                                id: item.id || item.Id || '',
+                                userName: item.userName || item.UserName || '',
+                                name: item.name || item.Name || '',
+                                family: item.family || item.Family || '',
+                                mobile: item.mobile || item.Mobile || '',
+                                password: '',
+                                repeatePassword: '',
+                                role: item.role || item.Role || '',
+                                token: item.token || item.Token || '',
+                                windowsToken: item.windowsToken || item.WindowsToken || '',
+                                selectedSiteIds: (item.selectedSiteIds || item.SelectedSiteIds || []).map(Number)
+                            };
+                            this.form.visible = true;
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        } catch (error) {
+                            this.serverError = 'دریافت اطلاعات کاربر با خطا مواجه شد.';
+                        }
+                    },
+                    closeForm() {
+                        this.form.visible = false;
+                    },
+                    goToResetPassword(user) {
+                        window.location.href = `${this.urls.resetPassword}?id=${encodeURIComponent(user.id)}`;
+                    },
+                    async confirmDelete(user) {
+                        const confirmed = await this.askDeleteConfirm(user);
+                        if (confirmed) await this.deleteUser(user);
+                    },
+                    async askDeleteConfirm(user) {
+                        if (window.Swal) {
+                            const result = await Swal.fire({
+                                title: 'تایید عملیات',
+                                text: `آیا از حذف کاربر ${user.userName || ''} اطمینان دارید؟`,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'تایید',
+                                cancelButtonText: 'انصراف',
+                                customClass: {
+                                    confirmButton: 'btn btn-danger',
+                                    cancelButton: 'btn btn-outline-danger mr-2'
+                                },
+                                buttonsStyling: false
+                            });
+                            return result.isConfirmed;
+                        }
+                        return window.confirm('آیا از حذف کاربر انتخاب شده اطمینان دارید؟');
+                    },
+                    async deleteUser(user) {
+                        try {
+                            const response = await fetch(this.urls.deleteUser, {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ id: user.id })
+                            });
+                            const result = await response.json();
+                            this.notify(result.result, result.msg || 'عملیات حذف انجام شد.');
+                            if (result.result) await this.loadUsers();
+                        } catch (error) {
+                            this.notify(false, 'حذف کاربر با خطا مواجه شد.');
+                        }
+                    },
+                    openTokenModal(type) {
+                        this.tokenModal = {
+                            visible: true,
+                            type,
+                            hamUsername: '',
+                            password: ''
+                        };
+                    },
+                    closeTokenModal() {
+                        this.tokenModal.visible = false;
+                    },
+                    async requestToken() {
+                        const isWindows = this.tokenModal.type === 'windows';
+                        const url = isWindows ? this.urls.windowsToken : this.urls.hamyarToken;
+                        const body = isWindows
+                            ? { WinPassword: this.tokenModal.password }
+                            : { HamUsername: this.tokenModal.hamUsername, HamPassword: this.tokenModal.password };
+
+                        try {
+                            const response = await fetch(url, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(body)
+                            });
+                            const result = await response.json();
+
+                            if (!result.success) {
+                                this.notify(false, result.message || 'دریافت توکن با خطا مواجه شد.');
+                                return;
+                            }
+
+                            if (isWindows) {
+                                this.form.model.windowsToken = result.token;
+                            } else {
+                                this.form.model.token = result.token;
+                            }
+
+                            this.closeTokenModal();
+                        } catch (error) {
+                            this.notify(false, 'درخواست دریافت توکن با خطا مواجه شد.');
+                        }
+                    },
+                    notify(success, message) {
+                        if (window.toastr) {
+                            const options = {
+                                closeButton: true,
+                                tapToDismiss: false,
+                                showMethod: 'slideDown',
+                                hideMethod: 'slideUp',
+                                progressBar: true,
+                                timeOut: 6000,
+                                rtl: true
+                            };
+                            success ? toastr.success(message, 'تایید', options) : toastr.error(message, 'خطا', options);
+                            return;
+                        }
+                        if (!success) this.serverError = message;
+                    }
+                }
+            }).mount('#userManagerApp');
+        })();
+    </script>
 }
-
-@section Scripts{
-	<link href="~/apl/swat/sweetalert2.min.css" rel="stylesheet" />
-	<script src="~/apl/swat/sweetalert2.all.min.js"></script>
-	<script>
-		var table;
-
-		// Base URLs from Razor
-		var editUrlBase = '@Url.Action("Edit", "UserManager")';
-		var resetPasswordUrlBase = '@Url.Action("ResetUserPassword", "UserManager")';
-		var accessUrlBase = '@Url.Action("Index", "UserManager")';
-		var deleteUserUrlBase = '@Url.Action("DeleteUser", "UserManager")';
-		var loadDataUrl = '@Url.Action("load_data_users", "UserManager")';
-
-		$(document).ready(function () {
-			load_data();
-		});
-
-		$('body').on('click', '._edit', function () {
-			var data = table.row($(this).parents('tr')).data();
-			window.location.href = editUrlBase + "?id=" + data.id;
-		});
-
-		$('body').on('click', '._change_pass', function () {
-			var data = table.row($(this).parents('tr')).data();
-			window.location.href = resetPasswordUrlBase + "?id=" + data.id;
-		});
-
-		$('body').on('click', '._access', function () {
-			var data = table.row($(this).parents('tr')).data();
-			window.location.href = accessUrlBase + "?id=" + data.id;
-		});
-
-		$('body #users_table1').on('click', '._delete', function () {
-			var data = table.row($(this).parents('tr')).data();
-
-			Swal.fire({
-				title: 'تایید عملیات',
-				text: 'آیا از حذف آیتم انتخاب شده اطمینان دارید ؟',
-				icon: "warning",
-				showCancelButton: true,
-				confirmButtonText: "تایید",
-				cancelButtonText: 'انصراف',
-				customClass: {
-					confirmButton: "btn btn-danger",
-					cancelButton: "btn btn-outline-danger ms-1"
-				},
-				buttonsStyling: false
-			}).then(function (t) {
-				if (t.isConfirmed) {
-					_delete(data.id);
-				}
-			});
-		});
-
-		function _delete(id) {
-			$.ajax({
-				url: deleteUserUrlBase + "?id=" + id,
-				datatype: 'json',
-				data: JSON.stringify(id),
-				type: 'POST',
-				contentType: 'application/json; charset=utf-8',
-				success: function (response) {
-					if (response.result) {
-						toastr.success(response.msg, "تایید", {
-							closeButton: true,
-							tapToDismiss: false,
-							showMethod: "slideDown",
-							hideMethod: "slideUp",
-							progressBar: true,
-							timeOut: 50000,
-							rtl: "rtl"
-						});
-					}
-					else {
-						toastr.error(response.msg, "خطا", {
-							closeButton: true,
-							tapToDismiss: false,
-							showMethod: "slideDown",
-							hideMethod: "slideUp",
-							progressBar: true,
-							timeOut: 50000,
-							rtl: "rtl"
-						});
-					}
-					table.ajax.reload();
-				},
-				error: function (jqXHR, textStatus, errorThrown) {
-					console.log('jqXHR:', jqXHR);
-					console.log('textStatus:', textStatus);
-					console.log('errorThrown:', errorThrown);
-				}
-			});
-			Reload_data();
-		}
-
-		function Reload_data() {
-			location.reload();
-		}
-
-		function load_data() {
-			table = $('#users_table1').DataTable({
-				ajax: {
-					url: loadDataUrl,
-					datatype: 'json',
-					type: 'GET',
-				},
-		columnDefs: [
-			{
-				searchable: true,
-				targets: -1,
-				data: "id",
-				defaultContent: `
-					<div class="btn-group btn-group-sm" role="group">
-						<button type="button" class="btn btn-outline-primary _change_pass" title="تغییر رمز">
-							<i class="fa fa-lock"></i>
-						</button>
-						<button type="button" class="btn btn-outline-primary _edit" title="ویرایش">
-							<i class="fa fa-pencil"></i>
-						</button>
-						<button type="button" class="btn btn-outline-primary _delete" title="حذف">
-							<i class="fa fa-trash"></i>
-						</button>
-					</div>
-				`
-			}
-		],
-
-				columns: [
-					{ "data": "id", "autoWidth": true, "visible": false },
-					{ "data": "userName", "autoWidth": true },
-					{ "data": "name", "autoWidth": true },
-					{ "data": "family", "autoWidth": true },
-					{ "data": "mobile", "autoWidth": true },
-					{ "data": null, "searchable": false, orderable: false  },
-				],
-				paging: true,
-				filter: true,
-				ordering: false,
-				bInfo: false,
-				order: [[1, "asc"]],
-				dom: '<"top"f>rtp<"bottom"B><"clear">',
-				pageLength: 30,
-				pagingType: "full_numbers",
-
-				language: {
-					searchPlaceholder: "...",
-					search: "جستجو",
-					paginate: {
-						previous: "<",
-						next: ">",
-						last: ">>",
-						first: "<<",
-					}
-				},
-				fnDrawCallback: function () {
-					$("input[type='search']").attr("id", "searchBox");
-					$('#searchBox').addClass("input").focus();
-				},
-				scrollX: true,
-			});
-		}
-	</script>
-}
-
-
-
-

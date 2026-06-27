@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 
 namespace WebUI.Controllers
@@ -29,7 +30,18 @@ namespace WebUI.Controllers
         public IActionResult Index(string id)
         {
 			ObjectFormListViewModel objectForm = usersService.GetUserFormAccessList(id);
+            var currentUser = usersService.GetById(OnGetUserId());
+            var codeMarkaz = usersService.GetCodMarkazById(OnGetUserId());
+            var currentUserRole = _userManager.GetRolesAsync(currentUser).GetAwaiter().GetResult().FirstOrDefault();
+            var activeSites = siteService.GetAllActiveAsync(codeMarkaz);
 
+            ViewBag.ActiveSitesJson = JsonSerializer.Serialize(activeSites.Select(site => new
+            {
+                id = site.ID,
+                name = site.name
+            }));
+            ViewBag.RoleOptionsJson = JsonSerializer.Serialize(GetRoleOptions(currentUserRole));
+            ViewBag.CurrentUserRole = currentUserRole;
 			return View(objectForm);
         }
 		[HttpPost]
@@ -80,11 +92,24 @@ namespace WebUI.Controllers
                 //var appname = "irisa";
 
                 var m = new AppUser();
+                var currentUser = usersService.GetById(OnGetUserId());
                 var codemarkaz = usersService.GetCodMarkazByURL(appname);
                 if (string.IsNullOrEmpty(codemarkaz))
                 {
+                    codemarkaz = currentUser?.CodMarkaz;
+                }
+                if (string.IsNullOrEmpty(codemarkaz))
+                {
+                    codemarkaz = usersService.GetCodMarkazById(OnGetUserId());
+                }
+                if (string.IsNullOrEmpty(codemarkaz))
+                {
+                    codemarkaz = "1";
+                }
+                if (string.IsNullOrEmpty(codemarkaz))
+                {
                     TempData["InvalidCodMrakaz"] = "ابتدا کد مرکز را تعریف کنید";
-                    return View(model);
+                    return RedirectToAction("Index", "UserManager");
                 }
                 if (await _userManager.FindByNameAsync(model.UserName) == null)
                 {
@@ -98,6 +123,10 @@ namespace WebUI.Controllers
                     m.LockoutEnabled = false;
                     m.Token = model.Token;
                     m.CodMarkaz = codemarkaz;
+                    m.Departments = currentUser?.Departments;
+                    m.SelectedSiteId = model.SelectedSiteIds.Any()
+                        ? model.SelectedSiteIds.First()
+                        : null;
                     //m.WindowsToken = model.WindowsToken;
                     m.UserSites = model.SelectedSiteIds.Select(siteId => new UserSite
                     {
@@ -123,7 +152,10 @@ namespace WebUI.Controllers
 			}
 			else
             {
-                return View(model);
+                TempData["InvalidCodMrakaz"] = string.Join(" - ", ModelState.Values
+                    .SelectMany(value => value.Errors)
+                    .Select(error => error.ErrorMessage));
+                return RedirectToAction("Index", "UserManager");
             }
         }
 
@@ -186,11 +218,17 @@ namespace WebUI.Controllers
                     }
                 }
             }
+            var existingUser = usersService.GetById(model.Id);
+            var currentUser = usersService.GetById(OnGetUserId());
+            model.CodeMarkaz = existingUser?.CodMarkaz
+                ?? currentUser?.CodMarkaz
+                ?? usersService.GetCodMarkazById(OnGetUserId())
+                ?? "1";
             usersService.UpdateUser(model);
             return RedirectToAction("Index", "UserManager");
         }
 
-        [HttpGet]
+		[HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
 			var usm = usersService.Get(id);
@@ -200,6 +238,43 @@ namespace WebUI.Controllers
             var user = await _userManager.FindByIdAsync(id);
             usm.Role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
             return View(usm);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetUserForEdit(string id)
+        {
+            var usm = usersService.Get(id);
+            if (usm == null)
+            {
+                return Json(new { success = false, message = "کاربر پیدا نشد." });
+            }
+
+            var codeMarkaz = usersService.GetCodMarkazById(OnGetUserId());
+            var activeSites = siteService.GetAllActiveAsync(codeMarkaz);
+            var user = await _userManager.FindByIdAsync(id);
+            var role = user == null ? string.Empty : (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+
+            return Json(new
+            {
+                success = true,
+                user = new
+                {
+                    usm.Id,
+                    usm.UserName,
+                    usm.Name,
+                    usm.Family,
+                    usm.Mobile,
+                    Role = role,
+                    usm.Token,
+                    usm.WindowsToken,
+                    usm.SelectedSiteIds
+                },
+                sites = activeSites.Select(site => new
+                {
+                    id = site.ID,
+                    name = site.name
+                })
+            });
         }
 		[Authorize(Roles = "Administrator,SuperAdmin, NONHAMYAADMIN")]
 		[HttpGet]
@@ -282,6 +357,31 @@ namespace WebUI.Controllers
             ViewBag.SiteName = await siteService.GetNameById(siteid);
 
             return PartialView("_UsersTablePartial", users);
+        }
+
+        private static IEnumerable<object> GetRoleOptions(string? role)
+        {
+            return role switch
+            {
+                "SuperAdmin" => new[]
+                {
+                    new { value = "Administrator", label = "مدیر سیستم همیار" },
+                    new { value = "User", label = "کاربر عادی همیار" },
+                    new { value = "NONHAMYAADMIN", label = "مدیر سیستم" },
+                    new { value = "NONHAMYARUSER", label = "کاربر عادی" }
+                },
+                "Administrator" => new[]
+                {
+                    new { value = "Administrator", label = "مدیر سیستم همیار" },
+                    new { value = "User", label = "کاربر عادی همیار" }
+                },
+                "NonHamyarAdmin" => new[]
+                {
+                    new { value = "NONHAMYAADMIN", label = "مدیر سیستم" },
+                    new { value = "NONHAMYARUSER", label = "کاربر عادی" }
+                },
+                _ => Array.Empty<object>()
+            };
         }
     }
 }

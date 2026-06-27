@@ -1,12 +1,25 @@
 @{
     ViewData["Title"] = "داشبورد سیستم باسکول";
     Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+
+    var tokenError = TempData["TokenError"]?.ToString() ?? string.Empty;
+    var nullSelectedSite = TempData["NullSelectedSite"]?.ToString() ?? string.Empty;
 }
 
 @section Style
 {
     <style>
+        [v-cloak] {
+            display: none;
+        }
+
         .home-dashboard {
+            --home-ink: #142d25;
+            --home-muted: #647870;
+            --home-line: #dce9e3;
+            --home-green: #0f7a5a;
+            --home-green-dark: #084f3b;
+            --home-cream: #fff8ed;
             direction: rtl;
             display: grid;
             gap: 22px;
@@ -15,138 +28,238 @@
         .home-hero {
             position: relative;
             overflow: hidden;
-            border-radius: 24px;
-            padding: 28px;
-            color: #123027;
+            border-radius: 28px;
+            padding: clamp(22px, 4vw, 36px);
+            color: var(--home-ink);
             background:
-                radial-gradient(circle at 12% 12%, rgba(15, 122, 90, .18), transparent 28rem),
+                radial-gradient(circle at 8% 18%, rgba(15, 122, 90, .20), transparent 25rem),
+                radial-gradient(circle at 86% 8%, rgba(240, 178, 65, .22), transparent 18rem),
                 linear-gradient(135deg, #ffffff 0%, #eef8f4 54%, #dceee7 100%);
-            border: 1px solid #d9e8e2;
+            border: 1px solid var(--home-line);
             box-shadow: 0 18px 50px rgba(18, 48, 39, .08);
         }
 
-        .home-hero h1 {
-            margin: 0 0 10px;
-            font-size: clamp(24px, 3vw, 34px);
+        .home-hero::after {
+            content: "";
+            position: absolute;
+            inset-inline-start: -80px;
+            bottom: -100px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            border: 34px solid rgba(15, 122, 90, .08);
+        }
+
+        .home-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            color: var(--home-green-dark);
+            background: rgba(15, 122, 90, .10);
             font-weight: 800;
+            font-size: 13px;
+        }
+
+        .home-hero h1 {
+            position: relative;
+            z-index: 1;
+            margin: 0 0 10px;
+            font-size: clamp(25px, 3.2vw, 38px);
+            font-weight: 900;
+            letter-spacing: -.4px;
         }
 
         .home-hero p {
-            max-width: 760px;
+            position: relative;
+            z-index: 1;
+            max-width: 820px;
             margin: 0;
-            color: #5c7069;
+            color: var(--home-muted);
             line-height: 2;
             font-size: 15px;
         }
 
+        .home-alerts {
+            display: grid;
+            gap: 10px;
+        }
+
+        .home-alert {
+            border-radius: 18px;
+            border: 1px solid #ffd7a6;
+            background: var(--home-cream);
+            color: #8a4b00;
+            padding: 14px 16px;
+            line-height: 1.9;
+            font-weight: 800;
+        }
+
+        .home-section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 4px 0 -4px;
+        }
+
+        .home-section-title h2 {
+            margin: 0;
+            color: var(--home-ink);
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .home-section-title span {
+            color: var(--home-muted);
+            font-size: 13px;
+        }
+
         .home-actions {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
             gap: 16px;
         }
 
         .home-action-card {
-            min-height: 132px;
+            position: relative;
+            min-height: 156px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            border-radius: 20px;
+            overflow: hidden;
+            border-radius: 22px;
             padding: 20px;
             background: #fff;
             border: 1px solid #e2ebe7;
-            color: #18352c;
+            color: var(--home-ink);
             text-decoration: none;
             box-shadow: 0 14px 34px rgba(18, 48, 39, .06);
             transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
         }
 
+        .home-action-card::before {
+            content: "";
+            position: absolute;
+            inset-inline-start: -45px;
+            top: -45px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--card-glow, rgba(15, 122, 90, .08));
+            transition: transform .2s ease;
+        }
+
         .home-action-card:hover {
-            color: #0f7a5a;
+            color: var(--home-green);
             text-decoration: none;
-            transform: translateY(-3px);
+            transform: translateY(-4px);
             border-color: rgba(15, 122, 90, .35);
             box-shadow: 0 20px 42px rgba(18, 48, 39, .10);
         }
 
-        .home-action-card i {
-            width: 42px;
-            height: 42px;
+        .home-action-card:hover::before {
+            transform: scale(1.2);
+        }
+
+        .home-action-icon {
+            position: relative;
+            z-index: 1;
+            width: 46px;
+            height: 46px;
             display: grid;
             place-items: center;
-            border-radius: 14px;
+            border-radius: 16px;
             color: #fff;
-            background: linear-gradient(135deg, #0f7a5a, #095d44);
-            font-size: 18px;
+            background: var(--card-gradient, linear-gradient(135deg, #0f7a5a, #095d44));
+            font-size: 19px;
         }
 
         .home-action-card strong {
+            position: relative;
+            z-index: 1;
             display: block;
             margin-top: 18px;
+            color: var(--home-ink);
             font-size: 17px;
+            font-weight: 900;
         }
 
         .home-action-card span {
-            color: #6a7b75;
+            position: relative;
+            z-index: 1;
+            color: var(--home-muted);
             line-height: 1.9;
             font-size: 13px;
         }
 
-        .home-alert {
-            border-radius: 16px;
-            border: 1px solid #ffd7a6;
-            background: #fff8ed;
-            color: #8a4b00;
-            padding: 14px 16px;
-            line-height: 1.9;
-            font-weight: 700;
+        .home-action-footer {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 18px;
+            color: var(--home-green-dark);
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        @@media (max-width: 575.98px) {
+            .home-section-title {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .home-action-card {
+                min-height: 142px;
+            }
         }
     </style>
 }
 
 @section Body
 {
-    <div class="home-dashboard">
-        @if (TempData["TokenError"] != null)
-        {
-            <div class="home-alert">@TempData["TokenError"]</div>
-        }
-
-        @if (TempData["NullSelectedSite"] != null)
-        {
-            <div class="home-alert">@TempData["NullSelectedSite"]</div>
-        }
-
-        <section class="home-hero">
-            <h1>داشبورد سیستم باسکول</h1>
-            <p>
-                از این بخش می‌توانید عملیات اصلی باسکول، ثبت برگه، مشاهده لیست برگه‌ها،
-                تنظیمات پایه و گزارش‌های سیستم را مدیریت کنید.
-            </p>
+    <div id="homeDashboardApp"
+         class="home-dashboard"
+         v-cloak
+         data-token-error="@tokenError"
+         data-null-selected-site="@nullSelectedSite">
+        <section v-if="alerts.length" class="home-alerts" aria-label="پیام‌های سیستم">
+            <div v-for="alert in alerts" :key="alert" class="home-alert">{{ alert }}</div>
         </section>
 
+        <section class="home-hero">
+            <div class="home-eyebrow">
+                <i class="fa fa-weight-hanging"></i>
+                <span>مرکز فرمان عملیات باسکول</span>
+            </div>
+            <h1>{{ hero.title }}</h1>
+            <p>{{ hero.description }}</p>
+        </section>
+
+        <div class="home-section-title">
+            <h2>دسترسی سریع</h2>
+            <span>مسیرهای پرتکرار سیستم باسکول</span>
+        </div>
+
         <section class="home-actions" aria-label="دسترسی سریع">
-            <a class="home-action-card" asp-controller="BargeBaskoul" asp-action="BargeAnbar">
-                <i class="fa fa-plus"></i>
-                <strong>ثبت برگه باسکول</strong>
-                <span>شروع سریع فرآیند ثبت وزن و اطلاعات برگه باسکول.</span>
-            </a>
-
-            <a class="home-action-card" asp-controller="BargeBaskoul" asp-action="ListBargeAnbar">
-                <i class="fa fa-list"></i>
-                <strong>لیست برگه‌ها</strong>
-                <span>جستجو، مشاهده و پیگیری برگه‌های ثبت‌شده.</span>
-            </a>
-
-            <a class="home-action-card" >
-                <i class="fa fa-balance-scale"></i>
-                <strong>مدیریت باسکول‌ها</strong>
-                <span>تعریف و مدیریت باسکول‌ها و محل‌های فعال.</span>
-            </a>
-
-            <a class="home-action-card" >
-                <i class="fa fa-print"></i>
-                <strong>گزارش‌ها و چاپ</strong>
-                <span>دسترسی به گزارش‌ها و تنظیمات چاپ برگه باسکول.</span>
+            <a v-for="action in actions"
+               :key="action.title"
+               class="home-action-card"
+               :href="action.href"
+               :style="action.style">
+                <i class="home-action-icon" :class="action.icon"></i>
+                <div>
+                    <strong>{{ action.title }}</strong>
+                    <span>{{ action.description }}</span>
+                </div>
+                <div class="home-action-footer">
+                    <span>{{ action.badge }}</span>
+                    <i class="fa fa-arrow-left"></i>
+                </div>
             </a>
         </section>
     </div>
@@ -154,4 +267,75 @@
 
 @section Scripts
 {
+    <script src="@Url.Content("~/lib/vue/vue.global.prod.js")"></script>
+    <script>
+        (() => {
+            const root = document.getElementById('homeDashboardApp');
+
+            Vue.createApp({
+                data() {
+                    return {
+                        hero: {
+                            title: 'داشبورد سیستم باسکول',
+                            description: 'از این بخش می‌توانید عملیات اصلی باسکول، ثبت برگه، مشاهده لیست برگه‌ها، تنظیمات پایه و گزارش‌های سیستم را مدیریت کنید.'
+                        },
+                        actions: [
+                            {
+                                title: 'ثبت برگه باسکول',
+                                description: 'شروع سریع فرآیند ثبت وزن، خودرو، راننده و اطلاعات برگه باسکول.',
+                                href: '/BargeBaskoul/BargeAnbar',
+                                icon: 'fa fa-plus',
+                                badge: 'عملیات روزانه',
+                                style: {
+                                    '--card-gradient': 'linear-gradient(135deg, #0f7a5a, #095d44)',
+                                    '--card-glow': 'rgba(15, 122, 90, .10)'
+                                }
+                            },
+                            {
+                                title: 'لیست برگه‌ها',
+                                description: 'جستجو، مشاهده، پیگیری و ویرایش برگه‌های باسکول ثبت شده.',
+                                href: '/BargeBaskoul/ListBargeAnbar',
+                                icon: 'fa fa-list',
+                                badge: 'پیگیری برگه‌ها',
+                                style: {
+                                    '--card-gradient': 'linear-gradient(135deg, #2d6cdf, #174ea6)',
+                                    '--card-glow': 'rgba(45, 108, 223, .10)'
+                                }
+                            },
+                            {
+                                title: 'مدیریت کفه‌های باسکول',
+                                description: 'تعریف، ویرایش و کنترل کفه‌های باسکول ورودی و خروجی.',
+                                href: '/BaskoulList/BaskoulList',
+                                icon: 'fa fa-balance-scale',
+                                badge: 'تنظیمات باسکول',
+                                style: {
+                                    '--card-gradient': 'linear-gradient(135deg, #d18419, #9b5b05)',
+                                    '--card-glow': 'rgba(209, 132, 25, .12)'
+                                }
+                            },
+                            {
+                                title: 'گزارش‌ها و چاپ',
+                                description: 'دسترسی به تنظیمات چاپ و گزارش‌های برگه باسکول.',
+                                href: '/Reports/ReportSetting',
+                                icon: 'fa fa-print',
+                                badge: 'چاپ و گزارش',
+                                style: {
+                                    '--card-gradient': 'linear-gradient(135deg, #263238, #111827)',
+                                    '--card-glow': 'rgba(38, 50, 56, .10)'
+                                }
+                            }
+                        ]
+                    };
+                },
+                computed: {
+                    alerts() {
+                        return [
+                            root.dataset.tokenError,
+                            root.dataset.nullSelectedSite
+                        ].filter(message => message && message.trim().length);
+                    }
+                }
+            }).mount(root);
+        })();
+    </script>
 }
