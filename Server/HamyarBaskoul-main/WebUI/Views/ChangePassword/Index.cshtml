@@ -1,0 +1,191 @@
+@{
+    ViewData["Title"] = "تغییر پسورد";
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+}
+
+@section Style {
+    <style>
+        [v-cloak] { display: none; }
+
+        .change-password-page {
+            direction: rtl;
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 18px 0;
+        }
+
+        .change-password-panel {
+            background: #fff;
+            border: 1px solid #dce6e1;
+            border-radius: 8px;
+            box-shadow: 0 12px 28px rgba(24, 45, 38, .08);
+            padding: 22px;
+        }
+
+        .change-password-panel h1 {
+            margin: 0 0 18px;
+            font-size: 22px;
+            font-weight: 800;
+            color: #172d25;
+        }
+
+        .password-field {
+            display: grid;
+            gap: 7px;
+            margin-bottom: 14px;
+        }
+
+        .password-field label {
+            margin: 0;
+            font-weight: 700;
+            color: #2d4039;
+        }
+
+        .password-field input {
+            width: 100%;
+            border: 1px solid #cfdcd6;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        .password-message {
+            margin: 14px 0 0;
+            padding: 10px 12px;
+            border-radius: 6px;
+            line-height: 1.8;
+        }
+
+        .password-message.success {
+            color: #0b5f42;
+            background: #e7f6ef;
+            border: 1px solid #bfe4d2;
+        }
+
+        .password-message.error {
+            color: #9b1c1c;
+            background: #fff0f0;
+            border: 1px solid #f2c1c1;
+        }
+
+        .password-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 18px;
+        }
+
+        .password-actions button {
+            min-width: 130px;
+        }
+    </style>
+}
+
+@section Body {
+<div id="changePasswordApp" class="change-password-page" v-cloak>
+    <div class="change-password-panel">
+        <h1>تغییر پسورد</h1>
+
+        <form v-on:submit.prevent="save">
+            <div class="password-field">
+                <label for="currentPassword">پسورد فعلی</label>
+                <input id="currentPassword" v-model.trim="form.currentPassword" type="password" autocomplete="current-password" />
+            </div>
+
+            <div class="password-field">
+                <label for="newPassword">پسورد جدید</label>
+                <input id="newPassword" v-model.trim="form.newPassword" type="password" autocomplete="new-password" />
+            </div>
+
+            <div class="password-field">
+                <label for="repeatPassword">تکرار پسورد جدید</label>
+                <input id="repeatPassword" v-model.trim="form.repeatPassword" type="password" autocomplete="new-password" />
+            </div>
+
+            <div class="password-actions">
+                <button type="submit" class="btn btn-success" :disabled="isSaving">
+                    <i class="fa fa-save"></i>
+                    {{ isSaving ? 'در حال ذخیره...' : 'ذخیره' }}
+                </button>
+            </div>
+
+            <div v-if="message" class="password-message" :class="messageType">
+                {{ message }}
+            </div>
+        </form>
+    </div>
+</div>
+
+}
+
+@section Scripts {
+    <script src="~/lib/vue/vue.global.prod.js"></script>
+    <script>
+        Vue.createApp({
+            data() {
+                return {
+                    saveUrl: '@Url.Action("Save", "ChangePassword")',
+                    isSaving: false,
+                    message: '',
+                    messageType: 'success',
+                    form: {
+                        currentPassword: '',
+                        newPassword: '',
+                        repeatPassword: ''
+                    }
+                };
+            },
+            methods: {
+                setMessage(type, text) {
+                    this.messageType = type;
+                    this.message = text;
+                },
+                validate() {
+                    if (!this.form.currentPassword || !this.form.newPassword || !this.form.repeatPassword) {
+                        this.setMessage('error', 'همه فیلدها را کامل کنید.');
+                        return false;
+                    }
+
+                    if (this.form.newPassword !== this.form.repeatPassword) {
+                        this.setMessage('error', 'تکرار پسورد با پسورد جدید برابر نیست.');
+                        return false;
+                    }
+
+                    return true;
+                },
+                async save() {
+                    if (!this.validate()) {
+                        return;
+                    }
+
+                    this.isSaving = true;
+                    this.message = '';
+
+                    try {
+                        const response = await fetch(this.saveUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify(this.form)
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            this.form.currentPassword = '';
+                            this.form.newPassword = '';
+                            this.form.repeatPassword = '';
+                            this.setMessage('success', result.message || 'پسورد با موفقیت تغییر کرد.');
+                        } else {
+                            this.setMessage('error', result.message || 'تغییر پسورد انجام نشد.');
+                        }
+                    } catch (error) {
+                        this.setMessage('error', 'خطا در ارتباط با سرور.');
+                    } finally {
+                        this.isSaving = false;
+                    }
+                }
+            }
+        }).mount('#changePasswordApp');
+    </script>
+}

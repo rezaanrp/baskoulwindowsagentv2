@@ -12,6 +12,7 @@ namespace Application.Interfaces
         Task AddSite(WeighbridgeSiteViewModel siteViewModel);
         Task UpdateSite(WeighbridgeSiteViewModel siteViewModel);
         List<WeighbridgeSiteViewModel> GetAllAsync(string codemarkaz);
+        List<WeighbridgeSiteViewModel> GetAllActiveAsync();
         List<WeighbridgeSiteViewModel> GetAllActiveAsync(string codemarkaz);
         Task<WeighbridgeSiteViewModel> GetByIdAsync(int id);
         Task<string> GetNameById(int id);

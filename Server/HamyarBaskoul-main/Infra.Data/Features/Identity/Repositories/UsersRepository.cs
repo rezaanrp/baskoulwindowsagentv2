@@ -114,6 +114,9 @@ namespace Infra.Data.Repository
 			if (string.IsNullOrWhiteSpace(roleName1) && string.IsNullOrWhiteSpace(roleName2))
 			{
 				return _Context.Users
+												.Include(x => x.SiteAccesses)
+												.ThenInclude(x => x.Site)
+												.ThenInclude(x => x.Company)
 												.Where(x => x.IsDelete == false)
 												.ToList();
 			}
@@ -141,6 +144,9 @@ namespace Infra.Data.Repository
 
 			// Get users based on user IDs
 			var usersInRoles = _Context.Users
+														.Include(x => x.SiteAccesses)
+														.ThenInclude(x => x.Site)
+														.ThenInclude(x => x.Company)
 														.Where(u => userIds.Contains(u.Id) && !u.IsDelete)
 														.OrderBy(x => x.Family)
 														.ToList();
@@ -149,7 +155,9 @@ namespace Infra.Data.Repository
 		}
 		public AppUser? GetById(string Id)
 		{
-			var category = _Context.Users.Include(u => u.WeighbridgeSiteUsers).FirstOrDefault(x => x.Id == Id);
+			var category = _Context.Users
+				.Include(x => x.SiteAccesses)
+				.FirstOrDefault(x => x.Id == Id);
 			return category;
 		}
 	 	public async Task<AppUser?> GetByIdAsync(string Id)
@@ -159,8 +167,7 @@ namespace Infra.Data.Repository
         public void Update(UsersListDomainViewModel category)
         {
             var model = _Context.Users
-    .Include(u => u.WeighbridgeSiteUsers) // Needed to access and modify WeighbridgeSiteUsers
-    .FirstOrDefault(u => u.Id == category.Id);
+                .FirstOrDefault(u => u.Id == category.Id);
 
 
             if (model != null)
@@ -169,21 +176,10 @@ namespace Infra.Data.Repository
                 model.Family = category.Family;
                 model.Mobile = category.Mobile;
                 model.UserName = category.UserName;
-				model.CodMarkaz = category.Company;
+                model.CodMarkaz = category.Company;
 				model.Token = category.Token;
 				model.WindowsToken = category.WindowsToken;
-                var toRemove = model.WeighbridgeSiteUsers.ToList();
-                _Context.WeighbridgeSiteUsers.RemoveRange(toRemove);
-
-                foreach (var site in category.SelectedSiteIds)
-                {
-                    model.WeighbridgeSiteUsers.Add(new WeighbridgeSiteUser
-                    {
-                        SiteId = site,
-                        UserId = category.Id,
-                        AssignedAt = DateTime.Now
-                    });
-                }
+                SyncSiteAccesses(model, category.SelectedSiteIds);
                 _Context.SaveChanges();
             }
         }
@@ -291,21 +287,20 @@ namespace Infra.Data.Repository
 
         public List<WeighbridgeSiteDomainViewModel> GetAllActiveSites(string userId)
         {
-            var user = _Context.Users
-                .Include(u => u.WeighbridgeSiteUsers)
-                    .ThenInclude(us => us.WeighbridgeSite)
-                .FirstOrDefault(u => u.Id == userId);
+            var user = _Context.Users.FirstOrDefault(u => u.Id == userId);
 
             if (user == null)
                 return new List<WeighbridgeSiteDomainViewModel>();
 
-            var sites = user.WeighbridgeSiteUsers
-                .Where(us => us.WeighbridgeSite.isActive)
-                .Select(us => new WeighbridgeSite
-                {
-                    ID = us.WeighbridgeSite.ID,
-                    name = us.WeighbridgeSite.name
-                })
+            var siteIds = _Context.UserSiteAccesses
+                .Where(access => access.UserId == userId)
+                .Select(access => access.SiteId)
+                .ToList();
+
+            var sites = _Context.WeighbridgeSites
+                .Include(site => site.Company)
+                .Where(site => siteIds.Contains(site.ID) && site.isActive)
+                .OrderBy(site => site.name)
                 .ToList();
 			var model = _mapper.Map<List<WeighbridgeSiteDomainViewModel>>(sites);
 			return model;
@@ -322,21 +317,13 @@ namespace Infra.Data.Repository
             if (!siteExists)
                 return false;
 
+            var hasAccess = await _Context.UserSiteAccesses
+                .AnyAsync(access => access.UserId == userId && access.SiteId == siteId);
+            if (!hasAccess)
+                return false;
+
             // Set selected site
             user.SelectedSiteId = siteId;
-
-            // Check if user already has access to this site
-            var alreadyLinked = await _Context.WeighbridgeSiteUsers
-                .AnyAsync(us => us.UserId == userId && us.SiteId == siteId);
-
-            if (!alreadyLinked)
-            {
-                _Context.WeighbridgeSiteUsers.Add(new WeighbridgeSiteUser
-                {
-                    UserId = userId,
-                    SiteId = siteId
-                });
-            }
 
             await _Context.SaveChangesAsync();
             return true;
@@ -346,10 +333,10 @@ namespace Infra.Data.Repository
         {
             _Context.Database.SetCommandTimeout(180); // 180 seconds
             var list = await _Context.Users
-    .Include(u => u.WeighbridgeSiteUsers)
-    .Where(u => u.CodMarkaz == codemarkaz &&
-                u.WeighbridgeSiteUsers.Any(us => us.SiteId == siteid))
-    .ToListAsync();
+                .Where(u => u.CodMarkaz == codemarkaz &&
+                    !u.IsDelete &&
+                    u.SiteAccesses.Any(access => access.SiteId == siteid))
+                .ToListAsync();
 			var users = new List<UsersListDomainViewModel>();
             foreach (var item in list)
             {
@@ -387,6 +374,51 @@ namespace Infra.Data.Repository
             user.WindowsToken = token;
 
             await _userManager.UpdateAsync(user);
+        }
+
+        private void SyncSiteAccesses(AppUser user, IEnumerable<int> selectedSiteIds)
+        {
+            var selectedIds = selectedSiteIds
+                .Where(siteId => siteId > 0)
+                .Distinct()
+                .ToList();
+
+            var existingAccesses = _Context.UserSiteAccesses
+                .Where(access => access.UserId == user.Id)
+                .ToList();
+
+            var removedAccesses = existingAccesses
+                .Where(access => !selectedIds.Contains(access.SiteId))
+                .ToList();
+
+            if (removedAccesses.Any())
+            {
+                _Context.UserSiteAccesses.RemoveRange(removedAccesses);
+            }
+
+            var existingSiteIds = existingAccesses.Select(access => access.SiteId).ToHashSet();
+            foreach (var siteId in selectedIds.Where(siteId => !existingSiteIds.Contains(siteId)))
+            {
+                _Context.UserSiteAccesses.Add(new UserSiteAccess
+                {
+                    UserId = user.Id,
+                    SiteId = siteId,
+                    AssignedAt = DateTime.Now
+                });
+            }
+
+            if (user.SelectedSiteId.HasValue && !selectedIds.Contains(user.SelectedSiteId.Value))
+            {
+                user.SelectedSiteId = selectedIds.FirstOrDefault();
+                if (user.SelectedSiteId == 0)
+                {
+                    user.SelectedSiteId = null;
+                }
+            }
+            else if (!user.SelectedSiteId.HasValue && selectedIds.Any())
+            {
+                user.SelectedSiteId = selectedIds.First();
+            }
         }
     }
 }

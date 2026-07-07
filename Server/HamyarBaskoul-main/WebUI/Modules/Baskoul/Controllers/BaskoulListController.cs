@@ -38,8 +38,7 @@ namespace WebUI.Controllers
             var model = new WeighbridgeViewModel
             {
                 CodMarkaz = _userservice.GetCodMarkazById(OnGetUserId()),
-                UserID= user.Id,
-                WeighbridgeSite = siteid
+                WeighbridgeSiteId = siteid
             };
             return PartialView("_AddBaskoulPartial", model);
         }

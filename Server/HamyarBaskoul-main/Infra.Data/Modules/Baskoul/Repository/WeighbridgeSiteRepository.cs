@@ -28,28 +28,56 @@ namespace Infra.Data.Repository
         public async Task AddAsync(WeighbridgeSiteDomainViewModel siteDomainView)
         {
             var model = _mapper.Map<WeighbridgeSite>(siteDomainView);
+            model.CompanyId = await GetCompanyIdAsync(siteDomainView.Company);
             await _context.AddAsync(model);
             await _context.SaveChangesAsync();
         }
 
         public List<WeighbridgeSiteDomainViewModel> GetAllAsync(string codemarkaz)
         {
-            var models = _context.WeighbridgeSites.Where(b => b.Company == codemarkaz).ToList();
+            var models = _context.WeighbridgeSites
+                .Include(b => b.Company)
+                .Where(b => b.Company.CodMarkaz == codemarkaz)
+                .ToList();
             var result = _mapper.Map<List<WeighbridgeSiteDomainViewModel>>(models);
+            result.ForEach(x => x.Company = codemarkaz);
             return result;
         }
 
         public List<WeighbridgeSiteDomainViewModel> GetAllActiveAsync(string codemarkaz)
         {
-            var models = _context.WeighbridgeSites.Where(b => (b.Company == codemarkaz) && (b.isActive)).ToList();
+            var models = _context.WeighbridgeSites
+                .Include(b => b.Company)
+                .Where(b => b.Company.CodMarkaz == codemarkaz && b.isActive)
+                .ToList();
             var result = _mapper.Map<List<WeighbridgeSiteDomainViewModel>>(models);
+            result.ForEach(x => x.Company = codemarkaz);
+            return result;
+        }
+
+        public List<WeighbridgeSiteDomainViewModel> GetAllActiveAsync()
+        {
+            var models = _context.WeighbridgeSites
+                .Include(b => b.Company)
+                .Where(b => b.isActive)
+                .OrderBy(b => b.Company.CodMarkaz)
+                .ThenBy(b => b.name)
+                .ToList();
+            var result = _mapper.Map<List<WeighbridgeSiteDomainViewModel>>(models);
+            result.ForEach(x => x.Company = x.Company ?? models.FirstOrDefault(m => m.ID == x.ID)?.Company?.CodMarkaz);
             return result;
         }
 
         public async Task<WeighbridgeSiteDomainViewModel> GetByIdAsync(int id)
         {
-            var model = await _context.WeighbridgeSites.FirstOrDefaultAsync(b => b.ID == id);
+            var model = await _context.WeighbridgeSites
+                .Include(b => b.Company)
+                .FirstOrDefaultAsync(b => b.ID == id);
             var result = _mapper.Map<WeighbridgeSiteDomainViewModel>(model);
+            if (result != null)
+            {
+                result.Company = model?.Company?.CodMarkaz;
+            }
             return result;
         }
 
@@ -58,7 +86,9 @@ namespace Infra.Data.Repository
             var site = await _context.WeighbridgeSites.FirstOrDefaultAsync(b => b.ID == siteDomainView.ID);
             if (site == null) return;
 
-            _mapper.Map(siteDomainView, site); // map onto the existing tracked entity
+            site.name = siteDomainView.name;
+            site.isActive = siteDomainView.isActive;
+            site.CompanyId = await GetCompanyIdAsync(siteDomainView.Company);
 
             await _context.SaveChangesAsync();
         }
@@ -72,7 +102,9 @@ namespace Infra.Data.Repository
 
         public async Task<int> GetIdByNameAsync(string name, string codemarkaz)
         {
-            var site = await _context.WeighbridgeSites.FirstOrDefaultAsync(s => s.Company == codemarkaz && s.name == name);
+            var site = await _context.WeighbridgeSites
+                .Include(s => s.Company)
+                .FirstOrDefaultAsync(s => s.Company.CodMarkaz == codemarkaz && s.name == name);
             if (site == null)
                 return 0;
             else return site.ID;
@@ -84,6 +116,16 @@ namespace Infra.Data.Repository
             if (site == null)
                 return false;
             else return site.isActive;
+        }
+
+        private async Task<int> GetCompanyIdAsync(string? codemarkaz)
+        {
+            var companyId = await _context.Companies
+                .Where(x => x.CodMarkaz == codemarkaz)
+                .Select(x => x.Id)
+                .FirstOrDefaultAsync();
+
+            return companyId;
         }
     }
 }

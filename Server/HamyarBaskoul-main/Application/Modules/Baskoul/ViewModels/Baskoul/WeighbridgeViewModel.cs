@@ -14,10 +14,8 @@ namespace Application.ViewModels.Weighbridge
         [Required]
         public string ScaleCode { get; set; }
         public string? Weight { get; set; }
-        // Foreign Key
-        public string UserID { get; set; }
         public string? CodMarkaz { get; set; }
-        public int? WeighbridgeSite { get; set; }
+        public int WeighbridgeSiteId { get; set; }
         /// <summary>
         ///  1: incoming,
         ///  2: outgoing

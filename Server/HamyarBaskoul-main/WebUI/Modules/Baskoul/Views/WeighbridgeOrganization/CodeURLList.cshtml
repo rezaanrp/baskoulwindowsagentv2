@@ -309,15 +309,6 @@
                                         <option value="2">خروجی</option>
                                     </select>
                                 </div>
-                                <div class="col-md-12 form-group">
-                                    <label>کاربر باسکول</label>
-                                    <select v-model="form.userId" class="form-control" required>
-                                        <option value="">انتخاب کاربر</option>
-                                        <option v-for="user in siteUsersForForm" :key="user.id" :value="user.id">
-                                            {{ user.userName }}
-                                        </option>
-                                    </select>
-                                </div>
                             </div>
                         </form>
                     </div>
@@ -399,7 +390,9 @@
                                     levelTitle: 'باسکول',
                                     name: scale.Name || scale.name || 'باسکول بدون نام',
                                     code: scale.ScaleCode || scale.scaleCode || '',
-                                    meta: `کاربر: ${scale.UserName || scale.userName || '-'}`,
+                                    meta: scale.Type == 1 || scale.type == 1
+                                        ? 'باسکول ورودی'
+                                        : (scale.Type == 2 || scale.type == 2 ? 'باسکول خروجی' : ''),
                                     raw: { ...scale, siteId: site.Id || site.id, companyCode },
                                     children: []
                                 }))
@@ -463,11 +456,6 @@
                         };
                         return titles[this.form.kind] || '';
                     },
-                    siteUsersForForm() {
-                        if (!this.form.siteId) return this.users;
-                        const siteNode = this.findNode(`site-${this.form.siteId}`, this.tree);
-                        return siteNode?.users?.length ? siteNode.users : this.users;
-                    }
                 },
                 mounted() {
                     for (const company of this.tree) this.expanded[company.key] = true;
@@ -537,7 +525,6 @@
                             this.form.scaleName = node.name;
                             this.form.scaleCode = node.code;
                             this.form.type = node.raw.Type || node.raw.type || '';
-                            this.form.userId = node.raw.UserId || node.raw.userId || '';
                         }
                         $('#companyTreeModal').modal('show');
                     },
@@ -571,7 +558,6 @@
                                 append('Name', this.form.scaleName);
                                 append('ScaleCode', this.form.scaleCode);
                                 append('Type', this.form.type);
-                                append('UserId', this.form.userId);
                             }
                             append('__RequestVerificationToken', antiforgeryToken);
 

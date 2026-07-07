@@ -27,8 +27,8 @@ namespace Infra.Data.Context
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
         public DbSet<ObjectForm> ObjectForms { get; set; }
         public DbSet<ObjectFormUser> ObjectFormUsers { get; set; }
+        public DbSet<UserSiteAccess> UserSiteAccesses { get; set; }
         public DbSet<WeighbridgeSite> WeighbridgeSites { get; set; }
-        public DbSet<WeighbridgeSiteUser> WeighbridgeSiteUsers { get; set; }
         public DbSet<GhabzSerialTracker> GhabzSerialTrackers { get; set; }
         public DbSet<ReportSetting> ReportSettings { get; set; }
         public DbSet<Settings> Settings { get; set; }
@@ -52,16 +52,39 @@ namespace Infra.Data.Context
                 entity.Property(e => e.IsDelete).HasDefaultValue(false);
             });
 
+            modelBuilder.Entity<WeighbridgeSite>()
+                .HasOne(site => site.Company)
+                .WithMany(company => company.WeighbridgeSites)
+                .HasForeignKey(site => site.CompanyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Weighbridge>()
-        .HasOne(b => b.User)
-        .WithMany() 
-        .HasForeignKey(b => b.UserID);
+                .HasOne(scale => scale.WeighbridgeSite)
+                .WithMany(site => site.Weighbridges)
+                .HasForeignKey(scale => scale.WeighbridgeSiteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserSiteAccess>()
+                .HasIndex(access => new { access.UserId, access.SiteId })
+                .IsUnique();
+
+            modelBuilder.Entity<UserSiteAccess>()
+                .HasOne(access => access.User)
+                .WithMany(user => user.SiteAccesses)
+                .HasForeignKey(access => access.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserSiteAccess>()
+                .HasOne(access => access.Site)
+                .WithMany(site => site.UserSiteAccesses)
+                .HasForeignKey(access => access.SiteId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<DataProtectionKey>().ToTable("DataProtectionKeys");
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 var clrType = entityType.ClrType;
-                if (clrType.GetProperty("CodMarkaz") == null && clrType.GetProperty("Company") == null)
+                if (clrType.GetProperty("CodMarkaz") == null && clrType.GetProperty("Company") == null && clrType.GetProperty("CompanyId") == null)
                 {
                     modelBuilder.Entity(clrType)
                         .Property<string>("CodMarkaz")
@@ -80,19 +103,6 @@ namespace Infra.Data.Context
 
             new Seeder(modelBuilder).Seed();
             new SeedObject(modelBuilder).Seed();
-
-            modelBuilder.Entity<WeighbridgeSiteUser>()
-        .HasKey(us => us.ID); // You can also use composite key if preferred
-
-            modelBuilder.Entity<WeighbridgeSiteUser>()
-                .HasOne(us => us.User)
-                .WithMany(u => u.WeighbridgeSiteUsers)
-                .HasForeignKey(us => us.UserId);
-
-            modelBuilder.Entity<WeighbridgeSiteUser>()
-                .HasOne(us => us.WeighbridgeSite)
-                .WithMany(s => s.WeighbridgeSiteUsers)
-                .HasForeignKey(us => us.SiteId);
 
             modelBuilder.Entity<IdentityRole>().HasData(
             new IdentityRole

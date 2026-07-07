@@ -4,6 +4,7 @@ using Infra.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infra.Data.Migrations
 {
     [DbContext(typeof(WriteDbContext))]
-    partial class CleanArchDataBaseContextModelSnapshot : ModelSnapshot
+    [Migration("20260707125117_RemoveSiteUserJoinAndAddOrganizationForeignKeys")]
+    partial class RemoveSiteUserJoinAndAddOrganizationForeignKeys
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -802,45 +805,6 @@ namespace Infra.Data.Migrations
                     b.ToTable("Settings");
                 });
 
-            modelBuilder.Entity("Domain.Models.UserSiteAccess", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CodMarkaz")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CreateIp")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ModifyIp")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("SiteId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SiteId");
-
-                    b.HasIndex("UserId", "SiteId")
-                        .IsUnique();
-
-                    b.ToTable("UserSiteAccesses");
-                });
-
             modelBuilder.Entity("Domain.Models.Weighbridge", b =>
                 {
                     b.Property<int>("Id")
@@ -1125,25 +1089,6 @@ namespace Infra.Data.Migrations
                     b.Navigation("ObjectForm");
                 });
 
-            modelBuilder.Entity("Domain.Models.UserSiteAccess", b =>
-                {
-                    b.HasOne("Domain.Models.WeighbridgeSite", "Site")
-                        .WithMany("UserSiteAccesses")
-                        .HasForeignKey("SiteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Models.AppUser", "User")
-                        .WithMany("SiteAccesses")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Site");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Domain.Models.Weighbridge", b =>
                 {
                     b.HasOne("Domain.Models.WeighbridgeSite", "WeighbridgeSite")
@@ -1217,11 +1162,6 @@ namespace Infra.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.Models.AppUser", b =>
-                {
-                    b.Navigation("SiteAccesses");
-                });
-
             modelBuilder.Entity("Domain.Models.Company", b =>
                 {
                     b.Navigation("WeighbridgeSites");
@@ -1234,8 +1174,6 @@ namespace Infra.Data.Migrations
 
             modelBuilder.Entity("Domain.Models.WeighbridgeSite", b =>
                 {
-                    b.Navigation("UserSiteAccesses");
-
                     b.Navigation("Weighbridges");
                 });
 #pragma warning restore 612, 618

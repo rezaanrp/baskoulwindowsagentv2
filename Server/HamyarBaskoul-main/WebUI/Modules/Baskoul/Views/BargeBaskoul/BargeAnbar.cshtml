@@ -67,16 +67,16 @@
                                         <p>@baskoul.Name</p>
                                         @if (baskoul.Weight == null)
                                         {
-                                            <h3 id="weight-@baskoul.WeighbridgeSite-@baskoul.ScaleCode"
-                                                data-site="@baskoul.WeighbridgeSite"
+                                            <h3 id="weight-@baskoul.WeighbridgeSiteId-@baskoul.ScaleCode"
+                                                data-site="@baskoul.WeighbridgeSiteId"
                                                 data-scale="@baskoul.ScaleCode"
                                                 class="live-weight"
                                                 style="display: inline;">0</h3>
                                         }
                                         else
                                         {
-                                            <h3 id="weight-@baskoul.WeighbridgeSite-@baskoul.ScaleCode"
-                                                data-site="@baskoul.WeighbridgeSite"
+                                            <h3 id="weight-@baskoul.WeighbridgeSiteId-@baskoul.ScaleCode"
+                                                data-site="@baskoul.WeighbridgeSiteId"
                                                 data-scale="@baskoul.ScaleCode"
                                                 class="live-weight"
                                                 style="display: inline;">@baskoul.Weight</h3>

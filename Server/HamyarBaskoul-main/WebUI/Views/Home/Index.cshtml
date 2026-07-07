@@ -4,6 +4,10 @@
 
     var tokenError = TempData["TokenError"]?.ToString() ?? string.Empty;
     var nullSelectedSite = TempData["NullSelectedSite"]?.ToString() ?? string.Empty;
+    var defaultSiteName = ViewBag.DefaultSiteName?.ToString() ?? string.Empty;
+    var defaultSiteId = ViewBag.DefaultSiteId as int? ?? 0;
+    var availableSitesJson = ViewBag.AvailableSitesJson?.ToString() ?? "[]";
+    var saveSiteUrl = Url.Action("SaveSelectedSite", "WeighbridgeSite") ?? "/WeighbridgeSite/SaveSelectedSite";
 }
 
 @section Style
@@ -95,6 +99,76 @@
             padding: 14px 16px;
             line-height: 1.9;
             font-weight: 800;
+        }
+
+        .home-current-site {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 16px;
+            border: 1px solid var(--home-line);
+            border-radius: 18px;
+            background: #fff;
+            box-shadow: 0 12px 30px rgba(18, 48, 39, .06);
+        }
+
+        .home-current-site strong {
+            display: block;
+            color: var(--home-ink);
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .home-current-site span {
+            color: var(--home-muted);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .home-site-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: min(100%, 430px);
+        }
+
+        .home-site-select {
+            min-width: 240px;
+            height: 39px;
+            border: 1px solid var(--home-line);
+            border-radius: 12px;
+            padding: 0 12px;
+            color: var(--home-ink);
+            background: #fff;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .home-site-message {
+            color: var(--home-green-dark);
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .home-change-site {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            border-radius: 12px;
+            background: var(--home-green);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 900;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .home-change-site:hover {
+            color: #fff;
+            background: var(--home-green-dark);
+            text-decoration: none;
         }
 
         .home-section-title {
@@ -216,6 +290,22 @@
             .home-action-card {
                 min-height: 142px;
             }
+
+            .home-current-site {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .home-site-picker {
+                align-items: stretch;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .home-site-select {
+                width: 100%;
+                min-width: 0;
+            }
         }
     </style>
 }
@@ -226,10 +316,33 @@
          class="home-dashboard"
          v-cloak
          data-token-error="@tokenError"
-         data-null-selected-site="@nullSelectedSite">
+         data-null-selected-site="@nullSelectedSite"
+         data-save-site-url="@saveSiteUrl">
         <section v-if="alerts.length" class="home-alerts" aria-label="پیام‌های سیستم">
             <div v-for="alert in alerts" :key="alert" class="home-alert">{{ alert }}</div>
         </section>
+
+        @if (!string.IsNullOrWhiteSpace(defaultSiteName))
+        {
+            <section class="home-current-site" aria-label="سایت پیش‌فرض">
+                <div>
+                    <strong>سایت پیش‌فرض فعلی</strong>
+                    <span>{{ currentSiteName }}</span>
+                </div>
+                <div class="home-site-picker">
+                    <select class="home-site-select" v-model.number="selectedSiteId">
+                        <option v-for="site in availableSites" :key="site.id" :value="site.id">
+                            {{ site.name }}
+                        </option>
+                    </select>
+                    <button type="button" class="home-change-site" v-on:click="saveDefaultSite" :disabled="savingSite">
+                        <i class="fa fa-save"></i>
+                        {{ savingSite ? 'در حال ذخیره...' : 'ذخیره' }}
+                    </button>
+                    <span v-if="siteMessage" class="home-site-message">{{ siteMessage }}</span>
+                </div>
+            </section>
+        }
 
         <section class="home-hero">
             <div class="home-eyebrow">
@@ -271,10 +384,17 @@
     <script>
         (() => {
             const root = document.getElementById('homeDashboardApp');
+            const availableSites = @Html.Raw(availableSitesJson);
+            const initialSiteId = @defaultSiteId;
 
             Vue.createApp({
                 data() {
                     return {
+                        availableSites,
+                        selectedSiteId: initialSiteId,
+                        currentSiteName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(defaultSiteName)),
+                        savingSite: false,
+                        siteMessage: '',
                         hero: {
                             title: 'داشبورد سیستم باسکول',
                             description: 'از این بخش می‌توانید عملیات اصلی باسکول، ثبت برگه، مشاهده لیست برگه‌ها، تنظیمات پایه و گزارش‌های سیستم را مدیریت کنید.'
@@ -333,6 +453,43 @@
                             root.dataset.tokenError,
                             root.dataset.nullSelectedSite
                         ].filter(message => message && message.trim().length);
+                    }
+                },
+                methods: {
+                    async saveDefaultSite() {
+                        if (!this.selectedSiteId || this.savingSite) {
+                            return;
+                        }
+
+                        this.savingSite = true;
+                        this.siteMessage = '';
+
+                        const body = new URLSearchParams();
+                        body.append('selectedSiteId', this.selectedSiteId);
+
+                        try {
+                            const response = await fetch(root.dataset.saveSiteUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body
+                            });
+                            const result = await response.json();
+                            if (!result.success) {
+                                this.siteMessage = result.message || 'ذخیره انجام نشد.';
+                                return;
+                            }
+
+                            const site = this.availableSites.find(item => Number(item.id) === Number(this.selectedSiteId));
+                            this.currentSiteName = site ? site.name : this.currentSiteName;
+                            this.siteMessage = result.message || 'سایت پیش‌فرض ذخیره شد.';
+                        } catch (error) {
+                            this.siteMessage = 'ذخیره با خطا مواجه شد.';
+                        } finally {
+                            this.savingSite = false;
+                        }
                     }
                 }
             }).mount(root);

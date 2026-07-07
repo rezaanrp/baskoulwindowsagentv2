@@ -530,6 +530,7 @@
                                 <th>نام</th>
                                 <th>نام خانوادگی</th>
                                 <th>شماره موبایل</th>
+                                <th>سایت‌های مجاز</th>
                                 <th>عملیات</th>
                             </tr>
                         </thead>
@@ -544,6 +545,7 @@
                                 <td>{{ user.name || '-' }}</td>
                                 <td>{{ user.family || '-' }}</td>
                                 <td><span class="users-mobile">{{ user.mobile || '-' }}</span></td>
+                                <td>{{ formatSites(user.siteNames || user.SiteNames) }}</td>
                                 <td>
                                     <div class="users-actions">
                                         <button type="button" class="users-action-btn" title="تغییر رمز" v-on:click="openResetPasswordModal(user)">
@@ -738,7 +740,8 @@
                             user.userName,
                             user.name,
                             user.family,
-                            user.mobile
+                            user.mobile,
+                            (user.siteNames || user.SiteNames || []).join(' ')
                         ].some(value => String(value || '').toLowerCase().includes(term)));
                     },
                     totalPages() {
@@ -846,6 +849,10 @@
                     },
                     closeForm() {
                         this.form.visible = false;
+                    },
+                    formatSites(siteNames) {
+                        const names = Array.isArray(siteNames) ? siteNames.filter(Boolean) : [];
+                        return names.length ? names.join('، ') : '-';
                     },
                     openResetPasswordModal(user) {
                         this.resetPasswordModal = {

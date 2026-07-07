@@ -16,6 +16,8 @@ namespace Application.Dtos
         public bool IsDelete { get; set; }
         public string CodMarkaz { get; set; }
         public int? SelectedSiteId { get; set; }
+        public List<int> SelectedSiteIds { get; set; } = new();
+        public List<string> SiteNames { get; set; } = new();
     }
 
 }

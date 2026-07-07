@@ -27,7 +27,7 @@ namespace Infra.Data.Repository
         public async Task<IEnumerable<WeighbridgeDomainViewModel>> GetBySiteAsync(int siteId, string codeMarkaz)
         {
             _context.Database.SetCommandTimeout(180); // 180 seconds
-            var list = await _context.Weighbridges.Where(b => b.CodMarkaz == codeMarkaz && b.WeighbridgeSite == siteId).ToListAsync();
+            var list = await _context.Weighbridges.Where(b => b.CodMarkaz == codeMarkaz && b.WeighbridgeSiteId == siteId).ToListAsync();
             var Weighbridges = _mapper.Map<IEnumerable<WeighbridgeDomainViewModel>>(list);
             return Weighbridges;
         }

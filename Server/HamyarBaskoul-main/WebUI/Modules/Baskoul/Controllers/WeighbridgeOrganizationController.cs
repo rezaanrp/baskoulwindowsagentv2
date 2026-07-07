@@ -8,14 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace WebUI.Controllers
 {
     [Authorize(Roles = "Admin")]
-    [Route("WeighbridgeOrganization")]
-    [Route("CodeMarkazForURL")]
     public class WeighbridgeOrganizationController : Controller
     {
-        private const string ListViewPath = "~/Views/WeighbridgeOrganization/CodeURLList.cshtml";
-        private const string InsertPartialPath = "~/Views/WeighbridgeOrganization/_InsertPartial.cshtml";
-        private const string EditPartialPath = "~/Views/WeighbridgeOrganization/_EditPartial.cshtml";
-
         private readonly IMediator _mediator;
 
         public WeighbridgeOrganizationController(IMediator mediator)
@@ -23,20 +17,20 @@ namespace WebUI.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet("InsertURLMarkaz")]
+        [HttpGet]
         public IActionResult InsertURLMarkaz()
         {
             var model = new CompanyViewModel();
-            return PartialView(InsertPartialPath, model);
+            return PartialView("_InsertPartial", model);
         }
 
-        [HttpPost("InsertURLMarkaz")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> InsertURLMarkaz(CompanyViewModel model, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
-                return PartialView(InsertPartialPath, model);
+                return PartialView("_InsertPartial", model);
             }
 
             await _mediator.Send(new SaveCompanyCommand(
@@ -50,14 +44,14 @@ namespace WebUI.Controllers
             return RedirectToAction(nameof(CodeURLList));
         }
 
-        [HttpGet("CodeURLList")]
+        [HttpGet]
         public async Task<IActionResult> CodeURLList(CancellationToken cancellationToken)
         {
             var model = await _mediator.Send(new GetWeighbridgeOrganizationTreeQuery(), cancellationToken);
-            return View(ListViewPath, model);
+            return View(model);
         }
 
-        [HttpPost("SaveCompany")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveCompany(CompanyInputViewModel model, CancellationToken cancellationToken)
         {
@@ -75,7 +69,7 @@ namespace WebUI.Controllers
             return RedirectToAction(nameof(CodeURLList));
         }
 
-        [HttpPost("SaveSite")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveSite(CompanySiteInputViewModel model, CancellationToken cancellationToken)
         {
@@ -91,7 +85,7 @@ namespace WebUI.Controllers
             return RedirectToAction(nameof(CodeURLList));
         }
 
-        [HttpPost("SaveScale")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveScale(CompanyScaleInputViewModel model, CancellationToken cancellationToken)
         {
@@ -103,20 +97,19 @@ namespace WebUI.Controllers
                     model.SiteId,
                     model.Name,
                     model.ScaleCode,
-                    model.UserId,
                     model.Type), cancellationToken);
             }
 
             return RedirectToAction(nameof(CodeURLList));
         }
 
-        [HttpPost("SaveScaleUser")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveScaleUser(CompanyScaleUserInputViewModel model, CancellationToken cancellationToken)
         {
             if (ModelState.IsValid)
             {
-                await _mediator.Send(new AssignWeighbridgeSiteUserCommand(
+                await _mediator.Send(new AssignSiteUserCommand(
                     model.CompanyCode,
                     model.SiteId,
                     model.UserId), cancellationToken);
@@ -125,19 +118,19 @@ namespace WebUI.Controllers
             return RedirectToAction(nameof(CodeURLList));
         }
 
-        [HttpPost("DeleteScaleUser")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteScaleUser(CompanyScaleUserDeleteViewModel model, CancellationToken cancellationToken)
         {
             if (ModelState.IsValid)
             {
-                await _mediator.Send(new RemoveWeighbridgeSiteUserCommand(model.SiteId, model.UserId), cancellationToken);
+                await _mediator.Send(new RemoveSiteUserCommand(model.SiteId, model.UserId), cancellationToken);
             }
 
             return RedirectToAction(nameof(CodeURLList));
         }
 
-        [HttpPost("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
@@ -145,7 +138,7 @@ namespace WebUI.Controllers
             return RedirectToAction(nameof(CodeURLList));
         }
 
-        [HttpGet("Edit")]
+        [HttpGet]
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
             var entity = await _mediator.Send(new GetCompanyForEditQuery(id), cancellationToken);
@@ -154,16 +147,16 @@ namespace WebUI.Controllers
                 return NotFound();
             }
 
-            return PartialView(EditPartialPath, entity);
+            return PartialView("_EditPartial", entity);
         }
 
-        [HttpPost("Edit")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(CompanyViewModel model, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
-                return PartialView(EditPartialPath, model);
+                return PartialView("_EditPartial", model);
             }
 
             await _mediator.Send(new SaveCompanyCommand(

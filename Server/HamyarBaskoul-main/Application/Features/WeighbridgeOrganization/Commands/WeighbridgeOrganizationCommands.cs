@@ -25,15 +25,14 @@ namespace Application.Features.WeighbridgeOrganization.Commands
         int SiteId,
         string Name,
         string ScaleCode,
-        string UserId,
         int? Type) : IRequest;
 
-    public sealed record AssignWeighbridgeSiteUserCommand(
+    public sealed record AssignSiteUserCommand(
         string CompanyCode,
         int SiteId,
         string UserId) : IRequest;
 
-    public sealed record RemoveWeighbridgeSiteUserCommand(
+    public sealed record RemoveSiteUserCommand(
         int SiteId,
         string UserId) : IRequest;
 
@@ -91,8 +90,15 @@ namespace Application.Features.WeighbridgeOrganization.Commands
                 _db.WeighbridgeSites.Add(site);
             }
 
+            var company = await _db.Companies
+                .FirstOrDefaultAsync(x => x.CodMarkaz == request.CompanyCode, cancellationToken);
+            if (company == null)
+            {
+                return;
+            }
+
             site.name = request.SiteName;
-            site.Company = request.CompanyCode;
+            site.CompanyId = company.Id;
             site.isActive = request.IsActive;
 
             await _db.SaveChangesAsync(cancellationToken);
@@ -123,25 +129,23 @@ namespace Application.Features.WeighbridgeOrganization.Commands
             scale.Name = request.Name;
             scale.ScaleCode = request.ScaleCode;
             scale.CodMarkaz = request.CompanyCode;
-            scale.WeighbridgeSite = request.SiteId;
-            scale.UserID = request.UserId;
+            scale.WeighbridgeSiteId = request.SiteId;
             scale.Type = request.Type;
 
-            await WeighbridgeSiteUserLinks.EnsureAsync(_db, request.UserId, request.SiteId, cancellationToken);
             await _db.SaveChangesAsync(cancellationToken);
         }
     }
 
-    public sealed class AssignWeighbridgeSiteUserCommandHandler : IRequestHandler<AssignWeighbridgeSiteUserCommand>
+    public sealed class AssignSiteUserCommandHandler : IRequestHandler<AssignSiteUserCommand>
     {
         private readonly IWriteDbContext _db;
 
-        public AssignWeighbridgeSiteUserCommandHandler(IWriteDbContext db)
+        public AssignSiteUserCommandHandler(IWriteDbContext db)
         {
             _db = db;
         }
 
-        public async Task Handle(AssignWeighbridgeSiteUserCommand request, CancellationToken cancellationToken)
+        public async Task Handle(AssignSiteUserCommand request, CancellationToken cancellationToken)
         {
             var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
             if (user == null)
@@ -150,43 +154,55 @@ namespace Application.Features.WeighbridgeOrganization.Commands
             }
 
             user.CodMarkaz = request.CompanyCode;
-            user.SelectedSiteId = request.SiteId;
+            if (user.SelectedSiteId == null)
+            {
+                user.SelectedSiteId = request.SiteId;
+            }
 
-            await WeighbridgeSiteUserLinks.EnsureAsync(_db, user.Id, request.SiteId, cancellationToken);
+            var exists = await _db.UserSiteAccesses
+                .AnyAsync(x => x.UserId == user.Id && x.SiteId == request.SiteId, cancellationToken);
+
+            if (!exists)
+            {
+                _db.UserSiteAccesses.Add(new UserSiteAccess
+                {
+                    UserId = user.Id,
+                    SiteId = request.SiteId,
+                    AssignedAt = DateTime.Now
+                });
+            }
+
             await _db.SaveChangesAsync(cancellationToken);
         }
     }
 
-    public sealed class RemoveWeighbridgeSiteUserCommandHandler : IRequestHandler<RemoveWeighbridgeSiteUserCommand>
+    public sealed class RemoveSiteUserCommandHandler : IRequestHandler<RemoveSiteUserCommand>
     {
         private readonly IWriteDbContext _db;
 
-        public RemoveWeighbridgeSiteUserCommandHandler(IWriteDbContext db)
+        public RemoveSiteUserCommandHandler(IWriteDbContext db)
         {
             _db = db;
         }
 
-        public async Task Handle(RemoveWeighbridgeSiteUserCommand request, CancellationToken cancellationToken)
+        public async Task Handle(RemoveSiteUserCommand request, CancellationToken cancellationToken)
         {
-            var links = await _db.WeighbridgeSiteUsers
-                .Where(x => x.UserId == request.UserId && x.SiteId == request.SiteId)
-                .ToListAsync(cancellationToken);
-
-            if (links.Count == 0)
+            var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
+            var access = await _db.UserSiteAccesses
+                .FirstOrDefaultAsync(x => x.UserId == request.UserId && x.SiteId == request.SiteId, cancellationToken);
+            if (access != null)
             {
-                return;
+                _db.UserSiteAccesses.Remove(access);
             }
 
-            var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
             if (user != null && user.SelectedSiteId == request.SiteId)
             {
-                user.SelectedSiteId = await _db.WeighbridgeSiteUsers
+                user.SelectedSiteId = await _db.UserSiteAccesses
                     .Where(x => x.UserId == request.UserId && x.SiteId != request.SiteId)
                     .Select(x => (int?)x.SiteId)
                     .FirstOrDefaultAsync(cancellationToken);
             }
 
-            _db.WeighbridgeSiteUsers.RemoveRange(links);
             await _db.SaveChangesAsync(cancellationToken);
         }
     }
@@ -213,22 +229,4 @@ namespace Application.Features.WeighbridgeOrganization.Commands
         }
     }
 
-    internal static class WeighbridgeSiteUserLinks
-    {
-        public static async Task EnsureAsync(IWriteDbContext db, string userId, int siteId, CancellationToken cancellationToken)
-        {
-            var exists = await db.WeighbridgeSiteUsers
-                .AnyAsync(x => x.UserId == userId && x.SiteId == siteId, cancellationToken);
-
-            if (!exists)
-            {
-                db.WeighbridgeSiteUsers.Add(new WeighbridgeSiteUser
-                {
-                    UserId = userId,
-                    SiteId = siteId,
-                    AssignedAt = DateTime.Now
-                });
-            }
-        }
-    }
 }

@@ -13,7 +13,6 @@
 @{
 	var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
 	var action = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
-	var mode = Context.Request.Query["mode"].ToString();
 	var routeKey = $"{controller}.{action}";
 	var activeMenuKey = routeKey switch
 	{
@@ -27,7 +26,7 @@
 		"BaseData.DataList" => "DataList",
 		"BaseData.ShowList" => "DataList",
 		"WindowsAPIs.Index" => "WindowsAPIs",
-		"UserManager.Index" when string.Equals(mode, "password", StringComparison.OrdinalIgnoreCase) => "ChangePassword",
+		"ChangePassword.Index" => "ChangePassword",
 		"UserManager.Index" => "UserManager",
 		"UserManager.Insert" => "UserManager",
 		"UserManager.Edit" => "UserManager",
@@ -40,7 +39,7 @@
 
 	var operationsKeys = new[] { "BargeAnbar", "ListBargeAnbar", "UploadExcel", "SyncServer" };
 	var reportsKeys = new[] { "ReportSetting" };
-	var baseSettingsKeys = new[] { "SiteList", "SelectSite", "DataList", "WindowsAPIs" };
+	var baseSettingsKeys = new[] { "SiteList", "DataList", "WindowsAPIs" };
 	var systemManagementKeys = new[] { "UserManager", "CodeURLList" };
 
 	var hasOperations = operationsKeys.Any(Has);
@@ -56,16 +55,7 @@
 	var systemManagementOpen = systemManagementKeys.Contains(activeMenuKey);
 }
 
-	@if (Has("ChangePassword"))
-	{
-		var title = Title("ChangePassword", "تغییر پسورد");
-		<li class="nav-item">
-			<a class="nav-link @(activeMenuKey == "ChangePassword" ? "active" : "")" asp-controller="UserManager" asp-action="Index" asp-route-mode="password" title="@title">
-				<i class="fa fa-lock nav-icon"></i>
-				<p>@title</p>
-			</a>
-		</li>
-	}
+
 
 	@if (hasBaskoulSystem)
 	{
@@ -179,16 +169,6 @@
 									</a>
 								</li>
 							}
-							@if (Has("SelectSite"))
-							{
-								var title = Title("SelectSite", "انتخاب باسکول پیش‌فرض");
-								<li class="nav-item">
-									<a class="nav-link @(activeMenuKey == "SelectSite" ? "active" : "")" asp-controller="WeighbridgeSite" asp-action="SelectSite" title="@title">
-										<i class="fa fa-circle-o nav-icon"></i>
-										<p>@title</p>
-									</a>
-								</li>
-							}
 							@if (Has("DataList"))
 							{
 								var title = Title("DataList", "اطلاعات پایه باسکول");
@@ -250,3 +230,21 @@
 			</ul>
 		</li>
 	}
+
+
+	@{
+		var changePasswordTitle = Title("ChangePassword", "تغییر پسورد");
+	}
+	<li class="nav-item">
+		<a class="nav-link @(activeMenuKey == "ChangePassword" ? "active" : "")" asp-controller="ChangePassword" asp-action="Index" title="@changePasswordTitle">
+			<i class="fa fa-lock nav-icon"></i>
+			<p>@changePasswordTitle</p>
+		</a>
+	</li>
+
+	<li class="nav-item">
+		<a class="nav-link @(activeMenuKey == "SelectSite" ? "active" : "")" asp-controller="WeighbridgeSite" asp-action="SelectSite" title="انتخاب سایت پیش‌فرض">
+			<i class="fa fa-map-marker nav-icon"></i>
+			<p>انتخاب سایت پیش‌فرض</p>
+		</a>
+	</li>

@@ -37,6 +37,13 @@ namespace Application.Services
             return sites;
         }
 
+        public List<WeighbridgeSiteViewModel> GetAllActiveAsync()
+        {
+            var list = _siterepository.GetAllActiveAsync();
+            var sites = _mapper.Map<List<WeighbridgeSiteViewModel>>(list);
+            return sites;
+        }
+
         public async Task<WeighbridgeSiteViewModel> GetByIdAsync(int id)
         {
             var site = await _siterepository.GetByIdAsync(id);

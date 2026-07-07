@@ -36,13 +36,12 @@
             <hr />
         </div>
         <input type="hidden" asp-for="CodMarkaz" />
-        <input type="hidden" asp-for="UserID" />
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="ScaleCode" />
-        <input type="hidden" asp-for="WeighbridgeSite" />
+        <input type="hidden" asp-for="WeighbridgeSiteId" />
         <div class="card-footer">
             <button type="submit" class="btn btn-success px-4">ذخیره</button>
             <button class="btn btn-secondary px-4" data-dismiss="modal">لغو</button>
         </div>
     </form>
-<input type="hidden" id="hidden-site-id" value=@Model.WeighbridgeSite />
+<input type="hidden" id="hidden-site-id" value=@Model.WeighbridgeSiteId />

@@ -35,8 +35,6 @@ namespace Application.ViewModels
         public string? Name { get; set; }
         public string? ScaleCode { get; set; }
         public int? Type { get; set; }
-        public string? UserId { get; set; }
-        public string? UserName { get; set; }
     }
 
     public class CompanyUserOptionViewModel
@@ -89,9 +87,6 @@ namespace Application.ViewModels
 
         [Required(ErrorMessage = "کد باسکول را وارد کنید")]
         public string ScaleCode { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "کاربر باسکول را انتخاب کنید")]
-        public string UserId { get; set; } = string.Empty;
 
         public int? Type { get; set; }
     }

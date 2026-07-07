@@ -114,7 +114,17 @@
                                                    name="SelectedSiteIds[]"
                                                    value="@site.ID"
                                                    @(Model.SelectedSiteIds.Contains(site.ID) ? "checked" : "") />
-                                            <label class="form-check-label">@site.name</label>
+                                            <label class="form-check-label">
+                                                @site.name
+                                                @if (!string.IsNullOrWhiteSpace(site.CompanyName))
+                                                {
+                                                    <span> - @site.CompanyName</span>
+                                                }
+                                                else if (!string.IsNullOrWhiteSpace(site.Company))
+                                                {
+                                                    <span> - @site.Company</span>
+                                                }
+                                            </label>
                                         </div>
                                     }
                                     <span class="text-danger" asp-validation-for="SelectedSiteIds"></span>

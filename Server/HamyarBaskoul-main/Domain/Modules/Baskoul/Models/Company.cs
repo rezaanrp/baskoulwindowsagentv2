@@ -15,6 +15,7 @@ namespace Domain.Models
         public string? CoName { get; set; }
         public string? APIURL { get; set; }
         public bool? AutoAsync { get; set; } = true;
+        public ICollection<WeighbridgeSite> WeighbridgeSites { get; set; } = new List<WeighbridgeSite>();
     } 
 }
 

@@ -8,6 +8,7 @@ using WebUI.Models;
 using Application.ViewModels.Weighbridge;
 using Application.ViewModels;
 using Domain.Interfaces;
+using System.Text.Json;
 
 
 namespace WebUI.Controllers
@@ -34,38 +35,27 @@ namespace WebUI.Controllers
         {
             var user = _userservise.GetById(OnGetUserId());
             var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Contains("Admin"))
+            var activeSites = _userservise.GetAllActiveSites(user.Id).ToList();
+
+            if (user.SelectedSiteId == null || activeSites.All(site => site.ID != user.SelectedSiteId.Value))
             {
+                if (activeSites.Any())
+                {
+                    return RedirectToAction("SelectSite", "WeighbridgeSite");
+                }
+
+                TempData["NullSelectedSite"] = "سایت فعالی در دسترسی‌های شما تعریف نشده است.";
                 return View();
             }
-            if (user.SelectedSiteId == null)
+
+            var selectedSite = activeSites.FirstOrDefault(site => site.ID == user.SelectedSiteId.Value);
+            ViewBag.DefaultSiteName = GetSiteDisplayName(selectedSite?.name, selectedSite?.CompanyName, selectedSite?.Company);
+            ViewBag.DefaultSiteId = user.SelectedSiteId.Value;
+            ViewBag.AvailableSitesJson = JsonSerializer.Serialize(activeSites.Select(site => new
             {
-                var activeSites = _userservise.GetAllActiveSites(OnGetUserId());
-                if (activeSites.Any() && (activeSites.Count() > 1))
-                {
-                    return RedirectToAction("SelectSite", "WeighbridgeSite", 1);
-                }
-                else if (activeSites.Count() == 1)
-                {
-                    var site = activeSites.First();
-                    await _userservise.SaveSelectedSiteAsync(site.ID, user.Id);
-                    return View();
-                }
-                else if (!activeSites.Any())
-                {
-                    var markazSites = _siteService.GetAllActiveAsync(user.CodMarkaz);
-                    if(markazSites.Any())
-                    {
-                        if (roles.Contains("Admin"))
-                        {
-                            TempData["ErrorMessage"] = "ابتدا یک سایت فعال انتخاب کنید";
-                            return RedirectToAction("Edit", "UserManager", new { id = user.Id });
-                        }
-                    }
-                    TempData["ErrorMessage"] = "لطفاً ابتدا یک سایت فعال ایجاد کنید.";
-                    return RedirectToAction("SiteList", "WeighbridgeSite");
-                }
-            }
+                id = site.ID,
+                name = GetSiteDisplayName(site.name, site.CompanyName, site.Company)
+            }));
             return View();
         }
         //admin@localhost.com
@@ -79,6 +69,13 @@ namespace WebUI.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        private static string GetSiteDisplayName(string? siteName, string? companyName, string? codeMarkaz)
+        {
+            var name = siteName ?? string.Empty;
+            var company = !string.IsNullOrWhiteSpace(companyName) ? companyName : codeMarkaz;
+            return string.IsNullOrWhiteSpace(company) ? name : $"{name} - {company}";
         }
     }
 }

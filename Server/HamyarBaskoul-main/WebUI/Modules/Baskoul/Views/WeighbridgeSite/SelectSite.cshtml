@@ -5,6 +5,14 @@
     Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
 }
 
+@functions {
+    private static string SiteDisplayName(WeighbridgeSiteViewModel site)
+    {
+        var company = !string.IsNullOrWhiteSpace(site.CompanyName) ? site.CompanyName : site.Company;
+        return string.IsNullOrWhiteSpace(company) ? site.name ?? "" : $"{site.name} - {company}";
+    }
+}
+
 @section Style {
         @{
     ViewData["Title"] = "انتخاب باسکول پیش‌فرض";
@@ -28,7 +36,7 @@
                 <div class="card-header">
                     <h3 class="card-title">مرکز باسکول پیش ‌فرض خود را انتخاب نمایید</h3>
                 </div>
-                <form asp-action="SaveSelectedSite" asp-controller="WeighbridgeSite" method="post">
+                <form action="@Url.Action("SaveSelectedSite", "WeighbridgeSite")" method="post">
                     <div class="card-body">
                         <div class="form-group">
                             @foreach (var site in Model)
@@ -40,7 +48,7 @@
                                            value="@site.ID"
                                     @(site.ID == (int?)ViewBag.SelectedSiteId ? "checked" : "") />
                                     <label class="form-check-label" for="site-@site.ID">
-                                        @site.name
+                                        @SiteDisplayName(site)
                                     </label>
                                 </div>
                             }

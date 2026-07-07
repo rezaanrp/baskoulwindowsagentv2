@@ -26,14 +26,11 @@ namespace Application.Features.WeighbridgeOrganization.Queries
 
             var sites = await _db.WeighbridgeSites
                 .AsNoTracking()
-                .Include(x => x.WeighbridgeSiteUsers)
-                .ThenInclude(x => x.User)
                 .OrderBy(x => x.name)
                 .ToListAsync(cancellationToken);
 
             var scales = await _db.Weighbridges
                 .AsNoTracking()
-                .Include(x => x.User)
                 .OrderBy(x => x.Name)
                 .ToListAsync(cancellationToken);
 
@@ -41,6 +38,10 @@ namespace Application.Features.WeighbridgeOrganization.Queries
                 .AsNoTracking()
                 .Where(x => !x.IsDelete)
                 .OrderBy(x => x.UserName)
+                .ToListAsync(cancellationToken);
+
+            var userSiteAccesses = await _db.UserSiteAccesses
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
             return new CompanyTreeViewModel
@@ -55,27 +56,28 @@ namespace Application.Features.WeighbridgeOrganization.Queries
                     ApiUrl = company.APIURL,
                     AutoSync = company.AutoAsync ?? false,
                     WeighbridgeSites = sites
-                        .Where(site => site.Company == company.CodMarkaz)
+                        .Where(site => site.CompanyId == company.Id)
                         .Select(site => new CompanySiteNodeViewModel
                         {
                             Id = site.ID,
                             SiteName = site.name,
-                            CompanyCode = site.Company,
+                            CompanyCode = company.CodMarkaz,
                             IsActive = site.isActive,
-                            Users = site.WeighbridgeSiteUsers
-                                .Where(x => x.User != null)
-                                .Select(x => ToUserOption(x.User!))
+                            Users = userSiteAccesses
+                                .Where(access => access.SiteId == site.ID)
+                                .Join(users,
+                                    access => access.UserId,
+                                    user => user.Id,
+                                    (_, user) => ToUserOption(user))
                                 .ToList(),
                             Scales = scales
-                                .Where(scale => scale.WeighbridgeSite == site.ID)
+                                .Where(scale => scale.WeighbridgeSiteId == site.ID)
                                 .Select(scale => new CompanyScaleNodeViewModel
                                 {
                                     Id = scale.Id,
                                     Name = scale.Name,
                                     ScaleCode = scale.ScaleCode,
-                                    Type = scale.Type,
-                                    UserId = scale.UserID,
-                                    UserName = scale.User?.UserName
+                                    Type = scale.Type
                                 })
                                 .ToList()
                         })

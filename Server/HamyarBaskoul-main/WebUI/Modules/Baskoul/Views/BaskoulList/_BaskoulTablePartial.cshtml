@@ -38,7 +38,7 @@
                             <i class="fa fa-pencil"></i>
                         </a>
                         <form asp-controller="BaskoulList" asp-action="DeleteBaskoul" method="post"
-                              onsubmit="return confirmDelete(event, this, @baskoul.WeighbridgeSite)" class="d-inline m-0">
+                              onsubmit="return confirmDelete(event, this, @baskoul.WeighbridgeSiteId)" class="d-inline m-0">
                               @Html.AntiForgeryToken()
                               <input type="hidden" name="Id" value="@baskoul.Id" />
                             <button type="submit" class="btn btn-icon btn-outline-primary _delete" title="حذف">

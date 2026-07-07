@@ -13,8 +13,8 @@ namespace Application.Common.Interfaces
         DbSet<AppUser> Users { get; set; }
         DbSet<ObjectForm> ObjectForms { get; set; }
         DbSet<ObjectFormUser> ObjectFormUsers { get; set; }
+        DbSet<UserSiteAccess> UserSiteAccesses { get; set; }
         DbSet<WeighbridgeSite> WeighbridgeSites { get; set; }
-        DbSet<WeighbridgeSiteUser> WeighbridgeSiteUsers { get; set; }
         DbSet<GhabzSerialTracker> GhabzSerialTrackers { get; set; }
         DbSet<ReportSetting> ReportSettings { get; set; }
         DbSet<Settings> Settings { get; set; }

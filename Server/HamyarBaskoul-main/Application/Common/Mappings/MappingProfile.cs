@@ -32,10 +32,12 @@ namespace Application.Profiles
             #endregion
 
             #region Weighbridge
-            CreateMap<WeighbridgeViewModel, Weighbridge>();
+            CreateMap<WeighbridgeViewModel, Weighbridge>()
+                .ForMember(destination => destination.WeighbridgeSite, options => options.Ignore());
             CreateMap<Weighbridge, WeighbridgeViewModel>();
 
-            CreateMap<WeighbridgeDomainViewModel, Weighbridge>();
+            CreateMap<WeighbridgeDomainViewModel, Weighbridge>()
+                .ForMember(destination => destination.WeighbridgeSite, options => options.Ignore());
             CreateMap<Weighbridge, WeighbridgeDomainViewModel>();
 
             CreateMap<WeighbridgeDomainViewModel, WeighbridgeViewModel>();
@@ -78,11 +80,21 @@ namespace Application.Profiles
             CreateMap<WeighbridgeSiteDomainViewModel, WeighbridgeSiteViewModel>();
             CreateMap<WeighbridgeSiteViewModel, WeighbridgeSiteDomainViewModel>();
 
-            CreateMap<WeighbridgeSiteDomainViewModel, WeighbridgeSite>();
-            CreateMap<WeighbridgeSite, WeighbridgeSiteDomainViewModel>();
+            CreateMap<WeighbridgeSiteDomainViewModel, WeighbridgeSite>()
+                .ForMember(destination => destination.Company, options => options.Ignore())
+                .ForMember(destination => destination.CompanyId, options => options.Ignore())
+                .ForMember(destination => destination.Weighbridges, options => options.Ignore());
+            CreateMap<WeighbridgeSite, WeighbridgeSiteDomainViewModel>()
+                .ForMember(destination => destination.Company, options => options.MapFrom(source => source.Company == null ? null : source.Company.CodMarkaz))
+                .ForMember(destination => destination.CompanyName, options => options.MapFrom(source => source.Company == null ? null : source.Company.CoName));
 
-            CreateMap<WeighbridgeSiteViewModel, WeighbridgeSite>();
-            CreateMap<WeighbridgeSite, WeighbridgeSiteViewModel>();
+            CreateMap<WeighbridgeSiteViewModel, WeighbridgeSite>()
+                .ForMember(destination => destination.Company, options => options.Ignore())
+                .ForMember(destination => destination.CompanyId, options => options.Ignore())
+                .ForMember(destination => destination.Weighbridges, options => options.Ignore());
+            CreateMap<WeighbridgeSite, WeighbridgeSiteViewModel>()
+                .ForMember(destination => destination.Company, options => options.MapFrom(source => source.Company == null ? null : source.Company.CodMarkaz))
+                .ForMember(destination => destination.CompanyName, options => options.MapFrom(source => source.Company == null ? null : source.Company.CoName));
 
             #endregion
 

@@ -11,13 +11,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace WebUI.Controllers
 {
     [Authorize]
-    public class SiteController : BaseController
+    public class WeighbridgeSiteController : BaseController
     {
         private readonly IUsersService _userservice;
         private readonly IWeighbridgeSiteService _siteservice;
         private readonly IWeighbridgeService _baskoulservice;
 
-        public SiteController(UserManager<AppUser> userManager, IUsersService userservice, 
+        public WeighbridgeSiteController(UserManager<AppUser> userManager, IUsersService userservice, 
             IWeighbridgeSiteService siteservice, IWeighbridgeService baskoulservice) : base(userManager)
         {
             _userManager = userManager;
@@ -107,30 +107,37 @@ namespace WebUI.Controllers
         {
             var user = _userservice.GetById(OnGetUserId());
             ViewBag.SelectedSiteId = user.SelectedSiteId;
-            var activeSites = _userservice.GetAllActiveSites(user.Id);
-            var markazSites = _siteservice.GetAllActiveAsync(user.CodMarkaz);
+            var activeSites = _userservice.GetAllActiveSites(user.Id).ToList();
             if (!activeSites.Any())
             {
                 TempData["NullSelectedSite"] = "سایت فعالی برای کاربر انتخاب نشده است";
                 return RedirectToAction("Index", "Home");
             }
-            if (type == 1)
-            {
-                return View(activeSites);
-            }
-            else if (type == 2)
-            {
-                return View(markazSites);
-            }
-            if (activeSites.Any())
-                return View(activeSites);
-            return View(markazSites);
+
+            return View(activeSites);
         }
         [HttpPost]
         public async Task<IActionResult> SaveSelectedSite(int selectedSiteId)
         {
             var userId = OnGetUserId();
-            await _userservice.SaveSelectedSiteAsync(selectedSiteId, userId);
+            var saved = await _userservice.SaveSelectedSiteAsync(selectedSiteId, userId);
+            var wantsJson = string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+            if (!saved)
+            {
+                if (wantsJson)
+                {
+                    return Json(new { success = false, message = "سایت انتخاب شده در دسترسی‌های شما وجود ندارد." });
+                }
+
+                TempData["ErrorMessage"] = "سایت انتخاب شده در دسترسی‌های شما وجود ندارد.";
+                return RedirectToAction("SelectSite", "WeighbridgeSite");
+            }
+
+            if (wantsJson)
+            {
+                return Json(new { success = true, message = "سایت پیش‌فرض ذخیره شد." });
+            }
+
             return RedirectToAction("Index", "Home");
         }
     }

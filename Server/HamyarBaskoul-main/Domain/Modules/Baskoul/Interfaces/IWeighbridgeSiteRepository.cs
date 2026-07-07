@@ -12,6 +12,7 @@ namespace Domain.Interfaces
         Task AddAsync(WeighbridgeSiteDomainViewModel siteDomainView);
         Task UpdateAsync(WeighbridgeSiteDomainViewModel siteDomainView);
         List<WeighbridgeSiteDomainViewModel> GetAllAsync(string codemarkaz);
+        List<WeighbridgeSiteDomainViewModel> GetAllActiveAsync();
         List<WeighbridgeSiteDomainViewModel> GetAllActiveAsync(string codemarkaz);
         Task<WeighbridgeSiteDomainViewModel> GetByIdAsync(int id);
         Task<string> GetNAmeByIdAsync(int id);

@@ -35,12 +35,12 @@ namespace WebUI.Controllers
             var currentUser = usersService.GetById(OnGetUserId());
             var codeMarkaz = usersService.GetCodMarkazById(OnGetUserId());
             var currentUserRole = _userManager.GetRolesAsync(currentUser).GetAwaiter().GetResult().FirstOrDefault();
-            var activeSites = siteService.GetAllActiveAsync(codeMarkaz);
+            var activeSites = siteService.GetAllActiveAsync().ToList();
 
             ViewBag.ActiveSitesJson = JsonSerializer.Serialize(activeSites.Select(site => new
             {
                 id = site.ID,
-                name = site.name
+                name = GetSiteDisplayName(site.name, site.CompanyName, site.Company)
             }));
             ViewBag.RoleOptionsJson = JsonSerializer.Serialize(GetRoleOptions(currentUserRole));
             ViewBag.CurrentUserRole = currentUserRole;
@@ -90,8 +90,7 @@ namespace WebUI.Controllers
         {
             try
             {
-                var user = usersService.GetById(OnGetUserId());
-                var m = await usersService.GetAllByDepartementasync(user.Departments ?? "", user.CodMarkaz);
+                var m = usersService.GetAll1("", "");
 
                 var result = m.Select(u => new UserDto
                 {
@@ -102,7 +101,20 @@ namespace WebUI.Controllers
                     Mobile = u.Mobile,
                     IsDelete = u.IsDelete,
                     CodMarkaz = u.CodMarkaz,
-                    SelectedSiteId = u.SelectedSiteId
+                    SelectedSiteId = u.SelectedSiteId,
+                    SelectedSiteIds = u.SiteAccesses
+                        .Select(access => access.SiteId)
+                        .Distinct()
+                        .ToList(),
+                    SiteNames = u.SiteAccesses
+                        .Where(access => access.Site != null)
+                        .Select(access => GetSiteDisplayName(
+                            access.Site.name,
+                            access.Site.Company?.CoName,
+                            access.Site.Company?.CodMarkaz))
+                        .Where(name => !string.IsNullOrWhiteSpace(name))
+                        .Distinct()
+                        .ToList()
                 }).ToList();
 
                 return Json(new { data = result });
@@ -161,12 +173,15 @@ namespace WebUI.Controllers
                     m.SelectedSiteId = model.SelectedSiteIds.Any()
                         ? model.SelectedSiteIds.First()
                         : null;
-                    //m.WindowsToken = model.WindowsToken;
-                    m.WeighbridgeSiteUsers = model.SelectedSiteIds.Select(siteId => new WeighbridgeSiteUser
-                    {
-                        SiteId = siteId,
-                        AssignedAt = DateTime.Now
-                    }).ToList();
+                    m.SiteAccesses = model.SelectedSiteIds
+                        .Where(siteId => siteId > 0)
+                        .Distinct()
+                        .Select(siteId => new UserSiteAccess
+                        {
+                            SiteId = siteId,
+                            AssignedAt = DateTime.Now
+                        })
+                        .ToList();
 
                     var result = await _userManager.CreateAsync(m, model.Password);
                     if (result.Succeeded)
@@ -203,8 +218,8 @@ namespace WebUI.Controllers
 			//		.ToDictionary(m => m.CodMarkaz, m => m.MarkazName);
 			//}
 			var codeMarkaz = usersService.GetCodMarkazById(OnGetUserId());
-            model.AvailableSites = siteService.GetAllActiveAsync(codeMarkaz);
             var user = usersService.GetById(OnGetUserId());
+            model.AvailableSites = siteService.GetAllActiveAsync();
             model.UserRole = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
             return View(model);
         }
@@ -222,8 +237,8 @@ namespace WebUI.Controllers
                     }
                 }
                 var usm = usersService.Get(model.Id);
-                var codeMarkaz = usersService.GetCodMarkazById(OnGetUserId());
-                usm.ActiveSites = siteService.GetAllActiveAsync(codeMarkaz);
+                var codeMarkaz = usm.Company ?? usersService.GetCodMarkazById(OnGetUserId());
+                usm.ActiveSites = siteService.GetAllActiveAsync();
                 return View(usm);
             }
 
@@ -262,9 +277,10 @@ namespace WebUI.Controllers
 		[HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
-			var usm = usersService.Get(id);
-            var codeMarkaz = usersService.GetCodMarkazById(OnGetUserId());
-            usm.ActiveSites = siteService.GetAllActiveAsync(codeMarkaz);
+            var usm = usersService.Get(id);
+            var targetUser = usersService.GetById(id);
+            var codeMarkaz = targetUser?.CodMarkaz ?? usersService.GetCodMarkazById(OnGetUserId());
+            usm.ActiveSites = siteService.GetAllActiveAsync();
             usm.Company = codeMarkaz;
             var user = await _userManager.FindByIdAsync(id);
             usm.Role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
@@ -280,8 +296,18 @@ namespace WebUI.Controllers
                 return Json(new { success = false, message = "کاربر پیدا نشد." });
             }
 
-            var codeMarkaz = usersService.GetCodMarkazById(OnGetUserId());
-            var activeSites = siteService.GetAllActiveAsync(codeMarkaz);
+            var targetUser = usersService.GetById(id);
+            var codeMarkaz = usm.Company
+                ?? targetUser?.CodMarkaz
+                ?? usersService.GetCodMarkazById(OnGetUserId());
+            var activeSites = siteService.GetAllActiveAsync().ToList();
+
+            var targetSites = usm.SelectedSiteIds
+                .Where(siteId => activeSites.All(site => site.ID != siteId))
+                .Select(siteId => siteService.GetByIdAsync(siteId).GetAwaiter().GetResult())
+                .Where(site => site != null)
+                .ToList();
+            activeSites.AddRange(targetSites);
             var user = await _userManager.FindByIdAsync(id);
             var role = user == null ? string.Empty : (await _userManager.GetRolesAsync(user)).FirstOrDefault();
 
@@ -303,7 +329,7 @@ namespace WebUI.Controllers
                 sites = activeSites.Select(site => new
                 {
                     id = site.ID,
-                    name = site.name
+                    name = GetSiteDisplayName(site.name, site.CompanyName, site.Company)
                 })
             });
         }
@@ -401,6 +427,13 @@ namespace WebUI.Controllers
                 },
                 _ => Array.Empty<object>()
             };
+        }
+
+        private static string GetSiteDisplayName(string? siteName, string? companyName, string? codeMarkaz)
+        {
+            var name = siteName ?? string.Empty;
+            var company = !string.IsNullOrWhiteSpace(companyName) ? companyName : codeMarkaz;
+            return string.IsNullOrWhiteSpace(company) ? name : $"{name} - {company}";
         }
     }
 }

@@ -12,9 +12,7 @@ namespace Domain.ViewModels.Weighbridge
         public string Name { get; set; }
         public string ScaleCode { get; set; }
         public string? CodMarkaz { get; set; }
-        // Foreign Key
-        public string UserID { get; set; }
-        public int? WeighbridgeSite { get; set; }
+        public int WeighbridgeSiteId { get; set; }
 
         /// <summary>
         ///  1: incoming,

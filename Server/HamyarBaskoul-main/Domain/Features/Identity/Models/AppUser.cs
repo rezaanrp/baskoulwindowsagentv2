@@ -34,9 +34,8 @@ namespace Domain.Models
         public string? Token { get; set; } // this is for Hamyar APIs
         public string? WindowsToken { get; set; } // this is for receiving weight from windows
 
-        public ICollection<WeighbridgeSiteUser> WeighbridgeSiteUsers { get; set; } = new List<WeighbridgeSiteUser>();
-
         public int? SelectedSiteId { get; set; }
+        public ICollection<UserSiteAccess> SiteAccesses { get; set; } = new List<UserSiteAccess>();
     }
 }
 

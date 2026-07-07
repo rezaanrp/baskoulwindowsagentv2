@@ -28,11 +28,13 @@ namespace Application.Services
 		{
 			var result = _usersRepository.GetById(Id);
 			var result2 = mapper.Map<UsersListViewModel>(result);
-			foreach (var site in result.WeighbridgeSiteUsers)
+			if (result?.SiteAccesses != null)
 			{
-				result2.SelectedSiteIds.Add(site.SiteId);
-
-            }
+				result2.SelectedSiteIds = result.SiteAccesses
+					.Select(access => access.SiteId)
+					.Distinct()
+					.ToList();
+			}
 			//result2.role = _usersRepository.GetRole_by_user_id(Id);
 			return result2;
 		}
