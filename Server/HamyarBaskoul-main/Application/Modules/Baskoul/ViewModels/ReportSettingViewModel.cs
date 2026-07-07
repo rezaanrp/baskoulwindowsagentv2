@@ -58,7 +58,7 @@ namespace Application.ViewModels
 
         public IFormFile? Logo { get; set; }
 
-        public string? CodeMarkaz { get; set; }
+        public string? Company { get; set; }
     }
 }
 

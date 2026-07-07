@@ -1,4 +1,4 @@
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Application.Services;
 using Domain.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -15,14 +15,14 @@ namespace WebUI.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IUsersService _usersService;
-        private readonly ICodeMarkaz _codeMarkazService;
+        private readonly ICompanyService _codeMarkazService;
         private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             IUsersService usersService,
-            ICodeMarkaz codeMarkazService,
+            ICompanyService codeMarkazService,
             ILogger<AuthController> logger)
         {
             _userManager = userManager;
@@ -92,14 +92,14 @@ namespace WebUI.Controllers
                     return View("~/Features/Identity/Views/Auth/Login.cshtml", model);
                 }
 
-                if (!roles.Contains("SuperAdmin") && !isUserPermited)
+                if (!roles.Contains("Admin") && !isUserPermited)
                 {
                     await _signInManager.SignOutAsync();
                     ModelState.AddModelError(string.Empty, "مجوز ورود به این مرکز ندارید");
                     return View("~/Features/Identity/Views/Auth/Login.cshtml", model);
                 }
 
-                if (!activeSites.Any() && !roles.Contains("SuperAdmin") && !roles.Contains("Administrator"))
+                if (!activeSites.Any() && !roles.Contains("Admin"))
                 {
                     await _signInManager.SignOutAsync();
                     ModelState.AddModelError(string.Empty, "کاربر به هیچ سایت فعالی دسترسی ندارد");

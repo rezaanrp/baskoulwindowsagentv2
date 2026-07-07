@@ -11,8 +11,8 @@ namespace Application.ViewModels.Users
 {
 	public class ObjectFormListViewModel
 	{
-        public string  UserId { get; set; }
-        public List<ObjectFormViewModel>  objectFormViews { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public List<ObjectFormViewModel> objectFormViews { get; set; } = new();
 	}
 }
 

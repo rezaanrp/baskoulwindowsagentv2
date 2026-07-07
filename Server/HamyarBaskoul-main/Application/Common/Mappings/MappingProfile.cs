@@ -4,8 +4,8 @@ using Application.ViewModels.Users;
 using Domain.ViewModels.Users;
 using Domain.ViewModels.BaseTable;
 using Application.ViewModels.BaseTable;
-using Domain.ViewModels.Baskoul;
-using Application.ViewModels.Baskoul;
+using Domain.ViewModels.Weighbridge;
+using Application.ViewModels.Weighbridge;
 using Domain.ViewModels;
 using Application.ViewModels;
 using Application.ViewModels.Reports;
@@ -31,15 +31,15 @@ namespace Application.Profiles
 				CreateMap<BaseTableViewModel, BaseTableDomainViewModel>();
             #endregion
 
-            #region Baskoul
-            CreateMap<BaskoulViewModel, Baskoul>();
-            CreateMap<Baskoul, BaskoulViewModel>();
+            #region Weighbridge
+            CreateMap<WeighbridgeViewModel, Weighbridge>();
+            CreateMap<Weighbridge, WeighbridgeViewModel>();
 
-            CreateMap<BaskoulDomainViewModel, Baskoul>();
-            CreateMap<Baskoul, BaskoulDomainViewModel>();
+            CreateMap<WeighbridgeDomainViewModel, Weighbridge>();
+            CreateMap<Weighbridge, WeighbridgeDomainViewModel>();
 
-            CreateMap<BaskoulDomainViewModel, BaskoulViewModel>();
-            CreateMap<BaskoulViewModel, BaskoulDomainViewModel>();
+            CreateMap<WeighbridgeDomainViewModel, WeighbridgeViewModel>();
+            CreateMap<WeighbridgeViewModel, WeighbridgeDomainViewModel>();
             #endregion
             #region BargeBaskoul
 
@@ -73,29 +73,29 @@ namespace Application.Profiles
 
             #endregion
 
-            #region Site
+            #region WeighbridgeSite
 
-            CreateMap<SiteDomainViewModel, SiteViewModel>();
-            CreateMap<SiteViewModel, SiteDomainViewModel>();
+            CreateMap<WeighbridgeSiteDomainViewModel, WeighbridgeSiteViewModel>();
+            CreateMap<WeighbridgeSiteViewModel, WeighbridgeSiteDomainViewModel>();
 
-            CreateMap<SiteDomainViewModel, Site>();
-            CreateMap<Site, SiteDomainViewModel>();
+            CreateMap<WeighbridgeSiteDomainViewModel, WeighbridgeSite>();
+            CreateMap<WeighbridgeSite, WeighbridgeSiteDomainViewModel>();
 
-            CreateMap<SiteViewModel, Site>();
-            CreateMap<Site, SiteViewModel>();
+            CreateMap<WeighbridgeSiteViewModel, WeighbridgeSite>();
+            CreateMap<WeighbridgeSite, WeighbridgeSiteViewModel>();
 
             #endregion
 
-            #region CodeMarkaz
+            #region Company
 
-            CreateMap<CodeMarkaz, CodeMarkazViewModel>();
-            CreateMap<CodeMarkazViewModel, CodeMarkaz>();
+            CreateMap<Company, CompanyViewModel>();
+            CreateMap<CompanyViewModel, Company>();
 
-            CreateMap<CodeMarkazViewModel, CodeMarkazDomainViewModel>();
-            CreateMap<CodeMarkazDomainViewModel, CodeMarkazViewModel>();
+            CreateMap<CompanyViewModel, CompanyDomainViewModel>();
+            CreateMap<CompanyDomainViewModel, CompanyViewModel>();
 
-            CreateMap<CodeMarkazDomainViewModel, CodeMarkaz>();
-            CreateMap<CodeMarkaz, CodeMarkazDomainViewModel>();
+            CreateMap<CompanyDomainViewModel, Company>();
+            CreateMap<Company, CompanyDomainViewModel>();
 
             #endregion
 

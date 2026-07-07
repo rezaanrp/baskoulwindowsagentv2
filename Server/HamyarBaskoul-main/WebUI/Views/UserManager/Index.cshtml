@@ -1,6 +1,7 @@
 @model Application.ViewModels.Users.ObjectFormListViewModel
 @{
-    ViewData["Title"] = "مدیریت کاربران";
+    var isPasswordMode = string.Equals(Context.Request.Query["mode"].ToString(), "password", StringComparison.OrdinalIgnoreCase);
+    ViewData["Title"] = isPasswordMode ? "تغییر پسورد" : "مدیریت کاربران";
     Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
 
     var errorMessage = ViewBag.ErrorMessage?.ToString() ?? TempData["InvalidCodMrakaz"]?.ToString() ?? string.Empty;
@@ -202,6 +203,38 @@
         .users-action-btn.danger { color: #b42318; }
         .users-action-btn.danger:hover { border-color: rgba(180, 35, 24, .28); background: #fff5f4; }
 
+        .users-access-list {
+            display: grid;
+            gap: 12px;
+            max-height: 60vh;
+            overflow: auto;
+            padding: 18px;
+        }
+
+        .users-access-group {
+            display: grid;
+            gap: 8px;
+            padding: 12px;
+            border: 1px solid var(--users-line);
+            border-radius: 16px;
+            background: #fbfefd;
+        }
+
+        .users-access-group h4 {
+            margin: 0;
+            color: var(--users-green-dark);
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .users-access-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--users-ink);
+            font-weight: 800;
+        }
+
         .users-empty,
         .users-loading {
             padding: 34px 18px;
@@ -378,8 +411,8 @@
         <div v-if="serverError" class="users-alert">{{ serverError }}</div>
 
         <section class="users-hero">
-            <h1>مدیریت کاربران</h1>
-            <p>کاربران سیستم باسکول را مشاهده، ایجاد و ویرایش کنید؛ تغییر رمز و حذف دسترسی هم از همین صفحه انجام می‌شود.</p>
+            <h1>@ViewData["Title"]</h1>
+            <p>@(isPasswordMode ? "برای تغییر رمز هر کاربر، از دکمه قفل در ردیف همان کاربر استفاده کنید." : "کاربران سیستم باسکول را مشاهده، ایجاد و ویرایش کنید؛ تغییر رمز و حذف دسترسی هم از همین صفحه انجام می‌شود.")</p>
         </section>
 
         <section class="users-form-panel" v-if="form.visible">
@@ -513,11 +546,14 @@
                                 <td><span class="users-mobile">{{ user.mobile || '-' }}</span></td>
                                 <td>
                                     <div class="users-actions">
-                                        <button type="button" class="users-action-btn" title="تغییر رمز" v-on:click="goToResetPassword(user)">
+                                        <button type="button" class="users-action-btn" title="تغییر رمز" v-on:click="openResetPasswordModal(user)">
                                             <i class="fa fa-lock"></i>
                                         </button>
                                         <button type="button" class="users-action-btn" title="ویرایش" v-on:click="openEditForm(user)">
                                             <i class="fa fa-pencil"></i>
+                                        </button>
+                                        <button type="button" class="users-action-btn" title="دسترسی منو" v-on:click="openAccessModal(user)">
+                                            <i class="fa fa-list"></i>
                                         </button>
                                         <button type="button" class="users-action-btn danger" title="حذف" v-on:click="confirmDelete(user)">
                                             <i class="fa fa-trash"></i>
@@ -548,6 +584,54 @@
                 </footer>
             </template>
         </section>
+
+        <div class="users-modal-backdrop" v-if="accessModal.visible" v-on:click.self="closeAccessModal">
+            <div class="users-modal">
+                <h3>دسترسی منو برای {{ accessModal.userName }}</h3>
+                <div class="users-access-list">
+                    <div class="users-access-group" v-for="group in accessGroups" :key="group.name">
+                        <h4>{{ group.title }}</h4>
+                        <label class="users-access-option" v-for="item in group.items" :key="item.id">
+                            <input type="checkbox" v-model="item.isAccess" />
+                            <span>{{ item.nameFarsi || item.name }}</span>
+                        </label>
+                    </div>
+                    <div v-if="!accessModal.items.length" class="users-empty">آیتمی برای دسترسی تعریف نشده است.</div>
+                </div>
+                <div class="users-form-actions" style="padding: 0 18px 18px;">
+                    <button type="button" class="users-submit-btn" v-on:click="saveAccess">
+                        <i class="fa fa-save"></i>
+                        ذخیره دسترسی
+                    </button>
+                    <button type="button" class="users-cancel-btn" v-on:click="closeAccessModal">بستن</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="users-modal-backdrop" v-if="resetPasswordModal.visible" v-on:click.self="closeResetPasswordModal">
+            <div class="users-modal">
+                <h3>تغییر رمز برای {{ resetPasswordModal.userName }}</h3>
+                <form method="post" :action="urls.resetPassword" v-on:submit="validateResetPassword">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id" :value="resetPasswordModal.userId" />
+                    <div class="users-field">
+                        <label>رمز عبور جدید</label>
+                        <input name="Password" v-model="resetPasswordModal.password" type="password" autocomplete="new-password" required />
+                    </div>
+                    <div class="users-field">
+                        <label>تکرار رمز عبور جدید</label>
+                        <input name="RepeatePassword" v-model="resetPasswordModal.repeatePassword" type="password" autocomplete="new-password" required />
+                    </div>
+                    <div class="users-form-actions">
+                        <button type="submit" class="users-submit-btn">
+                            <i class="fa fa-save"></i>
+                            ذخیره رمز
+                        </button>
+                        <button type="button" class="users-cancel-btn" v-on:click="closeResetPasswordModal">بستن</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <div class="users-modal-backdrop" v-if="tokenModal.visible" v-on:click.self="closeTokenModal">
             <div class="users-modal">
@@ -617,11 +701,26 @@
                             hamUsername: '',
                             password: ''
                         },
+                        accessModal: {
+                            visible: false,
+                            userId: '',
+                            userName: '',
+                            items: []
+                        },
+                        resetPasswordModal: {
+                            visible: false,
+                            userId: '',
+                            userName: '',
+                            password: '',
+                            repeatePassword: ''
+                        },
                         urls: {
                             load: '@Url.Action("load_data_users", "UserManager")',
                             insert: '@Url.Action("Insert", "UserManager")',
                             edit: '@Url.Action("Edit", "UserManager")',
                             getForEdit: '@Url.Action("GetUserForEdit", "UserManager")',
+                            getAccess: '@Url.Action("GetAccess", "UserManager")',
+                            saveAccess: '@Url.Action("SaveAccess", "UserManager")',
                             resetPassword: '@Url.Action("ResetUserPassword", "UserManager")',
                             deleteUser: '@Url.Action("DeleteUser", "UserManager")',
                             hamyarToken: '@Url.Action("GetToken", "APIs")',
@@ -661,6 +760,21 @@
                         const end = Math.min(this.totalPages, this.page + 2);
                         for (let item = start; item <= end; item++) pages.push(item);
                         return pages;
+                    },
+                    accessGroups() {
+                        const groups = new Map();
+                        for (const item of this.accessModal.items) {
+                            const name = item.groupName || 'General';
+                            if (!groups.has(name)) {
+                                groups.set(name, {
+                                    name,
+                                    title: item.groupNameFarsi || 'عمومی',
+                                    items: []
+                                });
+                            }
+                            groups.get(name).items.push(item);
+                        }
+                        return Array.from(groups.values());
                     }
                 },
                 watch: {
@@ -733,8 +847,82 @@
                     closeForm() {
                         this.form.visible = false;
                     },
-                    goToResetPassword(user) {
-                        window.location.href = `${this.urls.resetPassword}?id=${encodeURIComponent(user.id)}`;
+                    openResetPasswordModal(user) {
+                        this.resetPasswordModal = {
+                            visible: true,
+                            userId: user.id,
+                            userName: user.userName || '',
+                            password: '',
+                            repeatePassword: ''
+                        };
+                    },
+                    closeResetPasswordModal() {
+                        this.resetPasswordModal.visible = false;
+                    },
+                    validateResetPassword(event) {
+                        if (this.resetPasswordModal.password !== this.resetPasswordModal.repeatePassword) {
+                            event.preventDefault();
+                            this.notify(false, 'رمز عبور و تکرار آن یکسان نیستند.');
+                        }
+                    },
+                    async openAccessModal(user) {
+                        this.serverError = '';
+                        try {
+                            const response = await fetch(`${this.urls.getAccess}?id=${encodeURIComponent(user.id)}`, {
+                                headers: { 'Accept': 'application/json' }
+                            });
+                            const result = await response.json();
+                            if (!result.success) {
+                                this.notify(false, result.message || 'دریافت دسترسی‌های کاربر با خطا مواجه شد.');
+                                return;
+                            }
+
+                            this.accessModal = {
+                                visible: true,
+                                userId: result.userId || user.id,
+                                userName: user.userName || '',
+                                items: (result.items || []).map(item => ({
+                                    id: item.id || item.Id,
+                                    name: item.name || item.Name,
+                                    nameFarsi: item.nameFarsi || item.NameFarsi,
+                                    groupName: item.groupName || item.GroupName,
+                                    groupNameFarsi: item.groupNameFarsi || item.GroupNameFarsi,
+                                    isAccess: Boolean(item.isAccess ?? item.IsAccess)
+                                }))
+                            };
+                        } catch (error) {
+                            this.notify(false, 'دریافت دسترسی‌های کاربر با خطا مواجه شد.');
+                        }
+                    },
+                    closeAccessModal() {
+                        this.accessModal.visible = false;
+                    },
+                    async saveAccess() {
+                        try {
+                            const response = await fetch(this.urls.saveAccess, {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    userId: this.accessModal.userId,
+                                    objectFormViews: this.accessModal.items.map(item => ({
+                                        id: item.id,
+                                        name: item.name,
+                                        nameFarsi: item.nameFarsi,
+                                        groupName: item.groupName,
+                                        groupNameFarsi: item.groupNameFarsi,
+                                        isAccess: item.isAccess
+                                    }))
+                                })
+                            });
+                            const result = await response.json();
+                            this.notify(result.success, result.message || 'دسترسی‌ها ذخیره شد.');
+                            if (result.success) this.closeAccessModal();
+                        } catch (error) {
+                            this.notify(false, 'ذخیره دسترسی‌ها با خطا مواجه شد.');
+                        }
                     },
                     async confirmDelete(user) {
                         const confirmed = await this.askDeleteConfirm(user);

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Domain.Interfaces;
 using Domain.Models;
-using Domain.ViewModels.Baskoul;
+using Domain.ViewModels.Weighbridge;
 using Domain.Classes;
 using Infra.Data.Context;
 using System.Globalization;

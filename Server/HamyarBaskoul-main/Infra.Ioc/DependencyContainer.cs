@@ -48,8 +48,8 @@ namespace Infra.Ioc
 			services.AddScoped<IUsersRepository, UsersRepository>();
 			services.AddScoped<IBaseTableRepository, BaseTableRepository>();
 
-			services.AddScoped<IBaskoulService, BaskoulService>();
-			services.AddScoped<IBaskoulRepository, BaskoulRepository>();
+            services.AddScoped<IWeighbridgeService, WeighbridgeService>();
+            services.AddScoped<IWeighbridgeRepository, WeighbridgeRepository>();
 
 			services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
@@ -59,11 +59,11 @@ namespace Infra.Ioc
 			services.AddScoped<IBargeBaskoul, BargeBaskoulService>();
 			services.AddScoped<IBargeBaskoulRepository, BargeBaskoulRepository>();
 
-			services.AddScoped<ISite, SiteService>();
-			services.AddScoped<ISiteRepository, SiteRepository>();
+			services.AddScoped<IWeighbridgeSiteService, WeighbridgeSiteService>();
+			services.AddScoped<IWeighbridgeSiteRepository, WeighbridgeSiteRepository>();
 
-			services.AddScoped<ICodeMarkaz, CodeMarkazService>();
-			services.AddScoped<ICodeMarkazRepository, CodeMarkazRepository>();
+			services.AddScoped<ICompanyService, CompanyService>();
+			services.AddScoped<ICompanyRepository, CompanyRepository>();
 
 			services.AddScoped<IReports, ReportService>();
 			services.AddScoped<IReportsRepository, ReportsRepository>();

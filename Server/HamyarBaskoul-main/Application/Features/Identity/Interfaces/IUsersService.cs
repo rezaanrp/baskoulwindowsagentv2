@@ -19,7 +19,7 @@ namespace Application.Interfaces
 		string GetCodMarkazById(string Id);
 		string GetCodMarkazByURL(string Id);
 		public IEnumerable<AppUser> GetAll1(string roleName1, string roleName2);
-		public IEnumerable<SiteViewModel> GetAllActiveSites(string id);
+		public IEnumerable<WeighbridgeSiteViewModel> GetAllActiveSites(string id);
 		public Task<IEnumerable<AppUser>> GetAllByDepartementasync(string Departement, string codemarkaz);
 		public IEnumerable<AppUser> GetAllByDepartement(string Departement);
 

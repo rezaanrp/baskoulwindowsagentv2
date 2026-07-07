@@ -11,9 +11,9 @@ namespace Application.Services
     {
         private readonly IReportsRepository _reportrepo;
         private readonly IMapper _mapper;
-        private readonly ICodeMarkaz _codeMarkaz;
+        private readonly ICompanyService _codeMarkaz;
 
-        public ReportService(IReportsRepository reportrepo, IMapper mapper, ICodeMarkaz codeMarkaz)
+        public ReportService(IReportsRepository reportrepo, IMapper mapper, ICompanyService codeMarkaz)
         {
             _reportrepo = reportrepo;
             _mapper = mapper;
@@ -25,7 +25,7 @@ namespace Application.Services
             if (model.Logo != null && model.Logo.Length > 0)
             {
                 var extension = Path.GetExtension(model.Logo.FileName);
-                var fileName = $"{model.CodeMarkaz}{extension}";
+                var fileName = $"{model.Company}{extension}";
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
@@ -34,7 +34,7 @@ namespace Application.Services
                 {
                     await model.Logo.CopyToAsync(stream);
                 }
-                var appname = await _codeMarkaz.GetAppNameByCode(model.CodeMarkaz);
+                var appname = await _codeMarkaz.GetAppNameByCode(model.Company);
                 model.LogoPath = $"/{appname}/uploads/{fileName}"; 
             }
             model.DateIns = DateTime.Now;

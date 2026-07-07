@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.ViewModels.Baskoul
+namespace Application.ViewModels.Weighbridge
 {
     public class BargeBaskoulViewModel
     {

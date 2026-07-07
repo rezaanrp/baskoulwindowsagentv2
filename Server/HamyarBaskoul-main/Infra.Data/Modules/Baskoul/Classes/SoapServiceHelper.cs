@@ -48,7 +48,7 @@ namespace Infra.Data.Classes
             var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null) return (null, null);
 
-            var markaz = await context.CodeMarkazs.FirstOrDefaultAsync(m => m.CodMarkaz == user.CodMarkaz);
+            var markaz = await context.Companies.FirstOrDefaultAsync(m => m.CodMarkaz == user.CodMarkaz);
             if (string.IsNullOrEmpty(markaz?.APIURL)) return (null, null);
 
             return (markaz.APIURL, user.Token);
@@ -56,7 +56,7 @@ namespace Infra.Data.Classes
 
         public static async Task<string> GetApiUrlAsync(WriteDbContext context, string codMarkaz)
         {
-            var markaz = await context.CodeMarkazs.FirstOrDefaultAsync(m => m.CodMarkaz == codMarkaz);
+            var markaz = await context.Companies.FirstOrDefaultAsync(m => m.CodMarkaz == codMarkaz);
             return markaz?.APIURL;
         }
     }

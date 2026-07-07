@@ -1,5 +1,5 @@
 ﻿using Domain.Classes;
-using Domain.ViewModels.Baskoul;
+using Domain.ViewModels.Weighbridge;
 
 namespace Domain.Interfaces
 {

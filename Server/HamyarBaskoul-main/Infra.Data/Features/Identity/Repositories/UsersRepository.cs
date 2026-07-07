@@ -2,7 +2,7 @@
 using Domain.Interfaces;
 using Domain.Models;
 using Domain.ViewModels;
-using Domain.ViewModels.Baskoul;
+using Domain.ViewModels.Weighbridge;
 using Domain.ViewModels.Users;
 using Domain.Classes;
 using Infra.Data.Classes;
@@ -33,7 +33,7 @@ namespace Infra.Data.Repository
 		public string FindCodeMarkazByURL(string url)
 		{
 			Logger.LogToFile(url);
-            var codemarkaz = _Context.CodeMarkazs
+            var codemarkaz = _Context.Companies
 				.FirstOrDefault(m => url == m.MarkazURL);
 			if (codemarkaz == null) return null;
 			return codemarkaz.CodMarkaz;
@@ -120,7 +120,7 @@ namespace Infra.Data.Repository
 
 			// Get roles by names
 			var roles = _Context.Roles
-												.Where(r => r.Name == roleName1 || r.Name == roleName2 || r.Name == "Administrator")
+												.Where(r => r.Name == roleName1 || r.Name == roleName2 || r.Name == "Admin")
 												.ToList();
 
 			// Check if roles exist
@@ -149,7 +149,7 @@ namespace Infra.Data.Repository
 		}
 		public AppUser? GetById(string Id)
 		{
-			var category = _Context.Users.Include(u => u.UserSites).FirstOrDefault(x => x.Id == Id);
+			var category = _Context.Users.Include(u => u.WeighbridgeSiteUsers).FirstOrDefault(x => x.Id == Id);
 			return category;
 		}
 	 	public async Task<AppUser?> GetByIdAsync(string Id)
@@ -159,7 +159,7 @@ namespace Infra.Data.Repository
         public void Update(UsersListDomainViewModel category)
         {
             var model = _Context.Users
-    .Include(u => u.UserSites) // Needed to access and modify UserSites
+    .Include(u => u.WeighbridgeSiteUsers) // Needed to access and modify WeighbridgeSiteUsers
     .FirstOrDefault(u => u.Id == category.Id);
 
 
@@ -169,15 +169,15 @@ namespace Infra.Data.Repository
                 model.Family = category.Family;
                 model.Mobile = category.Mobile;
                 model.UserName = category.UserName;
-				model.CodMarkaz = category.CodeMarkaz;
+				model.CodMarkaz = category.Company;
 				model.Token = category.Token;
 				model.WindowsToken = category.WindowsToken;
-                var toRemove = model.UserSites.ToList();
-                _Context.UserSites.RemoveRange(toRemove);
+                var toRemove = model.WeighbridgeSiteUsers.ToList();
+                _Context.WeighbridgeSiteUsers.RemoveRange(toRemove);
 
                 foreach (var site in category.SelectedSiteIds)
                 {
-                    model.UserSites.Add(new UserSite
+                    model.WeighbridgeSiteUsers.Add(new WeighbridgeSiteUser
                     {
                         SiteId = site,
                         UserId = category.Id,
@@ -232,7 +232,10 @@ namespace Infra.Data.Repository
 		}
 		public IEnumerable<ObjectForm> GetObjectForm()
 		{
-			return _Context.ObjectForms.ToList();
+			return _Context.ObjectForms
+				.OrderBy(x => x.GroupName)
+				.ThenBy(x => x.Id)
+				.ToList();
 		}
 
 		public IEnumerable<ObjectFormUser> get_all_object_user_access(string UserId)
@@ -273,29 +276,38 @@ namespace Infra.Data.Repository
 
 		public IEnumerable<ObjectForm> GetObjectFormByDepartement(string Departement)
 		{
-			return _Context.ObjectForms.Where(x => x.Departement  == Departement).ToList();
+			var query = _Context.ObjectForms.AsQueryable();
+			if (!string.IsNullOrWhiteSpace(Departement))
+			{
+				query = query.Where(x => x.Departement == Departement || x.Departement == null || x.Departement == "");
+			}
+
+			return query
+				.OrderBy(x => x.GroupName)
+				.ThenBy(x => x.Id)
+				.ToList();
 
 		}
 
-        public List<SiteDomainViewModel> GetAllActiveSites(string userId)
+        public List<WeighbridgeSiteDomainViewModel> GetAllActiveSites(string userId)
         {
             var user = _Context.Users
-                .Include(u => u.UserSites)
-                    .ThenInclude(us => us.Site)
+                .Include(u => u.WeighbridgeSiteUsers)
+                    .ThenInclude(us => us.WeighbridgeSite)
                 .FirstOrDefault(u => u.Id == userId);
 
             if (user == null)
-                return new List<SiteDomainViewModel>();
+                return new List<WeighbridgeSiteDomainViewModel>();
 
-            var sites = user.UserSites
-                .Where(us => us.Site.isActive)
-                .Select(us => new Site
+            var sites = user.WeighbridgeSiteUsers
+                .Where(us => us.WeighbridgeSite.isActive)
+                .Select(us => new WeighbridgeSite
                 {
-                    ID = us.Site.ID,
-                    name = us.Site.name
+                    ID = us.WeighbridgeSite.ID,
+                    name = us.WeighbridgeSite.name
                 })
                 .ToList();
-			var model = _mapper.Map<List<SiteDomainViewModel>>(sites);
+			var model = _mapper.Map<List<WeighbridgeSiteDomainViewModel>>(sites);
 			return model;
         }
 
@@ -306,7 +318,7 @@ namespace Infra.Data.Repository
                 return false;
 
             // Check that the site exists and is active
-            var siteExists = await _Context.Sites.AnyAsync(s => s.ID == siteId && s.isActive);
+            var siteExists = await _Context.WeighbridgeSites.AnyAsync(s => s.ID == siteId && s.isActive);
             if (!siteExists)
                 return false;
 
@@ -314,12 +326,12 @@ namespace Infra.Data.Repository
             user.SelectedSiteId = siteId;
 
             // Check if user already has access to this site
-            var alreadyLinked = await _Context.UserSites
+            var alreadyLinked = await _Context.WeighbridgeSiteUsers
                 .AnyAsync(us => us.UserId == userId && us.SiteId == siteId);
 
             if (!alreadyLinked)
             {
-                _Context.UserSites.Add(new UserSite
+                _Context.WeighbridgeSiteUsers.Add(new WeighbridgeSiteUser
                 {
                     UserId = userId,
                     SiteId = siteId
@@ -334,9 +346,9 @@ namespace Infra.Data.Repository
         {
             _Context.Database.SetCommandTimeout(180); // 180 seconds
             var list = await _Context.Users
-    .Include(u => u.UserSites)
+    .Include(u => u.WeighbridgeSiteUsers)
     .Where(u => u.CodMarkaz == codemarkaz &&
-                u.UserSites.Any(us => us.SiteId == siteid))
+                u.WeighbridgeSiteUsers.Any(us => us.SiteId == siteid))
     .ToListAsync();
 			var users = new List<UsersListDomainViewModel>();
             foreach (var item in list)
@@ -354,7 +366,16 @@ namespace Infra.Data.Repository
 
 		public async Task<IEnumerable<ObjectForm?>> GetObjectFormByDepartementAsync(string Departement)
 		{
-			return await _Context.ObjectForms.Where(x => x.Departement == Departement).ToListAsync();
+			var query = _Context.ObjectForms.AsQueryable();
+			if (!string.IsNullOrWhiteSpace(Departement))
+			{
+				query = query.Where(x => x.Departement == Departement || x.Departement == null || x.Departement == "");
+			}
+
+			return await query
+				.OrderBy(x => x.GroupName)
+				.ThenBy(x => x.Id)
+				.ToListAsync();
 
 		}
 

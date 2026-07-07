@@ -55,7 +55,7 @@ namespace Domain.ViewModels
 
         public DateTime? DateUp { get; set; }
 
-        public string? CodeMarkaz { get; set; }
+        public string? Company { get; set; }
     }
 }
 

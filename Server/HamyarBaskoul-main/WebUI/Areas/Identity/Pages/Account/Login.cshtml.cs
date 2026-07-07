@@ -27,10 +27,10 @@ namespace WebUI.Areas.Identity.Pages.Account
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IUsersService _userservice;
         private readonly ILogger<LoginModel> _logger;
-        private readonly ICodeMarkaz _codemarkaz;
+        private readonly ICompanyService _codemarkaz;
 
         public LoginModel(UserManager<AppUser> UserManager,SignInManager<AppUser> signInManager,
-            ILogger<LoginModel> logger, IUsersService usersService, ICodeMarkaz codemarkaz)
+            ILogger<LoginModel> logger, IUsersService usersService, ICompanyService codemarkaz)
         {
             _signInManager = signInManager;
             _logger = logger;
@@ -115,7 +115,7 @@ namespace WebUI.Areas.Identity.Pages.Account
                         TempData["LoginError"] = "کد مرکز برای کاربر تعریف نشده";
                         return RedirectToPage("./Login");
                     }
-                    if (!roles.Contains("SuperAdmin"))
+                    if (!roles.Contains("Admin"))
                     {
                         if (!isUserPermited)
                         {
@@ -126,7 +126,7 @@ namespace WebUI.Areas.Identity.Pages.Account
                     }
                     if (!activeSites.Any())
                     {
-                        if (!roles.Contains("SuperAdmin") && !roles.Contains("Administrator"))
+                        if (!roles.Contains("Admin"))
                         {
                             await _signInManager.SignOutAsync();
                             TempData["LoginError"] = "کاربر به هیچ سایت فعالی دسترسی ندارد";

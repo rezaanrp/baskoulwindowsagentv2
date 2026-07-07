@@ -437,51 +437,7 @@ namespace Infra.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Domain.Models.Baskoul", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CodMarkaz")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CreateIp")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ModifyIp")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ScaleCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Site")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("baskouls");
-                });
-
-            modelBuilder.Entity("Domain.Models.CodeMarkaz", b =>
+            modelBuilder.Entity("Domain.Models.Company", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -514,7 +470,7 @@ namespace Infra.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CodeMarkazs");
+                    b.ToTable("Companies");
 
                     b.HasData(
                         new
@@ -703,7 +659,7 @@ namespace Infra.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
-                    b.Property<string>("CodeMarkaz")
+                    b.Property<string>("Company")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CreateIp")
@@ -846,7 +802,51 @@ namespace Infra.Data.Migrations
                     b.ToTable("Settings");
                 });
 
-            modelBuilder.Entity("Domain.Models.Site", b =>
+            modelBuilder.Entity("Domain.Models.Weighbridge", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodMarkaz")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreateIp")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ModifyIp")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ScaleCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("WeighbridgeSite")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Weighbridges");
+                });
+
+            modelBuilder.Entity("Domain.Models.WeighbridgeSite", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -854,7 +854,7 @@ namespace Infra.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
-                    b.Property<string>("CodeMarkaz")
+                    b.Property<string>("Company")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CreateIp")
@@ -873,10 +873,10 @@ namespace Infra.Data.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Sites");
+                    b.ToTable("WeighbridgeSites");
                 });
 
-            modelBuilder.Entity("Domain.Models.UserSite", b =>
+            modelBuilder.Entity("Domain.Models.WeighbridgeSiteUser", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -911,7 +911,7 @@ namespace Infra.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserSites");
+                    b.ToTable("WeighbridgeSiteUsers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -975,31 +975,10 @@ namespace Infra.Data.Migrations
                         },
                         new
                         {
-                            Id = "cbc43a8e-f7bb-4445-baaf-1add431ffbbf",
-                            ConcurrencyStamp = "dde4cd0a-c55c-4c1b-874d-8d2e33c0c7eb",
-                            Name = "Administrator",
-                            NormalizedName = "ADMINISTRATOR"
-                        },
-                        new
-                        {
                             Id = "abc12def-1234-4567-89ab-1234567890ab",
                             ConcurrencyStamp = "39a9015e-1958-405b-a4ea-25bf2249e783",
-                            Name = "SuperAdmin",
-                            NormalizedName = "SUPERADMIN"
-                        },
-                        new
-                        {
-                            Id = "abc12def-1234-8954-89ab-1234567890ab",
-                            ConcurrencyStamp = "ae356140-5de4-4a67-b818-e1021aeacfcf",
-                            Name = "NonHamyarUser",
-                            NormalizedName = "NONHAMYARUSER"
-                        },
-                        new
-                        {
-                            Id = "abc12def-1234-2548-89ab-1234567890ab",
-                            ConcurrencyStamp = "55a33924-8173-4f79-b41e-d438d1eada2a",
-                            Name = "NonHamyarAdmin",
-                            NormalizedName = "NONHAMYARADMIN"
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
                         });
                 });
 
@@ -1136,17 +1115,6 @@ namespace Infra.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Models.Baskoul", b =>
-                {
-                    b.HasOne("Domain.Models.AppUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Domain.Models.ObjectFormUser", b =>
                 {
                     b.HasOne("Domain.Models.ObjectForm", "ObjectForm")
@@ -1158,23 +1126,34 @@ namespace Infra.Data.Migrations
                     b.Navigation("ObjectForm");
                 });
 
-            modelBuilder.Entity("Domain.Models.UserSite", b =>
+            modelBuilder.Entity("Domain.Models.Weighbridge", b =>
                 {
-                    b.HasOne("Domain.Models.Site", "Site")
-                        .WithMany("UserSites")
+                    b.HasOne("Domain.Models.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Models.WeighbridgeSiteUser", b =>
+                {
+                    b.HasOne("Domain.Models.WeighbridgeSite", "WeighbridgeSite")
+                        .WithMany("WeighbridgeSiteUsers")
                         .HasForeignKey("SiteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.Models.AppUser", "User")
-                        .WithMany("UserSites")
+                        .WithMany("WeighbridgeSiteUsers")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Site");
-
                     b.Navigation("User");
+
+                    b.Navigation("WeighbridgeSite");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1230,7 +1209,7 @@ namespace Infra.Data.Migrations
 
             modelBuilder.Entity("Domain.Models.AppUser", b =>
                 {
-                    b.Navigation("UserSites");
+                    b.Navigation("WeighbridgeSiteUsers");
                 });
 
             modelBuilder.Entity("Domain.Models.ObjectForm", b =>
@@ -1238,9 +1217,9 @@ namespace Infra.Data.Migrations
                     b.Navigation("ObjectFormUsers");
                 });
 
-            modelBuilder.Entity("Domain.Models.Site", b =>
+            modelBuilder.Entity("Domain.Models.WeighbridgeSite", b =>
                 {
-                    b.Navigation("UserSites");
+                    b.Navigation("WeighbridgeSiteUsers");
                 });
 #pragma warning restore 612, 618
         }

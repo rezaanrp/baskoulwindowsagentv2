@@ -8,11 +8,11 @@ namespace WebUI.Tools
 {
     public class CoNameViewComponent : ViewComponent
     {
-        private readonly ICodeMarkaz _codemarkaz;
+        private readonly ICompanyService _codemarkaz;
         private readonly IHttpContextAccessor _httpContextAccessor;
         protected UserManager<AppUser> _userManager;
 
-        public CoNameViewComponent(ICodeMarkaz codeMarkaz, IHttpContextAccessor httpContextAccessor,
+        public CoNameViewComponent(ICompanyService codeMarkaz, IHttpContextAccessor httpContextAccessor,
             UserManager<AppUser> userManager)
         {
             _codemarkaz = codeMarkaz;

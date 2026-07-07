@@ -2,8 +2,8 @@
 using Domain.Interfaces;
 using AutoMapper;
 using Domain.Models;
-using Application.ViewModels.Baskoul;
-using Domain.ViewModels.Baskoul;
+using Application.ViewModels.Weighbridge;
+using Domain.ViewModels.Weighbridge;
 using System.Reflection.Metadata.Ecma335;
 using Application.Tools;
 using Application.Classes;

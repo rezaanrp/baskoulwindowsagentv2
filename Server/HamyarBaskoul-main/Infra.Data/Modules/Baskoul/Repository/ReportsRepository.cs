@@ -22,7 +22,7 @@ namespace Infra.Data.Repository
 
         public async Task<ReportSettingDomainViewModel> GetReportSettingByCodMarkaz(string codmarkaz)
         {
-            var entity = await _context.ReportSettings.FirstOrDefaultAsync(r => r.CodeMarkaz == codmarkaz);
+            var entity = await _context.ReportSettings.FirstOrDefaultAsync(r => r.Company == codmarkaz);
             var model = _mapper.Map<ReportSettingDomainViewModel>(entity);
             return model;
         }
@@ -30,7 +30,7 @@ namespace Infra.Data.Repository
         public async Task<SimpleReportDomainViewModel> GetSimpleReportViewModel(int id)
         {
             var barge = await _context.BargeBaskouls.FirstOrDefaultAsync(b => b.ID == id);
-            var markaz = await _context.CodeMarkazs.FirstOrDefaultAsync(c => c.CodMarkaz == barge.CodMarkaz);
+            var markaz = await _context.Companies.FirstOrDefaultAsync(c => c.CodMarkaz == barge.CodMarkaz);
             var taf = barge.IDTafsili != null ? await _context.Mabanis.FirstOrDefaultAsync(t => t.IDLinq == barge.IDTafsili) : null;
             var shakhs = barge.IDShakhs != null ? await _context.Mabanis.FirstOrDefaultAsync(t => t.IDLinq == barge.IDShakhs) : null;
             var anbar = barge.IDAnbar != null ? await _context.Mabanis.FirstOrDefaultAsync(t => t.IDLinq == barge.IDAnbar) : null;
@@ -79,10 +79,10 @@ namespace Infra.Data.Repository
         public async Task<TripleReportDomainViewModel> GetTripleReportViewModel(int id, string username)
         {
             var barge = await _context.BargeBaskouls.FirstOrDefaultAsync(b => b.ID == id);
-            var markaz = await _context.CodeMarkazs.FirstOrDefaultAsync(c => c.CodMarkaz == barge.CodMarkaz);
+            var markaz = await _context.Companies.FirstOrDefaultAsync(c => c.CodMarkaz == barge.CodMarkaz);
             var kala = barge.IDKala != null ? await _context.Mabanis.FirstOrDefaultAsync(t => t.IDLinq == barge.IDKala) : null;
             var vasile = barge.IDVasile != null ? await _context.Mabanis.FirstOrDefaultAsync(t => t.IDLinq == barge.IDVasile) : null;
-            var reportSetting = await _context.ReportSettings.FirstOrDefaultAsync(s => s.CodeMarkaz == markaz.CodMarkaz);
+            var reportSetting = await _context.ReportSettings.FirstOrDefaultAsync(s => s.Company == markaz.CodMarkaz);
             if (reportSetting == null) return null;
             var model = new TripleReportDomainViewModel
             {
@@ -119,7 +119,7 @@ namespace Infra.Data.Repository
         public async Task<bool> SaveReportSettings(ReportSettingDomainViewModel model)
         {
             var report = _mapper.Map<ReportSetting>(model);
-            var entity = await _context.ReportSettings.FirstOrDefaultAsync(r => r.CodeMarkaz == model.CodeMarkaz);
+            var entity = await _context.ReportSettings.FirstOrDefaultAsync(r => r.Company == model.Company);
             if (entity == null)
             {
                 await _context.ReportSettings.AddAsync(report);

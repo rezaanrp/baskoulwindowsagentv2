@@ -1,4 +1,4 @@
-﻿@using Application.ViewModels.Baskoul
+﻿@using Application.ViewModels.Weighbridge
 @model BargeBaskoulViewModel
 
 @{
@@ -465,12 +465,12 @@
 
         function getSelectedWeight() {
 
-            let baskouls = document.querySelectorAll(".small-box");
+            let Weighbridges = document.querySelectorAll(".small-box");
             let selectedRadio = document.querySelector("input[name='selectedScale']:checked");
 
             let validBaskouls = [];
 
-            baskouls.forEach(baskoul => {
+            Weighbridges.forEach(baskoul => {
                 let weightElement = baskoul.querySelector("h3[id^='weight-']");
                 let weight = parseFloat(weightElement.textContent) || 0;
                 let type = baskoul.dataset.type; // Scale type

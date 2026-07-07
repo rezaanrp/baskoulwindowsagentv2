@@ -24,8 +24,8 @@ namespace WebUI.Components
             var userPermissions = await _permissionService.GetUserFormAccessListAsync(userId ?? "");
 		
             if(userPermissions != null)
-			    return View(userPermissions.objectFormViews.Where(c => c.IsAccess).Select(c => c.Name).ToList());
-			return View("");
+			    return View(userPermissions.objectFormViews.Where(c => c.IsAccess).ToList());
+			return View(new List<Application.ViewModels.Users.ObjectFormViewModel>());
 
 		}
     }

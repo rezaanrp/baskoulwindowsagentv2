@@ -1,5 +1,5 @@
 ﻿@using Application.ViewModels
-@model ManageSiteViewModel
+@model ManageWeighbridgeSiteViewModel
 
 @if (Model != null && Model.siteViews.Any())
 {
@@ -26,7 +26,7 @@
                     }
                     <td>
                         <a class="btn btn-icon open-modal btn-outline-primary btn-sm _edit"
-                           href="@Url.Action("EditSite", "Site", new { id = site.ID })" style="margin-left: 2px;"
+                           href="@Url.Action("EditSite", "WeighbridgeSite", new { id = site.ID })" style="margin-left: 2px;"
                            title="ویرایش">
                             <i class="fa fa-pencil fa-lg"></i>
                         </a>

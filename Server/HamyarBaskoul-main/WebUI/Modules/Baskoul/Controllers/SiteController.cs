@@ -1,7 +1,7 @@
 ﻿using Application.Interfaces;
 using Application.Services;
 using Application.ViewModels;
-using Application.ViewModels.Baskoul;
+using Application.ViewModels.Weighbridge;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -14,40 +14,40 @@ namespace WebUI.Controllers
     public class SiteController : BaseController
     {
         private readonly IUsersService _userservice;
-        private readonly ISite _siteservice;
-        private readonly IBaskoulService _baskoulservice;
+        private readonly IWeighbridgeSiteService _siteservice;
+        private readonly IWeighbridgeService _baskoulservice;
 
         public SiteController(UserManager<AppUser> userManager, IUsersService userservice, 
-            ISite siteservice, IBaskoulService baskoulservice) : base(userManager)
+            IWeighbridgeSiteService siteservice, IWeighbridgeService baskoulservice) : base(userManager)
         {
             _userManager = userManager;
             _userservice = userservice;
             _siteservice = siteservice;
             _baskoulservice = baskoulservice;
         }
-        [Authorize(Roles = "Administrator,SuperAdmin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SiteList()
         {
             var user = _userservice.GetById(OnGetUserId());
-            var model = new ManageSiteViewModel
+            var model = new ManageWeighbridgeSiteViewModel
             {
-                siteViews = _siteservice.GetAllAsync(user.CodMarkaz) ?? new List<SiteViewModel>(),
-                baskoulViews = await _baskoulservice.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz) ?? new List<BaskoulViewModel>(),
+                siteViews = _siteservice.GetAllAsync(user.CodMarkaz) ?? new List<WeighbridgeSiteViewModel>(),
+                baskoulViews = await _baskoulservice.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz) ?? new List<WeighbridgeViewModel>(),
             };
             return View("ManageSite", model);
         }
-        [Authorize(Roles = "Administrator,SuperAdmin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateSite()
         {
-            var model = new SiteViewModel
+            var model = new WeighbridgeSiteViewModel
             {
-                CodeMarkaz = _userservice.GetCodMarkazById(OnGetUserId()),
+                Company = _userservice.GetCodMarkazById(OnGetUserId()),
             };
             return PartialView("_AddSitePartial", model);
         }
-        [Authorize(Roles = "Administrator,SuperAdmin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> CreateSite(SiteViewModel entity)
+        public async Task<IActionResult> CreateSite(WeighbridgeSiteViewModel entity)
         {
             if (ModelState.IsValid)
             {
@@ -64,31 +64,31 @@ namespace WebUI.Controllers
         public async Task<IActionResult> GetSiteListPartial()
         {
             var user = _userservice.GetById(OnGetUserId());
-            var model = new ManageSiteViewModel
+            var model = new ManageWeighbridgeSiteViewModel
             {
-                siteViews = _siteservice.GetAllAsync(user.CodMarkaz) ?? new List<SiteViewModel>(),
-                baskoulViews = await _baskoulservice.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz) ?? new List<BaskoulViewModel>(),
+                siteViews = _siteservice.GetAllAsync(user.CodMarkaz) ?? new List<WeighbridgeSiteViewModel>(),
+                baskoulViews = await _baskoulservice.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz) ?? new List<WeighbridgeViewModel>(),
             };
             return PartialView("_SiteListPartial", model);
         }
 
 
-        [Authorize(Roles = "Administrator,SuperAdmin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> EditSite(int id)
         {
             var entity = await _siteservice.GetByIdAsync(id);
             return PartialView("_EditSitePartial", entity);
         }
-        [Authorize(Roles = "Administrator,SuperAdmin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> EditSite(SiteViewModel entity)
+        public async Task<IActionResult> EditSite(WeighbridgeSiteViewModel entity)
         {
             if (ModelState.IsValid)
             {
 
                 await _siteservice.UpdateSite(entity);
-                return RedirectToAction("SiteList", "Site");
+                return RedirectToAction("SiteList", "WeighbridgeSite");
             }
 
             // Send error message if ModelState is not valid

@@ -28,10 +28,10 @@ namespace Application.ViewModels.Users
 		public string? Departments { get; set; }
         public string FullName => $"{Name} {Family}";
         // Active sites to display
-        public List<SiteViewModel> ActiveSites { get; set; } = new();
+        public List<WeighbridgeSiteViewModel> ActiveSites { get; set; } = new();
         // Selected site IDs
         public List<int> SelectedSiteIds { get; set; } = new();
-        public string? CodeMarkaz { get; set; }
+        public string? Company { get; set; }
         //public IEnumerable<SelectListItem> AllRoles { get; set; } // All available roles
         //public string SelectedRole { get; set; } // Selected role for this user
         public string Role { get; set; } // Selected role for this user

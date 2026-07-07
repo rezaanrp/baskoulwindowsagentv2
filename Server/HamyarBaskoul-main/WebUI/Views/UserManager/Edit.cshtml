@@ -83,46 +83,23 @@
                             <div class="col-md-4">
                                 <div class="form-floating">
                                     <select asp-for="Role" class="form-select custom-select" id="roleSelect">
-                                        @switch (Model.Role)
-                                        {
-                                            case "SuperAdmin":
-                                                // SuperAdmin can see all roles
-                                                <option value="Administrator">مدیر سیستم همیار</option>
-                                                <option value="User">کاربر عادی همیار</option>
-                                                <option value="NONHAMYAADMIN">مدیر سیستم</option>
-                                                <option value="NONHAMYARUSER">کاربر عادی</option>
-                                                break;
-
-                                            case "Administrator":
-                                                // Administrator sees Administrator + User
-                                                <option value="Administrator">مدیر سیستم همیار</option>
-                                                <option value="User">کاربر عادی همیار</option>
-                                                break;
-
-                                            case "NonHamyarAdmin":
-                                                // NONHAMYAADMIN sees NONHAMYAADMIN + NONHAMYARUSER
-                                                <option value="NONHAMYAADMIN">مدیر سیستم</option>
-                                                <option value="NONHAMYARUSER">کاربر عادی</option>
-                                                break;
-                                        }
+                                        <option value="User">کاربر عادی</option>
+                                        <option value="Admin">مدیر سیستم</option>
                                     </select>
                                     <label>نقش کاربر</label>
                                     <span asp-validation-for="Role" class="text-danger small"></span>
                                 </div>
                             </div>
-                            @if (Model.Role != "NonHamyarAdmin" && Model.Role != "NonHamyarUser")
-                            {
-                                <div class="col-md-4">
-                                    <div class="input-group ">
-                                        <div class="input-group-prepend">
-                                            <button type="button" class="btn btn-primary btn-sm" onclick="showPopup()">دریافت توکن</button> <!-- btn-sm -->
-                                        </div>
-                                        <input asp-for="Token" class="form-control form-control-sm" id="Token" placeholder="دریافت توکن"> <!-- form-control-sm -->
-                                        <span asp-validation-for="Token" class="text-danger"></span>
+                            <div class="col-md-4">
+                                <div class="input-group ">
+                                    <div class="input-group-prepend">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="showPopup()">دریافت توکن</button> <!-- btn-sm -->
                                     </div>
-                                    <label class="form-label fw-bold">توکن</label>
+                                    <input asp-for="Token" class="form-control form-control-sm" id="Token" placeholder="دریافت توکن"> <!-- form-control-sm -->
+                                    <span asp-validation-for="Token" class="text-danger"></span>
                                 </div>
-                            }
+                                <label class="form-label fw-bold">توکن</label>
+                            </div>
                     </div>
                     <br />
                     <div class="row">

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Models;
-using Application.ViewModels.Baskoul;
+using Application.ViewModels.Weighbridge;
 using Application.ViewModels;
 using Domain.Interfaces;
 
@@ -16,11 +16,11 @@ namespace WebUI.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 		private readonly IUsersService _userservise;
-        private readonly IBaskoulService _baskoulService;
-        private readonly ISite _siteService;
+        private readonly IWeighbridgeService _baskoulService;
+        private readonly IWeighbridgeSiteService _siteService;
 
-		public HomeController(ILogger<HomeController> logger, IBaskoulService baskoulService,
-			  UserManager<AppUser> userManager, IUsersService userservise, ISite site
+		public HomeController(ILogger<HomeController> logger, IWeighbridgeService baskoulService,
+			  UserManager<AppUser> userManager, IUsersService userservise, IWeighbridgeSiteService site
 			) : base(userManager)
 		{
 			_userservise = userservise;
@@ -34,7 +34,7 @@ namespace WebUI.Controllers
         {
             var user = _userservise.GetById(OnGetUserId());
             var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Contains("SuperAdmin"))
+            if (roles.Contains("Admin"))
             {
                 return View();
             }
@@ -43,7 +43,7 @@ namespace WebUI.Controllers
                 var activeSites = _userservise.GetAllActiveSites(OnGetUserId());
                 if (activeSites.Any() && (activeSites.Count() > 1))
                 {
-                    return RedirectToAction("SelectSite", "Site", 1);
+                    return RedirectToAction("SelectSite", "WeighbridgeSite", 1);
                 }
                 else if (activeSites.Count() == 1)
                 {
@@ -56,14 +56,14 @@ namespace WebUI.Controllers
                     var markazSites = _siteService.GetAllActiveAsync(user.CodMarkaz);
                     if(markazSites.Any())
                     {
-                        if (roles.Contains("Administrator"))
+                        if (roles.Contains("Admin"))
                         {
                             TempData["ErrorMessage"] = "ابتدا یک سایت فعال انتخاب کنید";
                             return RedirectToAction("Edit", "UserManager", new { id = user.Id });
                         }
                     }
                     TempData["ErrorMessage"] = "لطفاً ابتدا یک سایت فعال ایجاد کنید.";
-                    return RedirectToAction("SiteList", "Site");
+                    return RedirectToAction("SiteList", "WeighbridgeSite");
                 }
             }
             return View();

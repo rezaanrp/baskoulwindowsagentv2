@@ -8,11 +8,11 @@ namespace Application.Tools
     //[Authorize(AuthenticationSchemes = "Bearer")]
     public class ReceiveWeightFromScale : Hub
     {
-        private readonly ICodeMarkaz codeMarkaz;
-        private readonly ISite siteservice;
+        private readonly ICompanyService codeMarkaz;
+        private readonly IWeighbridgeSiteService siteservice;
         private readonly WeightService weightService; // inject here
 
-        public ReceiveWeightFromScale(ICodeMarkaz codeMarkaz, ISite siteservice, WeightService weightService)
+        public ReceiveWeightFromScale(ICompanyService codeMarkaz, IWeighbridgeSiteService siteservice, WeightService weightService)
         {
             this.codeMarkaz = codeMarkaz;
             this.siteservice = siteservice;

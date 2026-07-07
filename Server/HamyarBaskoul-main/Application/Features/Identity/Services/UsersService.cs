@@ -28,7 +28,7 @@ namespace Application.Services
 		{
 			var result = _usersRepository.GetById(Id);
 			var result2 = mapper.Map<UsersListViewModel>(result);
-			foreach (var site in result.UserSites)
+			foreach (var site in result.WeighbridgeSiteUsers)
 			{
 				result2.SelectedSiteIds.Add(site.SiteId);
 
@@ -130,6 +130,8 @@ namespace Application.Services
 				objectFormViewModel.UserName = item.UserName;
 				objectFormViewModel.Name = item.Name;
 				objectFormViewModel.NameFarsi = item.NameFarsi;
+				objectFormViewModel.GroupName = item.GroupName;
+				objectFormViewModel.GroupNameFarsi = item.GroupNameFarsi;
 				objectFormViewModel.IsAccess = user_have_access_to_object(item.Id, id);
 				mmm.Add(objectFormViewModel);
 			}
@@ -187,10 +189,10 @@ namespace Application.Services
         {
             return _usersRepository.FindCodeMarkazById(id);
         }
-        public IEnumerable<SiteViewModel> GetAllActiveSites(string id)
+        public IEnumerable<WeighbridgeSiteViewModel> GetAllActiveSites(string id)
         {
 			var sites = _usersRepository.GetAllActiveSites(id);
-			var model = mapper.Map<List<SiteViewModel>>(sites);
+			var model = mapper.Map<List<WeighbridgeSiteViewModel>>(sites);
 			return model;
         }
         public async Task<bool> SaveSelectedSiteAsync(int siteId, string userId)
@@ -222,6 +224,8 @@ namespace Application.Services
 				objectFormViewModel.Id = item.Id;
 				objectFormViewModel.Name = item.Name;
 				objectFormViewModel.NameFarsi = item.NameFarsi;
+				objectFormViewModel.GroupName = item.GroupName;
+				objectFormViewModel.GroupNameFarsi = item.GroupNameFarsi;
 				objectFormViewModel.IsAccess = user_have_access_to_object(item.Id, id);
 				mmm.Add(objectFormViewModel);
 			}

@@ -13,7 +13,7 @@ namespace Domain.Interfaces
     {
         Task<List<AppUser>> GetAllAsync(string roleName, bool filter_role);
         public List<AppUser> GetAll(string roleName1, string roleName2);
-        public List<SiteDomainViewModel> GetAllActiveSites(string id);
+        public List<WeighbridgeSiteDomainViewModel> GetAllActiveSites(string id);
 
         public Task<bool> SaveSelectedSiteAsync(int siteId, string userId);
         public string FindCodeMarkazById(string id);

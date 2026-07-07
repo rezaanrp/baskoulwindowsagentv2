@@ -1,5 +1,5 @@
 ﻿@using Application.ViewModels
-@model SiteViewModel
+@model WeighbridgeSiteViewModel
 
 @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
 {
@@ -10,7 +10,7 @@
         <h3 class="card-title">ویرایش مرکز باسکول</h3>
     </div>
 
-<form id="edit-site-form" method="post" action="@Url.Action("EditSite", "Site")">
+<form id="edit-site-form" method="post" action="@Url.Action("EditSite", "WeighbridgeSite")">
         @Html.AntiForgeryToken() <!-- اضافه کردن توکن ضد جعل برای امنیت بیشتر -->
 
         <div class="card-body">
@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <input type="hidden" asp-for="CodeMarkaz" />
+            <input type="hidden" asp-for="Company" />
             <input type="hidden" asp-for="ID" />
             <br />
             <hr />

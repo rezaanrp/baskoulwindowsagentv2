@@ -1,7 +1,7 @@
 ﻿using Application.Interfaces;
 using Application.Services;
 using Application.ViewModels;
-using Application.ViewModels.Baskoul;
+using Application.ViewModels.Weighbridge;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -15,12 +15,12 @@ namespace WebUI.Controllers
     public class BaskoulListController : BaseController
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IBaskoulService _baskoulservice;
+        private readonly IWeighbridgeService _baskoulservice;
         private readonly IUsersService _userservice;
-        private readonly ISite _siteservice;
+        private readonly IWeighbridgeSiteService _siteservice;
 
-        public BaskoulListController(ILogger<BaskoulListController> logger, IBaskoulService baskoulservice,
-            IUsersService userservice, UserManager<AppUser> userManager, ISite siteservice) : base(userManager)
+        public BaskoulListController(ILogger<BaskoulListController> logger, IWeighbridgeService baskoulservice,
+            IUsersService userservice, UserManager<AppUser> userManager, IWeighbridgeSiteService siteservice) : base(userManager)
         {
             _baskoulservice = baskoulservice;
             _userManager = userManager;
@@ -29,22 +29,22 @@ namespace WebUI.Controllers
         }
         public async Task<IActionResult> BaskoulList()
         {
-            return RedirectToAction("SiteList", "Site");
+            return RedirectToAction("SiteList", "WeighbridgeSite");
         }
         [HttpGet]
         public async Task<IActionResult> AddBaskoul(int siteid)
         {
             var user = _userservice.GetById(OnGetUserId());
-            var model = new BaskoulViewModel
+            var model = new WeighbridgeViewModel
             {
                 CodMarkaz = _userservice.GetCodMarkazById(OnGetUserId()),
                 UserID= user.Id,
-                Site = siteid
+                WeighbridgeSite = siteid
             };
             return PartialView("_AddBaskoulPartial", model);
         }
         [HttpPost]
-        public async Task<IActionResult> AddBaskoul(BaskoulViewModel entity)
+        public async Task<IActionResult> AddBaskoul(WeighbridgeViewModel entity)
         {
             if (ModelState.IsValid)
             {
@@ -80,7 +80,7 @@ namespace WebUI.Controllers
             return PartialView("_EditBaskoulPartial", entity);
         }
         [HttpPost]
-        public async Task<IActionResult> EditBaskoul(BaskoulViewModel entity)
+        public async Task<IActionResult> EditBaskoul(WeighbridgeViewModel entity)
         {
             if (ModelState.IsValid)
             {
@@ -99,10 +99,10 @@ namespace WebUI.Controllers
             var user = _userservice.GetById(OnGetUserId());
             if (user == null) return null;
             // Fetch baskoul data from DB
-            var baskouls = await _baskoulservice.GetBySiteAsync(siteid, user.CodMarkaz);
+            var Weighbridges = await _baskoulservice.GetBySiteAsync(siteid, user.CodMarkaz);
             //ViewBag.SiteName = await _siteservice.GetNameById(siteid);
 
-            return PartialView("_BaskoulTablePartial", baskouls);
+            return PartialView("_BaskoulTablePartial", Weighbridges);
         }
     }
 }

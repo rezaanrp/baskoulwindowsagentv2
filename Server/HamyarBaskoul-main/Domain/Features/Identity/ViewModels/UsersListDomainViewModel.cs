@@ -26,11 +26,11 @@ namespace Domain.ViewModels.Users
         public string? Departments { get; set; }
         public string FullName => $"{Name} {Family}";
         // Active sites to display
-        public List<SiteDomainViewModel> ActiveSites { get; set; } = new();
+        public List<WeighbridgeSiteDomainViewModel> ActiveSites { get; set; } = new();
 
         // Selected site IDs
         public List<int> SelectedSiteIds { get; set; } = new();
-        public string? CodeMarkaz { get; set; }
+        public string? Company { get; set; }
         public string? Token { get; set; }
         public string? WindowsToken { get; set; }
         public string? Role { get; set; }

@@ -1,5 +1,5 @@
 ﻿@using Application.ViewModels
-@model ManageSiteViewModel
+@model ManageWeighbridgeSiteViewModel
 
 @{
     Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
@@ -28,7 +28,7 @@
             <div class="card card-outline card-primary">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title col-md-11">لیست مراکز باسکول</h3>
-                    <button class="btn btn-primary open-modal" href="@Url.Action("CreateSite", "Site")">ایجاد</button>
+                    <button class="btn btn-primary open-modal" href="@Url.Action("CreateSite", "WeighbridgeSite")">ایجاد</button>
                 </div>
 
                 <div id="site-list-container">
@@ -116,7 +116,7 @@
                     if (response.success) {
                         $("#siteModal").modal("hide");
 
-                        $.get('@Url.Action("GetSiteListPartial", "Site")', function (html) {
+                        $.get('@Url.Action("GetSiteListPartial", "WeighbridgeSite")', function (html) {
                             $("#site-list-container").html(html);
                         });
 

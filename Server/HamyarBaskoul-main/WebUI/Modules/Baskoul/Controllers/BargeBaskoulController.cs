@@ -1,7 +1,7 @@
 ﻿using Application.Classes;
 using Application.Interfaces;
 using Application.Services;
-using Application.ViewModels.Baskoul;
+using Application.ViewModels.Weighbridge;
 using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Domain.Models;
@@ -15,10 +15,10 @@ namespace WebUI.Controllers
     public class BargeBaskoulController : BaseController
     {
         private readonly IBargeBaskoul _bargebaskoulservice;
-        private readonly IBaskoulService _baskoulService;
+        private readonly IWeighbridgeService _baskoulService;
         private readonly IUsersService _userservice;
 
-        public BargeBaskoulController(IBargeBaskoul bargebaskoulservice, IBaskoulService baskoulService,
+        public BargeBaskoulController(IBargeBaskoul bargebaskoulservice, IWeighbridgeService baskoulService,
             UserManager<AppUser> userManager, IUsersService userservice) : base(userManager)
         {
             _bargebaskoulservice = bargebaskoulservice;
@@ -41,11 +41,11 @@ namespace WebUI.Controllers
             var pagedResult = await _bargebaskoulservice.GetFilteredAsyncbyType(
         type, codeMarkaz, searchTerm, page, pageSize, sortColumn, sortDirection);
 
-            var baskouls = await _baskoulService.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz);
+            var Weighbridges = await _baskoulService.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz);
 
             var model = new BargeAnbarViewModel
             {
-                Baskouls = baskouls,
+                Baskouls = Weighbridges,
                 Codemarkaz = codeMarkaz,
                 BargeBaskouls = pagedResult.bargeBaskoulViews,
                 BargeAnbar = new BargeBaskoulViewModel
@@ -82,12 +82,12 @@ namespace WebUI.Controllers
             // Reload all necessary data
             var bargebaskouls = await _bargebaskoulservice.GetAllAsync(codeMarkaz, siteId,page, pageSize);
             if (bargebaskouls.bargeBaskoulViews == null) bargebaskouls.bargeBaskoulViews =  new List<BargeBaskoulViewModel>();
-            var baskouls = await _baskoulService.GetBySiteAsync(user.SelectedSiteId??0, user.CodMarkaz);
+            var Weighbridges = await _baskoulService.GetBySiteAsync(user.SelectedSiteId??0, user.CodMarkaz);
 
             var model = new BargeAnbarViewModel
             {
                 BargeBaskouls = bargebaskouls.bargeBaskoulViews,
-                Baskouls = baskouls,
+                Baskouls = Weighbridges,
                 Codemarkaz = codeMarkaz
             };
 
@@ -142,7 +142,7 @@ namespace WebUI.Controllers
             result.Type = type;
             result.CurrentPage = page;
             result.SearchTerm = searchTerm;
-            result.CodeMarkaz = codeMarkaz;
+            result.Company = codeMarkaz;
             result.SiteId = user.SelectedSiteId;
             result.SortColumn = sortColumn;
             result.SortDirection = sortDirection;
@@ -169,12 +169,12 @@ namespace WebUI.Controllers
             }
             var bargebaskouls = await _bargebaskoulservice.GetAllAsync(barg.CodMarkaz, (int)user.SelectedSiteId, page, pageSize);
             if(bargebaskouls.bargeBaskoulViews == null) bargebaskouls.bargeBaskoulViews = new List<BargeBaskoulViewModel>();
-            var baskouls = await _baskoulService.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz);
+            var Weighbridges = await _baskoulService.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz);
             barg.Mabanis = await _bargebaskoulservice.GetAllMabanisAsync(barg.CodMarkaz);
             int totalPages = (int)Math.Ceiling((double)bargebaskouls.TotalCount / pageSize);
             var model = new BargeAnbarViewModel
             {
-                Baskouls = baskouls,
+                Baskouls = Weighbridges,
                 BargeBaskouls = bargebaskouls.bargeBaskoulViews,
                 BargeAnbar = barg,
                 TotalPages = totalPages,
@@ -202,12 +202,12 @@ namespace WebUI.Controllers
             var codeMarkaz = entity.CodMarkaz;
             var bargebaskouls = await _bargebaskoulservice.GetAllAsync(codeMarkaz, (int)user.SelectedSiteId, page, pageSize);
             if (bargebaskouls.bargeBaskoulViews == null) bargebaskouls.bargeBaskoulViews = new List<BargeBaskoulViewModel>();
-            var baskouls = await _baskoulService.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz);
+            var Weighbridges = await _baskoulService.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz);
 
             var model = new BargeAnbarViewModel
             {
                 BargeBaskouls = bargebaskouls.bargeBaskoulViews,
-                Baskouls = baskouls,
+                Baskouls = Weighbridges,
             };
 
             if (!ModelState.IsValid)

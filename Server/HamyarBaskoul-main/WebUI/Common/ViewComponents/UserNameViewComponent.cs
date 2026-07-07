@@ -11,7 +11,7 @@ namespace WebUI.Tools
         protected UserManager<AppUser> _userManager;
         protected IUsersService _userservice;
 
-        public UserNameViewComponent(ICodeMarkaz codeMarkaz, IHttpContextAccessor httpContextAccessor,
+        public UserNameViewComponent(ICompanyService codeMarkaz, IHttpContextAccessor httpContextAccessor,
             UserManager<AppUser> userManager, IUsersService usersService)
         {
             _httpContextAccessor = httpContextAccessor;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.ViewModels.Baskoul
+namespace Domain.ViewModels.Weighbridge
 {
     public class MabaniDomainViewModel
     {

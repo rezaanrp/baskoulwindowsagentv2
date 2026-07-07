@@ -1,0 +1,716 @@
+﻿@using Application.ViewModels
+@model CompanyTreeViewModel
+
+@{
+    ViewData["Title"] = "تعریف شرکت، سایت و باسکول";
+    Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
+    var treeJson = System.Text.Json.JsonSerializer.Serialize(Model);
+}
+
+@section Style {
+    <style>
+        [v-cloak] { display: none; }
+
+        .org-chart-page { direction: rtl; }
+
+        .org-toolbar {
+            align-items: center;
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+        }
+
+        .chart-type-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chart-type-tabs .btn { border-radius: 8px; }
+
+        .org-list {
+            margin: 0;
+            padding: 0;
+        }
+
+        .org-list .org-list {
+            border-right: 1px dashed #cbd5e1;
+            margin-right: 22px;
+            padding-right: 16px;
+        }
+
+        .org-node {
+            list-style: none;
+            margin: 8px 0;
+        }
+
+        .org-node-row {
+            align-items: center;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: grid;
+            gap: 10px;
+            grid-template-columns: 34px minmax(220px, 1fr) minmax(88px, max-content) minmax(220px, max-content);
+            padding: 10px;
+        }
+
+        .org-node-row:hover { background: #f8fafc; }
+
+        .org-toggle {
+            align-items: center;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            color: #334155;
+            display: inline-flex;
+            height: 30px;
+            justify-content: center;
+            width: 30px;
+        }
+
+        .org-toggle:disabled { opacity: .35; }
+
+        .org-title { font-weight: 700; }
+
+        .org-meta {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .org-employees {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 6px;
+        }
+
+        .org-employee {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            color: #334155;
+            display: inline-flex;
+            font-size: 12px;
+            gap: 4px;
+            padding: 4px 8px;
+        }
+
+        .org-badge {
+            border-radius: 999px;
+            display: inline-flex;
+            font-size: 12px;
+            font-weight: 700;
+            justify-content: center;
+            max-width: 220px;
+            min-width: 64px;
+            overflow: hidden;
+            padding: 6px 10px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .level-1 { background: #e0f2fe; color: #075985; }
+        .level-2 { background: #ecfdf5; color: #166534; }
+        .level-3 { background: #fef3c7; color: #92400e; }
+        .level-4 { background: #fce7f3; color: #9d174d; }
+
+        .org-actions {
+            display: flex;
+            gap: 5px;
+            justify-content: flex-end;
+            min-width: 0;
+            white-space: nowrap;
+        }
+
+        .org-actions .btn {
+            align-items: center;
+            display: inline-flex;
+            flex: 0 0 30px;
+            height: 30px;
+            justify-content: center;
+            padding: 0;
+            width: 30px;
+        }
+
+        .org-empty {
+            color: #64748b;
+            padding: 48px 12px;
+            text-align: center;
+        }
+
+        @@media (max-width: 768px) {
+            .org-toolbar {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .org-node-row { grid-template-columns: 34px 1fr; }
+
+            .org-actions {
+                grid-column: 1 / -1;
+                justify-content: flex-start;
+            }
+
+            .org-badge {
+                grid-column: 1 / -1;
+                justify-content: flex-start;
+                max-width: 100%;
+            }
+        }
+    </style>
+}
+
+@section Body {
+    <div id="company-tree-app" class="org-chart-page" v-cloak>
+        <form id="companyTreeTokenForm" class="d-none">
+            @Html.AntiForgeryToken()
+        </form>
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <div class="org-toolbar">
+                    <h3 class="card-title mb-0">ساختار شرکت، سایت، باسکول و کاربران</h3>
+                    <div>
+                        <button class="btn btn-primary btn-sm" type="button" v-on:click="openCreateCompany">
+                            <i class="fa fa-plus ml-1"></i>
+                            افزودن شرکت
+                        </button>
+                        <button class="btn btn-default btn-sm" type="button" v-on:click="reloadPage">
+                            <i class="fa fa-refresh ml-1"></i>
+                            تازه‌سازی
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-7">
+                        <div class="chart-type-tabs">
+                            <button v-for="level in levels"
+                                    :key="level.id"
+                                    class="btn btn-sm"
+                                    :class="selectedLevel === level.id ? 'btn-primary' : 'btn-outline-primary'"
+                                    type="button"
+                                    v-on:click="selectedLevel = level.id">
+                                {{ level.title }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-5 mt-2 mt-md-0">
+                        <div class="input-group">
+                            <input v-model.trim="search" class="form-control" placeholder="جستجو در شرکت، سایت، باسکول یا کاربر" type="text">
+                            <div class="input-group-append">
+                                <button class="btn btn-default" type="button" v-on:click="search = ''">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+                <div v-if="filteredTree.length === 0" class="org-empty">
+                    موردی برای نمایش وجود ندارد.
+                </div>
+
+                <ul v-else class="org-list">
+                    <company-node v-for="node in filteredTree"
+                                  :key="node.key"
+                                  :node="node"
+                                  :expanded="expanded"
+                                  v-on:add-child="openCreateChild"
+                                  v-on:edit-node="openEdit"
+                                  v-on:delete-node="deleteScaleUser"
+                                  v-on:toggle-node="toggleNode">
+                    </company-node>
+                </ul>
+            </div>
+        </div>
+
+        <div class="modal fade" id="companyTreeModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ modalTitle }}</h5>
+                        <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form v-on:submit.prevent="saveCurrent">
+                            <div v-if="form.kind === 'company'" class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>نام شرکت</label>
+                                    <input v-model.trim="form.companyName" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>کد شرکت</label>
+                                    <input v-model.trim="form.companyCode" class="form-control" required>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Connection URL</label>
+                                    <input v-model.trim="form.connectionUrl" class="form-control" dir="ltr">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>API URL</label>
+                                    <input v-model.trim="form.apiUrl" class="form-control" dir="ltr">
+                                </div>
+                                <div class="col-md-12 form-group mb-0">
+                                    <label>
+                                        <input v-model="form.autoSync" type="checkbox">
+                                        همگام‌سازی خودکار
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div v-if="form.kind === 'site'" class="row">
+                                <div class="col-md-8 form-group">
+                                    <label>نام سایت / محل باسکول</label>
+                                    <input v-model.trim="form.siteName" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>وضعیت</label>
+                                    <select v-model="form.isActive" class="form-control">
+                                        <option :value="true">فعال</option>
+                                        <option :value="false">غیرفعال</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div v-if="form.kind === 'scaleUser'" class="row">
+                                <div class="col-md-12 form-group">
+                                    <label>انتخاب کاربر موجود</label>
+                                    <select v-model="form.userId" class="form-control" required>
+                                        <option value="">انتخاب کاربر</option>
+                                        <option v-for="user in users" :key="user.id" :value="user.id">
+                                            {{ user.userName }} {{ user.displayName ? '- ' + user.displayName : '' }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div v-if="form.kind === 'scale'" class="row">
+                                <div class="col-md-4 form-group">
+                                    <label>نام باسکول</label>
+                                    <input v-model.trim="form.scaleName" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>کد باسکول</label>
+                                    <input v-model.trim="form.scaleCode" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>نوع باسکول</label>
+                                    <select v-model="form.type" class="form-control">
+                                        <option value="">نامشخص</option>
+                                        <option value="1">ورودی</option>
+                                        <option value="2">خروجی</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12 form-group">
+                                    <label>کاربر باسکول</label>
+                                    <select v-model="form.userId" class="form-control" required>
+                                        <option value="">انتخاب کاربر</option>
+                                        <option v-for="user in siteUsersForForm" :key="user.id" :value="user.id">
+                                            {{ user.userName }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">بستن</button>
+                        <button class="btn btn-primary" type="button" :disabled="isSaving" v-on:click="saveCurrent">
+                            <i class="fa fa-save ml-1"></i>
+                            ذخیره
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="@Url.Content("~/lib/vue/vue.global.prod.js")"></script>
+    <script>
+        (() => {
+            const payload = @Html.Raw(treeJson);
+            const sourceCompanies = payload.Companies || payload.companies || [];
+            const sourceUsers = payload.Users || payload.users || [];
+            const antiforgeryToken = document.querySelector('#companyTreeTokenForm input[name="__RequestVerificationToken"]')?.value || '';
+
+            const normalizeUser = (user) => ({
+                id: user.Id || user.id || '',
+                userName: user.UserName || user.userName || '',
+                displayName: user.DisplayName || user.displayName || ''
+            });
+
+            const users = sourceUsers.map(normalizeUser);
+
+            const buildTree = (companies) => companies.map(company => {
+                const companyCode = company.CompanyCode || company.companyCode || '';
+                const sites = company.WeighbridgeSites || company.sites || [];
+                return {
+                    key: `company-${company.Id || company.id}`,
+                    id: company.Id || company.id || 0,
+                    kind: 'company',
+                    levelNo: 1,
+                    levelTitle: 'شرکت',
+                    name: company.CompanyName || company.companyName || 'شرکت بدون نام',
+                    code: companyCode,
+                    meta: `کد شرکت: ${companyCode || '-'} | API: ${company.ApiUrl || company.apiUrl || '-'}`,
+                    raw: company,
+                    children: sites.map(site => {
+                        const siteUsers = (site.Users || site.users || []).map(normalizeUser);
+                        const scales = site.Scales || site.scales || [];
+                        return {
+                            key: `site-${site.Id || site.id}`,
+                            id: site.Id || site.id || 0,
+                            kind: 'site',
+                            levelNo: 2,
+                            levelTitle: 'سایت',
+                            name: site.SiteName || site.siteName || 'سایت بدون نام',
+                            code: companyCode,
+                            meta: (site.IsActive ?? site.isActive) ? 'فعال' : 'غیرفعال',
+                            users: siteUsers,
+                            raw: { ...site, companyCode },
+                            children: [
+                                ...siteUsers.map(user => ({
+                                    key: `site-${site.Id || site.id}-user-${user.id}`,
+                                    id: user.id,
+                                    kind: 'scaleUser',
+                                    levelNo: 3,
+                                    levelTitle: 'کاربر باسکول',
+                                    name: user.displayName || user.userName,
+                                    code: user.userName,
+                                    meta: '',
+                                    raw: { ...user, siteId: site.Id || site.id, companyCode },
+                                    children: []
+                                })),
+                                ...scales.map(scale => ({
+                                    key: `scale-${scale.Id || scale.id}`,
+                                    id: scale.Id || scale.id || 0,
+                                    kind: 'scale',
+                                    levelNo: 4,
+                                    levelTitle: 'باسکول',
+                                    name: scale.Name || scale.name || 'باسکول بدون نام',
+                                    code: scale.ScaleCode || scale.scaleCode || '',
+                                    meta: `کاربر: ${scale.UserName || scale.userName || '-'}`,
+                                    raw: { ...scale, siteId: site.Id || site.id, companyCode },
+                                    children: []
+                                }))
+                            ]
+                        };
+                    })
+                };
+            });
+
+            const app = Vue.createApp({
+                data() {
+                    return {
+                        tree: buildTree(sourceCompanies),
+                        users,
+                        expanded: {},
+                        search: '',
+                        selectedLevel: 0,
+                        errorMessage: '',
+                        isSaving: false,
+                        form: this.emptyForm(),
+                        levels: [
+                            { id: 0, title: 'همه' },
+                            { id: 1, title: 'شرکت' },
+                            { id: 2, title: 'سایت' },
+                            { id: 3, title: 'کاربر باسکول' },
+                            { id: 4, title: 'باسکول' }
+                        ],
+                        urls: {
+                            company: '@Url.Action("SaveCompany", "WeighbridgeOrganization")',
+                            site: '@Url.Action("SaveSite", "WeighbridgeOrganization")',
+                            scaleUser: '@Url.Action("SaveScaleUser", "WeighbridgeOrganization")',
+                            deleteScaleUser: '@Url.Action("DeleteScaleUser", "WeighbridgeOrganization")',
+                            scale: '@Url.Action("SaveScale", "WeighbridgeOrganization")'
+                        }
+                    };
+                },
+                computed: {
+                    filteredTree() {
+                        const term = this.search.toLowerCase();
+                        const selectedLevel = Number(this.selectedLevel || 0);
+
+                        const filterNode = (node) => {
+                            const children = (node.children || []).map(filterNode).filter(Boolean);
+                            const values = [node.name, node.code, node.meta, node.levelTitle].join(' ').toLowerCase();
+                            const matchesTerm = !term || values.includes(term);
+                            const matchesLevel = !selectedLevel || node.levelNo === selectedLevel;
+
+                            if ((!matchesTerm || !matchesLevel) && children.length === 0) return null;
+                            if (term) this.expanded[node.key] = true;
+                            return { ...node, children };
+                        };
+
+                        return this.tree.map(filterNode).filter(Boolean);
+                    },
+                    modalTitle() {
+                        const titles = {
+                            company: this.form.id ? 'ویرایش شرکت' : 'افزودن شرکت',
+                            site: this.form.id ? 'ویرایش سایت' : 'افزودن سایت',
+                            scaleUser: 'تعریف یا اتصال کاربر باسکول',
+                            scale: this.form.id ? 'ویرایش باسکول' : 'افزودن باسکول'
+                        };
+                        return titles[this.form.kind] || '';
+                    },
+                    siteUsersForForm() {
+                        if (!this.form.siteId) return this.users;
+                        const siteNode = this.findNode(`site-${this.form.siteId}`, this.tree);
+                        return siteNode?.users?.length ? siteNode.users : this.users;
+                    }
+                },
+                mounted() {
+                    for (const company of this.tree) this.expanded[company.key] = true;
+                },
+                methods: {
+                    emptyForm() {
+                        return {
+                            kind: 'company',
+                            id: 0,
+                            companyCode: '',
+                            companyName: '',
+                            connectionUrl: '',
+                            apiUrl: '',
+                            autoSync: true,
+                            siteId: 0,
+                            siteName: '',
+                            isActive: true,
+                            scaleName: '',
+                            scaleCode: '',
+                            type: '',
+                            userId: ''
+                        };
+                    },
+                    reloadPage() {
+                        window.location.reload();
+                    },
+                    toggleNode(node) {
+                        this.expanded[node.key] = !this.expanded[node.key];
+                    },
+                    findNode(key, nodes) {
+                        for (const node of nodes) {
+                            if (node.key === key) return node;
+                            const child = this.findNode(key, node.children || []);
+                            if (child) return child;
+                        }
+                        return null;
+                    },
+                    openCreateCompany() {
+                        this.form = this.emptyForm();
+                        this.form.kind = 'company';
+                        $('#companyTreeModal').modal('show');
+                    },
+                    openCreateChild(node, childKind) {
+                        this.form = this.emptyForm();
+                        this.form.kind = childKind || (node.kind === 'company' ? 'site' : 'scale');
+                        this.form.companyCode = node.kind === 'company' ? node.code : node.raw.companyCode;
+                        this.form.siteId = node.kind === 'site' ? node.id : 0;
+                        $('#companyTreeModal').modal('show');
+                    },
+                    openEdit(node) {
+                        this.form = this.emptyForm();
+                        this.form.kind = node.kind;
+                        this.form.id = node.id;
+                        if (node.kind === 'company') {
+                            this.form.companyName = node.name;
+                            this.form.companyCode = node.code;
+                            this.form.connectionUrl = node.raw.ConnectionUrl || node.raw.connectionUrl || '';
+                            this.form.apiUrl = node.raw.ApiUrl || node.raw.apiUrl || '';
+                            this.form.autoSync = Boolean(node.raw.AutoSync ?? node.raw.autoSync);
+                        } else if (node.kind === 'site') {
+                            this.form.companyCode = node.raw.companyCode;
+                            this.form.siteName = node.name;
+                            this.form.isActive = Boolean(node.raw.IsActive ?? node.raw.isActive);
+                        } else if (node.kind === 'scale') {
+                            this.form.companyCode = node.raw.companyCode;
+                            this.form.siteId = node.raw.siteId;
+                            this.form.scaleName = node.name;
+                            this.form.scaleCode = node.code;
+                            this.form.type = node.raw.Type || node.raw.type || '';
+                            this.form.userId = node.raw.UserId || node.raw.userId || '';
+                        }
+                        $('#companyTreeModal').modal('show');
+                    },
+                    async saveCurrent() {
+                        this.errorMessage = '';
+                        this.isSaving = true;
+                        try {
+                            const body = new URLSearchParams();
+                            const append = (key, value) => body.append(key, value ?? '');
+
+                            if (this.form.kind === 'company') {
+                                append('Id', this.form.id);
+                                append('CompanyName', this.form.companyName);
+                                append('CompanyCode', this.form.companyCode);
+                                append('ConnectionUrl', this.form.connectionUrl);
+                                append('ApiUrl', this.form.apiUrl);
+                                append('AutoSync', this.form.autoSync);
+                            } else if (this.form.kind === 'site') {
+                                append('Id', this.form.id);
+                                append('CompanyCode', this.form.companyCode);
+                                append('SiteName', this.form.siteName);
+                                append('IsActive', this.form.isActive);
+                            } else if (this.form.kind === 'scaleUser') {
+                                append('CompanyCode', this.form.companyCode);
+                                append('SiteId', this.form.siteId);
+                                append('UserId', this.form.userId);
+                            } else if (this.form.kind === 'scale') {
+                                append('Id', this.form.id);
+                                append('CompanyCode', this.form.companyCode);
+                                append('SiteId', this.form.siteId);
+                                append('Name', this.form.scaleName);
+                                append('ScaleCode', this.form.scaleCode);
+                                append('Type', this.form.type);
+                                append('UserId', this.form.userId);
+                            }
+                            append('__RequestVerificationToken', antiforgeryToken);
+
+                            const response = await fetch(this.urls[this.form.kind], {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                                body
+                            });
+
+                            if (!response.ok) throw new Error();
+                            window.location.reload();
+                        } catch {
+                            this.errorMessage = 'ذخیره اطلاعات ناموفق بود.';
+                        } finally {
+                            this.isSaving = false;
+                        }
+                    },
+                    async deleteScaleUser(node) {
+                        if (!window.confirm('آیا از حذف دسترسی این کاربر اطمینان دارید؟')) {
+                            return;
+                        }
+
+                        this.errorMessage = '';
+                        try {
+                            const body = new URLSearchParams();
+                            body.append('CompanyCode', node.raw.companyCode || '');
+                            body.append('SiteId', node.raw.siteId || 0);
+                            body.append('UserId', node.id || '');
+                            body.append('__RequestVerificationToken', antiforgeryToken);
+
+                            const response = await fetch(this.urls.deleteScaleUser, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                                body
+                            });
+
+                            if (!response.ok) throw new Error();
+                            window.location.reload();
+                        } catch {
+                            this.errorMessage = 'حذف کاربر ناموفق بود.';
+                        }
+                    }
+                }
+            });
+
+            app.component('company-node', {
+                props: {
+                    expanded: { required: true, type: Object },
+                    node: { required: true, type: Object }
+                },
+                emits: ['add-child', 'delete-node', 'edit-node', 'toggle-node'],
+                computed: {
+                    hasChildren() {
+                        return this.node.children && this.node.children.length > 0;
+                    },
+                    isExpanded() {
+                        return !!this.expanded[this.node.key];
+                    },
+                    levelClass() {
+                        return `level-${this.node.levelNo}`;
+                    },
+                    toggleIcon() {
+                        return this.isExpanded ? 'fa fa-minus' : 'fa fa-plus';
+                    },
+                    employees() {
+                        return this.node.users || [];
+                    }
+                },
+                methods: {
+                    addOptions() {
+                        if (this.node.kind === 'company') return [{ kind: 'site', icon: 'fa-map-marker', title: 'افزودن سایت' }];
+                        if (this.node.kind === 'site') return [
+                            { kind: 'scaleUser', icon: 'fa-user-plus', title: 'افزودن کاربر باسکول' },
+                            { kind: 'scale', icon: 'fa-balance-scale', title: 'افزودن باسکول' }
+                        ];
+                        return [];
+                    }
+                },
+                template: `
+                    <li class="org-node">
+                        <div class="org-node-row">
+                            <button class="org-toggle"
+                                    type="button"
+                                    :disabled="!hasChildren"
+                                    v-on:click="$emit('toggle-node', node)">
+                                <i :class="toggleIcon"></i>
+                            </button>
+                            <div>
+                                <div class="org-title">{{ node.name }}</div>
+                                <div v-if="node.meta" class="org-meta">{{ node.meta }}</div>
+                                <div v-if="employees.length" class="org-employees">
+                                    <span v-for="employee in employees" :key="employee.id" class="org-employee">
+                                        <i class="fa fa-user"></i>
+                                        {{ employee.userName }}
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="org-badge" :class="levelClass">{{ node.levelTitle }}</span>
+                            <div class="org-actions">
+                                <button v-for="option in addOptions()"
+                                        :key="option.kind"
+                                        class="btn btn-sm btn-outline-success"
+                                        type="button"
+                                        :title="option.title"
+                                        v-on:click="$emit('add-child', node, option.kind)">
+                                    <i class="fa" :class="option.icon"></i>
+                                </button>
+                                <button v-if="node.kind !== 'scaleUser'"
+                                        class="btn btn-sm btn-outline-primary"
+                                        type="button"
+                                        title="ویرایش"
+                                        v-on:click="$emit('edit-node', node)">
+                                    <i class="fa fa-pencil"></i>
+                                </button>
+                                <button v-if="node.kind === 'scaleUser'"
+                                        class="btn btn-sm btn-outline-danger"
+                                        type="button"
+                                        title="حذف کاربر"
+                                        v-on:click="$emit('delete-node', node)">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <ul v-if="hasChildren && isExpanded" class="org-list">
+                            <company-node v-for="child in node.children"
+                                          :key="child.key"
+                                          :node="child"
+                                          :expanded="expanded"
+                                          v-on:add-child="(childNode, kind) => $emit('add-child', childNode, kind)"
+                                          v-on:delete-node="$emit('delete-node', $event)"
+                                          v-on:edit-node="$emit('edit-node', $event)"
+                                          v-on:toggle-node="$emit('toggle-node', $event)">
+                            </company-node>
+                        </ul>
+                    </li>
+                `
+            });
+
+            app.mount('#company-tree-app');
+        })();
+    </script>
+}

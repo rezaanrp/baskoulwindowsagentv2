@@ -22,6 +22,10 @@ namespace Application.ViewModels.Users
 		[MaxLength(100)]
 		public string NameFarsi { get; set; }
 
+		public string GroupName { get; set; } = string.Empty;
+
+		public string GroupNameFarsi { get; set; } = string.Empty;
+
 		public bool IsAccess { get; set; } = false;
 	}
 }

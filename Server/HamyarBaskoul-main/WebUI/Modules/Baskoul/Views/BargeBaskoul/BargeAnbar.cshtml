@@ -1,4 +1,4 @@
-﻿@using Application.ViewModels.Baskoul
+﻿@using Application.ViewModels.Weighbridge
 @model BargeAnbarViewModel
 @{
     Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
@@ -67,16 +67,16 @@
                                         <p>@baskoul.Name</p>
                                         @if (baskoul.Weight == null)
                                         {
-                                            <h3 id="weight-@baskoul.Site-@baskoul.ScaleCode"
-                                                data-site="@baskoul.Site"
+                                            <h3 id="weight-@baskoul.WeighbridgeSite-@baskoul.ScaleCode"
+                                                data-site="@baskoul.WeighbridgeSite"
                                                 data-scale="@baskoul.ScaleCode"
                                                 class="live-weight"
                                                 style="display: inline;">0</h3>
                                         }
                                         else
                                         {
-                                            <h3 id="weight-@baskoul.Site-@baskoul.ScaleCode"
-                                                data-site="@baskoul.Site"
+                                            <h3 id="weight-@baskoul.WeighbridgeSite-@baskoul.ScaleCode"
+                                                data-site="@baskoul.WeighbridgeSite"
                                                 data-scale="@baskoul.ScaleCode"
                                                 class="live-weight"
                                                 style="display: inline;">@baskoul.Weight</h3>

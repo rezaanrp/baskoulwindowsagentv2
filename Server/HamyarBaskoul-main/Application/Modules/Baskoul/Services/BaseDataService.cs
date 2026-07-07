@@ -3,7 +3,7 @@ using Application.ViewModels.BaseData;
 using AutoMapper;
 using Domain.Interfaces;
 using Domain.ViewModels.BaseData;
-using Domain.ViewModels.Baskoul;
+using Domain.ViewModels.Weighbridge;
 using System;
 using System.Collections.Generic;
 using System.Linq;

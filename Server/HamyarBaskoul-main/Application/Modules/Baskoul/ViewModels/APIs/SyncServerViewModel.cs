@@ -1,4 +1,4 @@
-﻿using Application.ViewModels.Baskoul;
+﻿using Application.ViewModels.Weighbridge;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,5 +1,5 @@
 ﻿@using Application.ViewModels
-@model List<SiteViewModel>
+@model List<WeighbridgeSiteViewModel>
 
 @{
     Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
@@ -28,7 +28,7 @@
                 <div class="card-header">
                     <h3 class="card-title">مرکز باسکول پیش ‌فرض خود را انتخاب نمایید</h3>
                 </div>
-                <form asp-action="SaveSelectedSite" asp-controller="Site" method="post">
+                <form asp-action="SaveSelectedSite" asp-controller="WeighbridgeSite" method="post">
                     <div class="card-body">
                         <div class="form-group">
                             @foreach (var site in Model)

@@ -1,8 +1,8 @@
-﻿using Application.ViewModels.Baskoul;
+﻿using Application.ViewModels.Weighbridge;
 using Application.Classes;
 using System.Threading.Tasks;
 using Application.Classes;
-using Domain.ViewModels.Baskoul;
+using Domain.ViewModels.Weighbridge;
 using System.IO;
 
 namespace Application.Interfaces

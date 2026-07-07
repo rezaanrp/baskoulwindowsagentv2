@@ -2,7 +2,7 @@
 using Domain.Interfaces;
 using Domain.Models;
 using Domain.ViewModels.APIs;
-using Domain.ViewModels.Baskoul;
+using Domain.ViewModels.Weighbridge;
 using Domain.Classes;
 using Infra.Data.Classes;
 using Infra.Data.Context;
@@ -538,7 +538,7 @@ namespace Infra.Data.Repository
 
         public async Task<bool> isAutoAsyncOn(string codmarkaz)
         {
-            var markaz = await _context.CodeMarkazs.FirstOrDefaultAsync(m => m.CodMarkaz == codmarkaz);
+            var markaz = await _context.Companies.FirstOrDefaultAsync(m => m.CodMarkaz == codmarkaz);
             if (markaz == null) return false;
             if (markaz.AutoAsync != true) return false;
             return true;

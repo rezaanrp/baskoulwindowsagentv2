@@ -39,7 +39,7 @@ namespace WebUI.Controllers
                 var user = _userservice.GetById(OnGetUserId());
                 model.KarbarIns = user.Id;
                 model.KarbarUp = user.Id;
-                model.CodeMarkaz = user.CodMarkaz;
+                model.Company = user.CodMarkaz;
                 var result = await _reportservice.SaveReportSettings(model);
                 if(result) 
                     ViewBag.Message = "تنظیمات با موفقیت ذخیره شد."; 

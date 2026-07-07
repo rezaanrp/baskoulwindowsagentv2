@@ -12,24 +12,26 @@ using System.Text.Json;
 
 namespace WebUI.Controllers
 {
-    [Authorize(Roles = "Administrator,SuperAdmin, NonHamyarAdmin")]
+    [Authorize(Roles = "Admin")]
     public class UserManagerController : BaseController
     {
         private readonly IUsersService usersService;
-        private readonly ISite siteService;
+        private readonly IWeighbridgeSiteService siteService;
         public UserManagerController(IUsersService _usersService
-            , UserManager<AppUser> userManager, ISite site
+            , UserManager<AppUser> userManager, IWeighbridgeSiteService site
             ) : base(userManager)
         {
             this.usersService = _usersService;
             _userManager = userManager;
             siteService = site;
         }
-        [Authorize(Roles = "Administrator,SuperAdmin, NonHamyarAdmin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult Index(string id)
         {
-			ObjectFormListViewModel objectForm = usersService.GetUserFormAccessList(id);
+			ObjectFormListViewModel objectForm = string.IsNullOrWhiteSpace(id)
+                ? new ObjectFormListViewModel()
+                : usersService.GetUserFormAccessList(id);
             var currentUser = usersService.GetById(OnGetUserId());
             var codeMarkaz = usersService.GetCodMarkazById(OnGetUserId());
             var currentUserRole = _userManager.GetRolesAsync(currentUser).GetAwaiter().GetResult().FirstOrDefault();
@@ -47,9 +49,41 @@ namespace WebUI.Controllers
 		[HttpPost]
 		public IActionResult Index(ObjectFormListViewModel objectForm)
 		{
-			//usersService.edit_object_access_for_user(objectForm,OnGetUserId());
-			return View();
+			usersService.edit_object_access_for_user(objectForm, OnGetUserId());
+			return RedirectToAction("Index", "UserManager");
 		}
+
+        [HttpGet]
+        public IActionResult GetAccess(string id)
+        {
+            var model = usersService.GetUserFormAccessList(id);
+            return Json(new
+            {
+                success = true,
+                userId = model.UserId,
+                items = model.objectFormViews.Select(item => new
+                {
+                    item.Id,
+                    item.Name,
+                    item.NameFarsi,
+                    item.GroupName,
+                    item.GroupNameFarsi,
+                    item.IsAccess
+                })
+            });
+        }
+
+        [HttpPost]
+        public IActionResult SaveAccess([FromBody] ObjectFormListViewModel objectForm)
+        {
+            if (objectForm == null || string.IsNullOrWhiteSpace(objectForm.UserId))
+            {
+                return Json(new { success = false, message = "کاربر انتخاب نشده است." });
+            }
+
+            usersService.edit_object_access_for_user(objectForm, OnGetUserId());
+            return Json(new { success = true, message = "دسترسی‌های کاربر ذخیره شد." });
+        }
 
 		[HttpGet]
         public async Task<JsonResult> load_data_users()
@@ -128,7 +162,7 @@ namespace WebUI.Controllers
                         ? model.SelectedSiteIds.First()
                         : null;
                     //m.WindowsToken = model.WindowsToken;
-                    m.UserSites = model.SelectedSiteIds.Select(siteId => new UserSite
+                    m.WeighbridgeSiteUsers = model.SelectedSiteIds.Select(siteId => new WeighbridgeSiteUser
                     {
                         SiteId = siteId,
                         AssignedAt = DateTime.Now
@@ -163,7 +197,7 @@ namespace WebUI.Controllers
         public async Task<IActionResult> Insert()
         {
             var model = new InsertUsersListViewModel();
-			//if (User.IsInRole("SuperAdmin"))
+			//if (User.IsInRole("Admin"))
 			//{
 			//	model.AllMarkazes = usersService.get.GetAllMarkazes()
 			//		.ToDictionary(m => m.CodMarkaz, m => m.MarkazName);
@@ -203,24 +237,21 @@ namespace WebUI.Controllers
                 }
                 var currentRoles = await _userManager.GetRolesAsync(user);
 
-                if (!currentRoles.Contains("SuperAdmin"))
-                {
-                    await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
-                    var addRoleResult = await _userManager.AddToRoleAsync(user, model.Role);
-                    if (!addRoleResult.Succeeded)
+                var addRoleResult = await _userManager.AddToRoleAsync(user, model.Role);
+                if (!addRoleResult.Succeeded)
+                {
+                    foreach (var error in addRoleResult.Errors)
                     {
-                        foreach (var error in addRoleResult.Errors)
-                        {
-                            ModelState.AddModelError("", error.Description);
-                        }
-                        return View(model);
+                        ModelState.AddModelError("", error.Description);
                     }
+                    return View(model);
                 }
             }
             var existingUser = usersService.GetById(model.Id);
             var currentUser = usersService.GetById(OnGetUserId());
-            model.CodeMarkaz = existingUser?.CodMarkaz
+            model.Company = existingUser?.CodMarkaz
                 ?? currentUser?.CodMarkaz
                 ?? usersService.GetCodMarkazById(OnGetUserId())
                 ?? "1";
@@ -234,7 +265,7 @@ namespace WebUI.Controllers
 			var usm = usersService.Get(id);
             var codeMarkaz = usersService.GetCodMarkazById(OnGetUserId());
             usm.ActiveSites = siteService.GetAllActiveAsync(codeMarkaz);
-            usm.CodeMarkaz = codeMarkaz;
+            usm.Company = codeMarkaz;
             var user = await _userManager.FindByIdAsync(id);
             usm.Role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
             return View(usm);
@@ -276,7 +307,7 @@ namespace WebUI.Controllers
                 })
             });
         }
-		[Authorize(Roles = "Administrator,SuperAdmin, NONHAMYAADMIN")]
+		[Authorize(Roles = "Admin")]
 		[HttpGet]
         public IActionResult ResetUserPassword(string id)
         {
@@ -349,7 +380,7 @@ namespace WebUI.Controllers
                 var us = usersService.GetById(item.Id);
                 var role = await _userManager.GetRolesAsync(us);
 
-                if (role.Contains("Administrator"))
+                if (role.Contains("Admin"))
                     item.Role = "مدیر سیستم";
                 else if (role.Contains("User"))
                     item.Role = "کاربر عادی";
@@ -363,22 +394,10 @@ namespace WebUI.Controllers
         {
             return role switch
             {
-                "SuperAdmin" => new[]
+                "Admin" => new[]
                 {
-                    new { value = "Administrator", label = "مدیر سیستم همیار" },
-                    new { value = "User", label = "کاربر عادی همیار" },
-                    new { value = "NONHAMYAADMIN", label = "مدیر سیستم" },
-                    new { value = "NONHAMYARUSER", label = "کاربر عادی" }
-                },
-                "Administrator" => new[]
-                {
-                    new { value = "Administrator", label = "مدیر سیستم همیار" },
-                    new { value = "User", label = "کاربر عادی همیار" }
-                },
-                "NonHamyarAdmin" => new[]
-                {
-                    new { value = "NONHAMYAADMIN", label = "مدیر سیستم" },
-                    new { value = "NONHAMYARUSER", label = "کاربر عادی" }
+                    new { value = "User", label = "کاربر عادی" },
+                    new { value = "Admin", label = "مدیر سیستم" }
                 },
                 _ => Array.Empty<object>()
             };

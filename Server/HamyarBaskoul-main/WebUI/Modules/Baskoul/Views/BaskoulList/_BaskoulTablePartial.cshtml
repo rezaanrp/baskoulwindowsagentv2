@@ -1,4 +1,4 @@
-﻿@model List<Application.ViewModels.Baskoul.BaskoulViewModel>
+﻿@model List<Application.ViewModels.Weighbridge.WeighbridgeViewModel>
 
 @* <span id="hidden-site-name" data-name="@ViewBag.SiteName" style="display:none;"></span> *@
 @if (Model.Any())
@@ -38,7 +38,7 @@
                             <i class="fa fa-pencil"></i>
                         </a>
                         <form asp-controller="BaskoulList" asp-action="DeleteBaskoul" method="post"
-                              onsubmit="return confirmDelete(event, this, @baskoul.Site)" class="d-inline m-0">
+                              onsubmit="return confirmDelete(event, this, @baskoul.WeighbridgeSite)" class="d-inline m-0">
                               @Html.AntiForgeryToken()
                               <input type="hidden" name="Id" value="@baskoul.Id" />
                             <button type="submit" class="btn btn-icon btn-outline-primary _delete" title="حذف">

@@ -40,8 +40,8 @@ namespace Application.ViewModels.Users
 
         public string? UserRole { get; set; }
         public List<int> SelectedSiteIds { get; set; } = new List<int>();
-		//public List<CodeMarkazViewModel> AllMarkazes { get; set; } = new List<CodeMarkazViewModel>();
-		public List<SiteViewModel> AvailableSites { get; set; } = new List<SiteViewModel>();
+		//public List<CompanyViewModel> AllMarkazes { get; set; } = new List<CompanyViewModel>();
+		public List<WeighbridgeSiteViewModel> AvailableSites { get; set; } = new List<WeighbridgeSiteViewModel>();
     }
 }
 

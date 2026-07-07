@@ -1,140 +1,252 @@
-﻿@model List<string>
+﻿@model List<Application.ViewModels.Users.ObjectFormViewModel>
 
-<ul class="nav nav-treeview">
-	<li class="nav-item has-treeview">
-		<a href="#" class="nav-link">
-			<i class="nav-icon fa fa-balance-scale"></i>
-			<p>
-				سیستم باسکول
-				<i class="fa fa-angle-left right"></i>
-			</p>
-		</a>
-		<ul class="nav nav-treeview" style="display: none;">
-			<li class="nav-item has-treeview">
-				<a class="nav-link" href="#">
-					<i class="nav-icon fa fa-truck"></i>
-					<p>
-						عملیات باسکول
-						<i class="fa fa-angle-left right"></i>
-					</p>
-				</a>
-				<ul class="nav nav-treeview" style="display: none;">
-					<li class="nav-item">
-						<a class="nav-link" asp-controller="BargeBaskoul" asp-action="BargeAnbar">
-							<i class="fa fa-circle-o nav-icon"></i>
-							<p>ثبت برگه باسکول</p>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" asp-controller="BargeBaskoul" asp-action="ListBargeAnbar" asp-route-type="3">
-							<i class="fa fa-circle-o nav-icon"></i>
-							<p>لیست برگه‌های باسکول</p>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" asp-controller="BargeBaskoul" asp-action="UploadExcel">
-							<i class="fa fa-upload nav-icon"></i>
-							<p>ورود اطلاعات از اکسل</p>
-						</a>
-					</li>
-					@if (User.Identity.IsAuthenticated && !User.IsInRole("NONHAMYAADMIN") && !User.IsInRole("NONHAMYARUSER"))
-					{
-						<li class="nav-item">
-							<a class="nav-link" asp-controller="APIs" asp-action="SyncServer">
-								<i class="fa fa-refresh nav-icon"></i>
-								<p>همگام‌سازی اطلاعات باسکول</p>
-							</a>
-						</li>
-					}
-				</ul>
-			</li>
+@functions {
+	private bool Has(string name) => Model?.Any(item => item.Name == name) == true;
 
-			<li class="nav-item has-treeview">
-				<a href="#" class="nav-link">
-					<i class="nav-icon fa fa-file-text-o"></i>
-					<p>
-						گزارش‌ها
-						<i class="right fa fa-angle-left"></i>
-					</p>
-				</a>
-				<ul class="nav nav-treeview" style="display: none;">
-					<li class="nav-item">
-						<a class="nav-link" asp-controller="Reports" asp-action="ReportSetting">
-							<i class="fa fa-circle-o nav-icon"></i>
-							<p>تنظیمات چاپ برگه باسکول</p>
-						</a>
-					</li>
-				</ul>
-			</li>
-
-			<li class="nav-item has-treeview">
-				<a href="#" class="nav-link">
-					<i class="nav-icon fa fa-database"></i>
-					<p>
-						تنظیمات پایه
-						<i class="fa fa-angle-left right"></i>
-					</p>
-				</a>
-				<ul class="nav nav-treeview" style="display: none;">
-					<li class="nav-item">
-						<a class="nav-link" asp-controller="Site" asp-action="SiteList">
-							<i class="fa fa-circle-o nav-icon"></i>
-							<p>مدیریت محل‌های باسکول</p>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" asp-controller="Site" asp-action="SelectSite">
-							<i class="fa fa-circle-o nav-icon"></i>
-							<p>انتخاب باسکول پیش‌فرض</p>
-						</a>
-					</li>
-					@if (User.Identity.IsAuthenticated && !User.IsInRole("User") && !User.IsInRole("Administrator"))
-					{
-						<li class="nav-item">
-							<a class="nav-link" asp-controller="BaseData" asp-action="DataList">
-								<i class="fa fa-circle-o nav-icon"></i>
-								<p>اطلاعات پایه باسکول</p>
-							</a>
-						</li>
-					}
-					<li class="nav-item">
-						<a class="nav-link" asp-controller="WindowsAPIs" asp-action="Index">
-							<i class="fa fa-key nav-icon"></i>
-							<p>توکن ارتباط با نمایشگر وزن</p>
-						</a>
-					</li>
-				</ul>
-			</li>
-		</ul>
-	</li>
-
-	@if (User.IsInRole("SuperAdmin") || User.IsInRole("Administrator") || User.IsInRole("NonHamyarAdmin"))
+	private string Title(string name, string fallback)
 	{
-		<li class="nav-item has-treeview">
-			<a href="#" class="nav-link">
+		var item = Model?.FirstOrDefault(x => x.Name == name);
+		return string.IsNullOrWhiteSpace(item?.NameFarsi) ? fallback : item.NameFarsi;
+	}
+}
+
+@{
+	var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+	var action = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+	var mode = Context.Request.Query["mode"].ToString();
+	var routeKey = $"{controller}.{action}";
+	var activeMenuKey = routeKey switch
+	{
+		"BargeBaskoul.BargeAnbar" => "BargeAnbar",
+		"BargeBaskoul.ListBargeAnbar" => "ListBargeAnbar",
+		"BargeBaskoul.UploadExcel" => "UploadExcel",
+		"APIs.SyncServer" => "SyncServer",
+		"Reports.ReportSetting" => "ReportSetting",
+		"WeighbridgeSite.SiteList" => "SiteList",
+		"WeighbridgeSite.SelectSite" => "SelectSite",
+		"BaseData.DataList" => "DataList",
+		"BaseData.ShowList" => "DataList",
+		"WindowsAPIs.Index" => "WindowsAPIs",
+		"UserManager.Index" when string.Equals(mode, "password", StringComparison.OrdinalIgnoreCase) => "ChangePassword",
+		"UserManager.Index" => "UserManager",
+		"UserManager.Insert" => "UserManager",
+		"UserManager.Edit" => "UserManager",
+		"UserManager.ResetUserPassword" => "UserManager",
+		"WeighbridgeOrganization.CodeURLList" => "CodeURLList",
+		"WeighbridgeOrganization.InsertURLMarkaz" => "CodeURLList",
+		"WeighbridgeOrganization.Edit" => "CodeURLList",
+		_ => string.Empty
+	};
+
+	var operationsKeys = new[] { "BargeAnbar", "ListBargeAnbar", "UploadExcel", "SyncServer" };
+	var reportsKeys = new[] { "ReportSetting" };
+	var baseSettingsKeys = new[] { "SiteList", "SelectSite", "DataList", "WindowsAPIs" };
+	var systemManagementKeys = new[] { "UserManager", "CodeURLList" };
+
+	var hasOperations = operationsKeys.Any(Has);
+	var hasReports = reportsKeys.Any(Has);
+	var hasBaseSettings = baseSettingsKeys.Any(Has);
+	var hasBaskoulSystem = hasOperations || hasReports || hasBaseSettings;
+	var hasSystemManagement = systemManagementKeys.Any(Has);
+
+	var operationsOpen = operationsKeys.Contains(activeMenuKey);
+	var reportsOpen = reportsKeys.Contains(activeMenuKey);
+	var baseSettingsOpen = baseSettingsKeys.Contains(activeMenuKey);
+	var baskoulSystemOpen = operationsOpen || reportsOpen || baseSettingsOpen;
+	var systemManagementOpen = systemManagementKeys.Contains(activeMenuKey);
+}
+
+	@if (Has("ChangePassword"))
+	{
+		var title = Title("ChangePassword", "تغییر پسورد");
+		<li class="nav-item">
+			<a class="nav-link @(activeMenuKey == "ChangePassword" ? "active" : "")" asp-controller="UserManager" asp-action="Index" asp-route-mode="password" title="@title">
+				<i class="fa fa-lock nav-icon"></i>
+				<p>@title</p>
+			</a>
+		</li>
+	}
+
+	@if (hasBaskoulSystem)
+	{
+		<li class="nav-item has-treeview @(baskoulSystemOpen ? "menu-open" : "")">
+			<a href="#" class="nav-link @(baskoulSystemOpen ? "active" : "")" title="سیستم باسکول">
+				<i class="nav-icon fa fa-balance-scale"></i>
+				<p>
+					سیستم باسکول
+					<i class="fa fa-angle-left right"></i>
+				</p>
+			</a>
+			<ul class="nav nav-treeview" style="@(baskoulSystemOpen ? "display: block;" : "display: none;")">
+				@if (hasOperations)
+				{
+					<li class="nav-item has-treeview @(operationsOpen ? "menu-open" : "")">
+						<a class="nav-link @(operationsOpen ? "active" : "")" href="#" title="عملیات باسکول">
+							<i class="nav-icon fa fa-truck"></i>
+							<p>
+								عملیات باسکول
+								<i class="fa fa-angle-left right"></i>
+							</p>
+						</a>
+						<ul class="nav nav-treeview" style="@(operationsOpen ? "display: block;" : "display: none;")">
+							@if (Has("BargeAnbar"))
+							{
+								var title = Title("BargeAnbar", "ثبت برگه باسکول");
+								<li class="nav-item">
+									<a class="nav-link @(activeMenuKey == "BargeAnbar" ? "active" : "")" asp-controller="BargeBaskoul" asp-action="BargeAnbar" title="@title">
+										<i class="fa fa-circle-o nav-icon"></i>
+										<p>@title</p>
+									</a>
+								</li>
+							}
+							@if (Has("ListBargeAnbar"))
+							{
+								var title = Title("ListBargeAnbar", "لیست برگه‌های باسکول");
+								<li class="nav-item">
+									<a class="nav-link @(activeMenuKey == "ListBargeAnbar" ? "active" : "")" asp-controller="BargeBaskoul" asp-action="ListBargeAnbar" asp-route-type="3" title="@title">
+										<i class="fa fa-circle-o nav-icon"></i>
+										<p>@title</p>
+									</a>
+								</li>
+							}
+							@if (Has("UploadExcel"))
+							{
+								var title = Title("UploadExcel", "ورود اطلاعات از اکسل");
+								<li class="nav-item">
+									<a class="nav-link @(activeMenuKey == "UploadExcel" ? "active" : "")" asp-controller="BargeBaskoul" asp-action="UploadExcel" title="@title">
+										<i class="fa fa-upload nav-icon"></i>
+										<p>@title</p>
+									</a>
+								</li>
+							}
+							@if (Has("SyncServer"))
+							{
+								var title = Title("SyncServer", "همگام‌سازی اطلاعات باسکول");
+								<li class="nav-item">
+									<a class="nav-link @(activeMenuKey == "SyncServer" ? "active" : "")" asp-controller="APIs" asp-action="SyncServer" title="@title">
+										<i class="fa fa-refresh nav-icon"></i>
+										<p>@title</p>
+									</a>
+								</li>
+							}
+						</ul>
+					</li>
+				}
+
+				@if (hasReports)
+				{
+					<li class="nav-item has-treeview @(reportsOpen ? "menu-open" : "")">
+						<a href="#" class="nav-link @(reportsOpen ? "active" : "")" title="گزارش‌ها">
+							<i class="nav-icon fa fa-file-text-o"></i>
+							<p>
+								گزارش‌ها
+								<i class="right fa fa-angle-left"></i>
+							</p>
+						</a>
+						<ul class="nav nav-treeview" style="@(reportsOpen ? "display: block;" : "display: none;")">
+							@if (Has("ReportSetting"))
+							{
+								var title = Title("ReportSetting", "تنظیمات چاپ برگه باسکول");
+								<li class="nav-item">
+									<a class="nav-link @(activeMenuKey == "ReportSetting" ? "active" : "")" asp-controller="Reports" asp-action="ReportSetting" title="@title">
+										<i class="fa fa-circle-o nav-icon"></i>
+										<p>@title</p>
+									</a>
+								</li>
+							}
+						</ul>
+					</li>
+				}
+
+				@if (hasBaseSettings)
+				{
+					<li class="nav-item has-treeview @(baseSettingsOpen ? "menu-open" : "")">
+						<a href="#" class="nav-link @(baseSettingsOpen ? "active" : "")" title="تنظیمات پایه">
+							<i class="nav-icon fa fa-database"></i>
+							<p>
+								تنظیمات پایه
+								<i class="fa fa-angle-left right"></i>
+							</p>
+						</a>
+						<ul class="nav nav-treeview" style="@(baseSettingsOpen ? "display: block;" : "display: none;")">
+							@if (Has("SiteList"))
+							{
+								var title = Title("SiteList", "مدیریت محل‌های باسکول");
+								<li class="nav-item">
+									<a class="nav-link @(activeMenuKey == "SiteList" ? "active" : "")" asp-controller="WeighbridgeSite" asp-action="SiteList" title="@title">
+										<i class="fa fa-circle-o nav-icon"></i>
+										<p>@title</p>
+									</a>
+								</li>
+							}
+							@if (Has("SelectSite"))
+							{
+								var title = Title("SelectSite", "انتخاب باسکول پیش‌فرض");
+								<li class="nav-item">
+									<a class="nav-link @(activeMenuKey == "SelectSite" ? "active" : "")" asp-controller="WeighbridgeSite" asp-action="SelectSite" title="@title">
+										<i class="fa fa-circle-o nav-icon"></i>
+										<p>@title</p>
+									</a>
+								</li>
+							}
+							@if (Has("DataList"))
+							{
+								var title = Title("DataList", "اطلاعات پایه باسکول");
+								<li class="nav-item">
+									<a class="nav-link @(activeMenuKey == "DataList" ? "active" : "")" asp-controller="BaseData" asp-action="DataList" title="@title">
+										<i class="fa fa-circle-o nav-icon"></i>
+										<p>@title</p>
+									</a>
+								</li>
+							}
+							@if (Has("WindowsAPIs"))
+							{
+								var title = Title("WindowsAPIs", "توکن ارتباط با نمایشگر وزن");
+								<li class="nav-item">
+									<a class="nav-link @(activeMenuKey == "WindowsAPIs" ? "active" : "")" asp-controller="WindowsAPIs" asp-action="Index" title="@title">
+										<i class="fa fa-key nav-icon"></i>
+										<p>@title</p>
+									</a>
+								</li>
+							}
+						</ul>
+					</li>
+				}
+			</ul>
+		</li>
+	}
+
+	@if (hasSystemManagement)
+	{
+		<li class="nav-item has-treeview @(systemManagementOpen ? "menu-open" : "")">
+			<a href="#" class="nav-link @(systemManagementOpen ? "active" : "")" title="مدیریت سیستم">
 				<i class="nav-icon fa fa-cogs"></i>
 				<p>
 					مدیریت سیستم
 					<i class="fa fa-angle-left right"></i>
 				</p>
 			</a>
-			<ul class="nav nav-treeview" style="display: none;">
-				<li class="nav-item">
-					<a class="nav-link" asp-controller="UserManager" asp-action="Index">
-						<i class="fa fa-users-cog nav-icon"></i>
-						<p>کاربران و دسترسی‌ها</p>
-					</a>
-				</li>
-				@if (User.IsInRole("SuperAdmin"))
+			<ul class="nav nav-treeview" style="@(systemManagementOpen ? "display: block;" : "display: none;")">
+				@if (Has("UserManager"))
 				{
+					var title = Title("UserManager", "کاربران و دسترسی‌ها");
 					<li class="nav-item">
-						<a class="nav-link" asp-controller="CodeMarkazForURL" asp-action="CodeURLList">
+						<a class="nav-link @(activeMenuKey == "UserManager" ? "active" : "")" asp-controller="UserManager" asp-action="Index" title="@title">
+							<i class="fa fa-users-cog nav-icon"></i>
+							<p>@title</p>
+						</a>
+					</li>
+				}
+				@if (Has("CodeURLList"))
+				{
+					var title = Title("CodeURLList", "تنظیمات مرکز باسکول");
+					<li class="nav-item">
+						<a class="nav-link @(activeMenuKey == "CodeURLList" ? "active" : "")" asp-controller="WeighbridgeOrganization" asp-action="CodeURLList" title="@title">
 							<i class="fa fa-building nav-icon"></i>
-							<p>تنظیمات مرکز باسکول</p>
+							<p>@title</p>
 						</a>
 					</li>
 				}
 			</ul>
 		</li>
 	}
-</ul>

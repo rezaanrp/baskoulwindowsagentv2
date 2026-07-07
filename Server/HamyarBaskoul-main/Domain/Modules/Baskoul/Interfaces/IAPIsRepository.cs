@@ -1,5 +1,5 @@
 ﻿using Domain.ViewModels.APIs;
-using Domain.ViewModels.Baskoul;
+using Domain.ViewModels.Weighbridge;
 using Microsoft.AspNetCore.Identity;
 using Domain.Classes;
 using System;

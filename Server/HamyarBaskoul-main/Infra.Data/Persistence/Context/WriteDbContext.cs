@@ -1,6 +1,6 @@
 ﻿using Application.Common.Interfaces;
 using Domain.Models;
-using Domain.ViewModels.Baskoul;
+using Domain.ViewModels.Weighbridge;
 using Infra.Data.Seed;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
@@ -19,16 +19,16 @@ namespace Infra.Data.Context
         {
             _httpContextAccessor = httpContextAccessor;
         }
-        public DbSet<Baskoul> baskouls { get; set; }
+        public DbSet<Weighbridge> Weighbridges { get; set; }
         public DbSet<BargeBaskoul> BargeBaskouls { get; set; }
         public DbSet<Mabani> Mabanis { get; set; }
-        public DbSet<CodeMarkaz> CodeMarkazs { get; set; }
+        public DbSet<Company> Companies { get; set; }
         public DbSet<BaseTable> BaseTables { get; set; }
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
         public DbSet<ObjectForm> ObjectForms { get; set; }
         public DbSet<ObjectFormUser> ObjectFormUsers { get; set; }
-        public DbSet<Site> Sites { get; set; }
-        public DbSet<UserSite> UserSites { get; set; }
+        public DbSet<WeighbridgeSite> WeighbridgeSites { get; set; }
+        public DbSet<WeighbridgeSiteUser> WeighbridgeSiteUsers { get; set; }
         public DbSet<GhabzSerialTracker> GhabzSerialTrackers { get; set; }
         public DbSet<ReportSetting> ReportSettings { get; set; }
         public DbSet<Settings> Settings { get; set; }
@@ -52,7 +52,7 @@ namespace Infra.Data.Context
                 entity.Property(e => e.IsDelete).HasDefaultValue(false);
             });
 
-            modelBuilder.Entity<Baskoul>()
+            modelBuilder.Entity<Weighbridge>()
         .HasOne(b => b.User)
         .WithMany() 
         .HasForeignKey(b => b.UserID);
@@ -61,7 +61,7 @@ namespace Infra.Data.Context
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 var clrType = entityType.ClrType;
-                if (clrType.GetProperty("CodMarkaz") == null && clrType.GetProperty("CodeMarkaz") == null)
+                if (clrType.GetProperty("CodMarkaz") == null && clrType.GetProperty("Company") == null)
                 {
                     modelBuilder.Entity(clrType)
                         .Property<string>("CodMarkaz")
@@ -81,17 +81,17 @@ namespace Infra.Data.Context
             new Seeder(modelBuilder).Seed();
             new SeedObject(modelBuilder).Seed();
 
-            modelBuilder.Entity<UserSite>()
+            modelBuilder.Entity<WeighbridgeSiteUser>()
         .HasKey(us => us.ID); // You can also use composite key if preferred
 
-            modelBuilder.Entity<UserSite>()
+            modelBuilder.Entity<WeighbridgeSiteUser>()
                 .HasOne(us => us.User)
-                .WithMany(u => u.UserSites)
+                .WithMany(u => u.WeighbridgeSiteUsers)
                 .HasForeignKey(us => us.UserId);
 
-            modelBuilder.Entity<UserSite>()
-                .HasOne(us => us.Site)
-                .WithMany(s => s.UserSites)
+            modelBuilder.Entity<WeighbridgeSiteUser>()
+                .HasOne(us => us.WeighbridgeSite)
+                .WithMany(s => s.WeighbridgeSiteUsers)
                 .HasForeignKey(us => us.SiteId);
 
             modelBuilder.Entity<IdentityRole>().HasData(
@@ -104,32 +104,11 @@ namespace Infra.Data.Context
             },
             new IdentityRole
             {
-                Id = "cbc43a8e-f7bb-4445-baaf-1add431ffbbf",
-                Name = "Administrator",
-                NormalizedName = "ADMINISTRATOR",
-                ConcurrencyStamp = "dde4cd0a-c55c-4c1b-874d-8d2e33c0c7eb"
-            },
-            new IdentityRole
-            {
                 Id = "abc12def-1234-4567-89ab-1234567890ab",
-                Name = "SuperAdmin",
-                NormalizedName = "SUPERADMIN",
+                Name = "Admin",
+                NormalizedName = "ADMIN",
                 ConcurrencyStamp = "39a9015e-1958-405b-a4ea-25bf2249e783"
-			},
-             new IdentityRole
-             {
-                 Id = "abc12def-1234-8954-89ab-1234567890ab",
-                 Name = "NonHamyarUser",
-                 NormalizedName = "NONHAMYARUSER",
-                 ConcurrencyStamp = "ae356140-5de4-4a67-b818-e1021aeacfcf"
-			 },
-              new IdentityRole
-              {
-                  Id = "abc12def-1234-2548-89ab-1234567890ab",
-                  Name = "NonHamyarAdmin",
-                  NormalizedName = "NONHAMYARADMIN",
-                  ConcurrencyStamp = "55a33924-8173-4f79-b41e-d438d1eada2a"
-			  }
+			}
         );
 
             var hasher = new PasswordHasher<AppUser>();
@@ -169,8 +148,8 @@ namespace Infra.Data.Context
                     }
                 );
 
-            modelBuilder.Entity<CodeMarkaz>().HasData(
-                   new CodeMarkaz
+            modelBuilder.Entity<Company>().HasData(
+                   new Company
                    {
                        CodMarkaz = "1",
                        Id = 1,
