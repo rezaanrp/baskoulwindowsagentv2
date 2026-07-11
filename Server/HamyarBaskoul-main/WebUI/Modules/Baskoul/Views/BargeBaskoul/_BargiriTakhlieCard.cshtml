@@ -1,117 +1,275 @@
-﻿@using Application.ViewModels.Weighbridge
+@using Application.ViewModels.Weighbridge
 @model BargeAnbarViewModel
 
 <style>
-    .table tbody tr:hover {
-        background-color: #c3c2cc;
+    .operation-list {
+        display: grid;
+        gap: .65rem;
+    }
+
+    .operation-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .75rem;
+        align-items: center;
+        padding: .8rem .9rem;
+        border: 1px solid #dbe6ef;
+        border-radius: .95rem;
+        background: linear-gradient(180deg, #fff 0%, #f8fbfe 100%);
         cursor: pointer;
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
     }
 
-    .table tbody tr {
-        position: relative;
-        z-index: 1;
+    .operation-row:hover {
+        transform: translateY(-2px);
+        border-color: #2a6f97;
+        box-shadow: 0 12px 22px rgba(15, 23, 42, .12);
     }
 
+    .operation-plate {
+        direction: ltr;
+        color: #12263a;
+        font-size: 1.05rem;
+        font-weight: 900;
+        letter-spacing: .02em;
+    }
+
+    .operation-receipt {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        margin-top: .28rem;
+        color: #52667a;
+        font-size: .82rem;
+    }
+
+    .operation-receipt strong {
+        direction: ltr;
+        color: #17324d;
+        font-size: .95rem;
+    }
+
+    .operation-open {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        color: #fff;
+        background: #22a06b;
+        box-shadow: 0 8px 18px rgba(34, 160, 107, .22);
+    }
+
+    .operation-empty {
+        padding: 1.15rem;
+        border: 1px dashed #b8c9d8;
+        border-radius: 1rem;
+        color: #52667a;
+        background: #f8fbfe;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    .operation-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        flex-wrap: wrap;
+        margin-top: .9rem;
+    }
+
+    .operation-info {
+        color: #52667a;
+        font-size: .85rem;
+    }
+
+    .operation-footer .pagination {
+        margin: 0;
+    }
+
+    .operation-footer .page-link {
+        border-radius: .7rem;
+        margin: 0 .12rem;
+        border-color: #d7e2ec;
+        color: #17324d;
+    }
+
+    .operation-footer .page-item.active .page-link {
+        border-color: #22a06b;
+        background: #22a06b;
+        color: #fff;
+    }
+
+    .operation-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #dbe6ef;
+        border-radius: .95rem;
+        background: #fff;
+    }
+
+    .operation-table {
+        min-width: 980px;
+        margin: 0;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .operation-table thead th {
+        border: 0;
+        background: #eef6fb;
+        color: #17324d;
+        font-size: .82rem;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .operation-table tbody tr {
+        cursor: pointer;
+        transition: background-color .15s ease;
+    }
+
+    .operation-table tbody tr:hover {
+        background: #f4faf7;
+    }
+
+    .operation-table td {
+        border-color: #edf2f6;
+        color: #34495e;
+        white-space: nowrap;
+    }
+
+    .weight-value {
+        direction: ltr;
+        font-variant-numeric: tabular-nums;
+        font-weight: 800;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 86px;
+        padding: .36rem .6rem;
+        border-radius: 999px;
+        font-size: .75rem;
+        font-weight: 900;
+    }
+
+    .status-progress { color: #8a5a00; background: #fff3cd; }
+    .status-complete { color: #146c43; background: #d9f2e5; }
+    .status-cancelled { color: #9f1239; background: #fde2e7; }
+    .status-unknown { color: #52667a; background: #e9eef3; }
+    .type-entry { color: #146c43; background: #e2f4ea; }
+    .type-exit { color: #9f1239; background: #fde7eb; }
+    .type-pending { color: #8a5a00; background: #fff3cd; }
+
+    @@media (max-width: 575.98px) {
+        .operation-row {
+            grid-template-columns: 1fr;
+        }
+
+        .operation-open {
+            width: 100%;
+            border-radius: .85rem;
+        }
+    }
 </style>
 
 @if (!Model.BargeBaskouls.Any())
 {
-    <li>برگه‌ای برای نمایش وجود ندارد</li>
+    <div class="operation-empty">
+        برگه‌ای برای نمایش وجود ندارد.
+    </div>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                @* <th>ردیف</th> *@
-                <th>شماره قبض</th>
-                <th>شماره ماشین</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.BargeBaskouls)
-            {
-                <tr class="clickable-row" data-href="@Url.Action("EditBargeBaskoul", "BargeBaskoul", new { id = item.ID })">
-                    @* <td>@item.ID</td> *@
-                    <td>@item.GhabzBaskolID</td>
-                    <td>@item.ShomareMashin</td>
+    <div class="operation-table-wrap">
+        <table class="table operation-table">
+            <thead>
+                <tr>
+                    <th>پلاک</th>
+                    <th>شماره قبض</th>
+                    <th>راننده</th>
+                    <th>وزن ورود</th>
+                    <th>وزن خروج</th>
+                    <th>وزن خالص</th>
+                    <th>نوع برگه</th>
+                    <th>وضعیت توزین</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    <div class="row">
-        <div class="col-sm-12 col-md-5">
-            <div class="dataTables_info" id="example2_info" role="status" aria-live="polite">
-                نمایش @ViewBag.startEntry تا @ViewBag.endEntry از @ViewBag.totalEntries برگه
-            </div>
-        </div>
-        <div class="col-sm-12 col-md-7">
-            <div class="dataTables_paginate paging_simple_numbers" id="example2_paginate">
-                <ul class="pagination justify-content-center">
-                    @if (ViewBag.currentPage > 1)
+            </thead>
+            <tbody>
+                @foreach (var item in Model.BargeBaskouls)
+                {
+                    var statusClass = item.WeighingStatus switch
                     {
-                        <li class="paginate_button page-item previous">
-                            <a href="javascript:void(0);" class="page-link" onclick="loadPage(@(ViewBag.currentPage - 1))">قبلی</a>
-                        </li>
-                    }
-                    else
+                        "تکمیل شده" => "status-complete",
+                        "در حال توزین" => "status-progress",
+                        "باطل شده" => "status-cancelled",
+                        _ => "status-unknown"
+                    };
+                    var typeClass = item.CalculatedBargeType switch
                     {
-                        <li class="paginate_button page-item previous disabled">
-                            <a href="#" class="page-link">قبلی</a>
-                        </li>
-                    }
+                        "ورود" => "type-entry",
+                        "خروج" => "type-exit",
+                        "در انتظار وزن دوم" => "type-pending",
+                        _ => "status-unknown"
+                    };
+                    <tr class="clickable-row" data-href="@Url.Action("EditBargeBaskoul", "BargeBaskoul", new { id = item.ID })">
+                        <td><span class="operation-plate">@(item.ShomareMashin ?? "ثبت نشده")</span></td>
+                        <td><strong dir="ltr">@(item.GhabzBaskolID?.ToString() ?? "ثبت نشده")</strong></td>
+                        <td>@item.DriverDisplayName</td>
+                        <td><span class="weight-value">@(item.EntryWeight > 0 ? $"{item.EntryWeight.Value:N0} kg" : "ثبت نشده")</span></td>
+                        <td><span class="weight-value">@(item.ExitWeight > 0 ? $"{item.ExitWeight.Value:N0} kg" : "ثبت نشده")</span></td>
+                        <td><span class="weight-value">@(item.NetDisplayWeight > 0 ? $"{item.NetDisplayWeight.Value:N0} kg" : "ثبت نشده")</span></td>
+                        <td><span class="status-badge @typeClass">@item.CalculatedBargeType</span></td>
+                        <td><span class="status-badge @statusClass">@item.WeighingStatus</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
-                    @for (int i = 1; i <= ViewBag.totalPages; i++)
-                    {
-                        <li class="paginate_button page-item @(i == ViewBag.currentPage ? "active" : "")">
-                            <a href="javascript:void(0);" class="page-link" onclick="loadPage(@i)">@i</a>
-                        </li>
-                    }
-
-                    @if (ViewBag.currentPage < ViewBag.totalPages)
-                    {
-                        <li class="paginate_button page-item next">
-                            <a href="javascript:void(0);" class="page-link" onclick="loadPage(@(ViewBag.currentPage + 1))">بعدی</a>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="paginate_button page-item next disabled">
-                            <a href="#" class="page-link">بعدی</a>
-                        </li>
-                    }
-                </ul>
-            </div>
+    <div class="operation-footer">
+        <div class="operation-info" role="status" aria-live="polite">
+            نمایش @ViewBag.startEntry تا @ViewBag.endEntry از @ViewBag.totalEntries برگه
         </div>
+        <nav aria-label="صفحه‌بندی برگه‌ها">
+            <ul class="pagination justify-content-center">
+                @if (ViewBag.currentPage > 1)
+                {
+                    <li class="paginate_button page-item previous">
+                        <a href="javascript:void(0);" class="page-link" onclick="loadPage(@(ViewBag.currentPage - 1))">قبلی</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="paginate_button page-item previous disabled">
+                        <a href="#" class="page-link">قبلی</a>
+                    </li>
+                }
+
+                @for (int i = 1; i <= ViewBag.totalPages; i++)
+                {
+                    <li class="paginate_button page-item @(i == ViewBag.currentPage ? "active" : "")">
+                        <a href="javascript:void(0);" class="page-link" onclick="loadPage(@i)">@i</a>
+                    </li>
+                }
+
+                @if (ViewBag.currentPage < ViewBag.totalPages)
+                {
+                    <li class="paginate_button page-item next">
+                        <a href="javascript:void(0);" class="page-link" onclick="loadPage(@(ViewBag.currentPage + 1))">بعدی</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="paginate_button page-item next disabled">
+                        <a href="#" class="page-link">بعدی</a>
+                    </li>
+                }
+            </ul>
+        </nav>
     </div>
 }
-<script>
-    document.addEventListener("click", function (event) {
-        // Check if the clicked element or its ancestor has the 'clickable-row' class
-        let row = event.target.closest(".clickable-row");
-        if (row) {
-            window.location = row.getAttribute("data-href");
-        }
-    });
-</script>
-@* <script>
-    let hoverTimer;
-
-    document.addEventListener("mouseover", function (event) {
-        const row = event.target.closest(".clickable-row");
-        if (!row) return;
-
-        hoverTimer = setTimeout(() => {
-            window.location = row.dataset.href;
-        }, 300); // 300ms delay
-    });
-
-    document.addEventListener("mouseout", function (event) {
-        const row = event.target.closest(".clickable-row");
-        if (row) {
-            clearTimeout(hoverTimer);
-        }
-    });
-</script> *@
-
-

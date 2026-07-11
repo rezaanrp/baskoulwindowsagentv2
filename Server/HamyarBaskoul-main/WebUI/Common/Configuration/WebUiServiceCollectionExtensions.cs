@@ -5,6 +5,7 @@ using Domain.Models;
 using Infra.Data.Classes;
 using Infra.Data.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -46,8 +47,18 @@ namespace WebUI.Common.Configuration
                             ? originalPathText
                             : $"{context.Request.PathBase}{context.Request.Path}{context.Request.QueryString}";
 
+                    var loginPath = options.LoginPath.Value ?? "/Identity/Account/Login";
+                    var pathBase = context.Request.PathBase.Value;
+                    if (string.IsNullOrWhiteSpace(pathBase) &&
+                        context.HttpContext.Items.TryGetValue("AppName", out var appNameValue) &&
+                        appNameValue is string appName &&
+                        !string.IsNullOrWhiteSpace(appName))
+                    {
+                        pathBase = "/" + appName.Trim('/');
+                    }
+
                     var loginUrl = QueryHelpers.AddQueryString(
-                        options.LoginPath.Value ?? "/Identity/Account/Login",
+                        $"{pathBase}{loginPath}",
                         options.ReturnUrlParameter,
                         returnUrl);
 

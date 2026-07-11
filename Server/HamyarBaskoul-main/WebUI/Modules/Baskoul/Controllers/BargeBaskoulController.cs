@@ -8,6 +8,7 @@ using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace WebUI.Controllers
 {
@@ -39,7 +40,7 @@ namespace WebUI.Controllers
 
             var codeMarkaz = user.CodMarkaz;
             var pagedResult = await _bargebaskoulservice.GetFilteredAsyncbyType(
-        type, codeMarkaz, searchTerm, page, pageSize, sortColumn, sortDirection);
+        type, codeMarkaz, user.SelectedSiteId.Value, searchTerm, page, pageSize, sortColumn, sortDirection);
 
             var Weighbridges = await _baskoulService.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz);
 
@@ -51,7 +52,11 @@ namespace WebUI.Controllers
                 BargeAnbar = new BargeBaskoulViewModel
                 {
                     isManual = true,
-                    TypeBarge = type,
+                    TypeBarge = null,
+                    DateBarge = ToPersianDate(DateTime.Now),
+                    DateBaskol = ToPersianDate(DateTime.Now),
+                    TimeBarge = DateTime.Now.ToString("HH:mm:ss"),
+                    TimeBaskol = DateTime.Now.ToString("HH:mm:ss"),
                     Mabanis = await _bargebaskoulservice.GetAllMabanisAsync(codeMarkaz),
                     CodMarkaz = codeMarkaz,
                     siteId = user.SelectedSiteId
@@ -72,6 +77,60 @@ namespace WebUI.Controllers
             ViewBag.siteId = user.SelectedSiteId;
             return View(model);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> LookupPlateWeight(string plate)
+        {
+            var user = _userservice.GetById(OnGetUserId());
+            if (user.SelectedSiteId == null)
+            {
+                return BadRequest(new { success = false, message = "سایت فعالی برای کاربر انتخاب نشده است" });
+            }
+
+            var codeMarkaz = user.CodMarkaz;
+            var normalizedPlate = (plate ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(normalizedPlate))
+            {
+                return Json(new { success = false, hasPrevious = false, previousWeight = 0 });
+            }
+
+            var record = await _bargebaskoulservice.GetLatestByPlateAsync(codeMarkaz, user.SelectedSiteId.Value, normalizedPlate);
+            if (record == null)
+            {
+                return Json(new { success = true, hasPrevious = false, previousWeight = 0 });
+            }
+
+            var previousWeight = record.VanKhali.HasValue && record.VanKhali.Value > 0
+                ? record.VanKhali.Value
+                : record.VaznPor ?? 0;
+            var vaznBarge = record.VaznPor.HasValue && record.VanKhali.HasValue
+                ? Math.Abs(record.VaznPor.Value - record.VanKhali.Value)
+                : (float?)null;
+            var mabanis = await _bargebaskoulservice.GetAllMabanisAsync(codeMarkaz);
+            var driver = record.IDRanande.HasValue
+                ? mabanis.FirstOrDefault(m => m.TableName == "Ranande" && m.IDLinq == record.IDRanande.Value)
+                : null;
+
+            return Json(new
+            {
+                success = true,
+                hasPrevious = true,
+                hasIncomplete = true,
+                id = record.ID,
+                plate = record.ShomareMashin,
+                previousWeight,
+                vaznPor = record.VaznPor,
+                vanKhali = record.VanKhali,
+                vaznBarge,
+                ghabzBaskolId = record.GhabzBaskolID,
+                driverId = driver?.ID,
+                driverName = record.OnvanRanandeh ?? driver?.Onvan,
+                isManualDriver = !record.IDRanande.HasValue,
+                dateBarge = record.DateBarge,
+                timeBarge = record.TimeBarge
+            });
+        }
+
         [HttpPost]
         public async Task<IActionResult> BargeAnbar(BargeBaskoulViewModel entity, int page = 1, int pageSize = 10)
         {
@@ -79,10 +138,15 @@ namespace WebUI.Controllers
             var codeMarkaz = _userservice.GetCodMarkazById(OnGetUserId());
             int siteId = (int)user.SelectedSiteId;
             if (entity == null) return RedirectToAction("Error", "Home");
+            entity.CodMarkaz = codeMarkaz;
+            entity.siteId = siteId;
+            ValidateManualWeight(entity);
+            entity.TypeBarge ??= InferBargeType(entity.VaznPor, entity.VanKhali);
             // Reload all necessary data
             var bargebaskouls = await _bargebaskoulservice.GetAllAsync(codeMarkaz, siteId,page, pageSize);
             if (bargebaskouls.bargeBaskoulViews == null) bargebaskouls.bargeBaskoulViews =  new List<BargeBaskoulViewModel>();
             var Weighbridges = await _baskoulService.GetBySiteAsync(user.SelectedSiteId??0, user.CodMarkaz);
+            entity.Mabanis = await _bargebaskoulservice.GetAllMabanisAsync(codeMarkaz);
 
             var model = new BargeAnbarViewModel
             {
@@ -93,14 +157,13 @@ namespace WebUI.Controllers
 
             if (!ModelState.IsValid)
             {
-                model.BargeAnbar = new BargeBaskoulViewModel();
-                if (entity.TypeBarge == null)
-                    ViewBag.ErrorMessage = "لطفا نوع برگه را مشخص کنید!";
-                else
-                { 
-                    ViewBag.ErrorMessage = "ذخیره با خطا مواجه شد لطفا دوباره تلاش کنید!";
-                    model.BargeAnbar.TypeBarge = entity.TypeBarge;
-                }
+                model.BargeAnbar = entity;
+                ViewBag.ErrorMessage = "ذخیره با خطا مواجه شد لطفا دوباره تلاش کنید!";
+                model.BargeAnbar.TypeBarge = entity.TypeBarge;
+                model.BargeAnbar.DateBarge = NormalizePersianDate(entity.DateBarge);
+                model.BargeAnbar.DateBaskol = NormalizePersianDate(entity.DateBaskol);
+                model.BargeAnbar.TimeBarge = entity.TimeBarge ?? DateTime.Now.ToString("HH:mm:ss");
+                model.BargeAnbar.TimeBaskol = entity.TimeBaskol ?? DateTime.Now.ToString("HH:mm:ss");
                 int totalPages = (int)Math.Ceiling((double)bargebaskouls.TotalCount / pageSize);
                 ViewBag.totalPages = totalPages;
                 ViewBag.totalEntries = bargebaskouls.TotalCount;
@@ -113,11 +176,30 @@ namespace WebUI.Controllers
                 return View(model); // Return the full model to reload the view
             }
 
-            // Save to database
-            await _bargebaskoulservice.AddBargeBaskoulAsync(entity);
+            try
+            {
+                var completedPreviousWeight = await _bargebaskoulservice.AddOrCompleteByPlateAsync(entity);
+                TempData["BargeSuccessMessage"] = completedPreviousWeight
+                    ? "وزن دوم ثبت و برگه تکمیل شد؛ آماده ثبت خودروی بعدی"
+                    : "وزن اول ثبت شد؛ آماده ثبت خودروی بعدی";
+            }
+            catch (Exception)
+            {
+                model.BargeAnbar = entity;
+                ViewBag.ErrorMessage = "ذخیره برگه انجام نشد؛ اطلاعات فرم حفظ شده است.";
+                ViewBag.totalPages = (int)Math.Ceiling((double)bargebaskouls.TotalCount / pageSize);
+                ViewBag.totalEntries = bargebaskouls.TotalCount;
+                ViewBag.startEntry = ((page - 1) * pageSize) + 1;
+                ViewBag.endEntry = Math.Min(page * pageSize, bargebaskouls.TotalCount);
+                ViewBag.type = entity.TypeBarge;
+                ViewBag.currentPage = page;
+                ViewBag.codeMarkaz = codeMarkaz;
+                ViewBag.siteId = user.SelectedSiteId;
+                ViewBag.EditOrSubmit = 1;
+                return View(model);
+            }
 
-            // Redirect to GET method to reload fresh data
-            return RedirectToAction("ListBargeAnbar");
+            return RedirectToAction(nameof(BargeAnbar));
         }
         [HttpGet]   
         public async Task<IActionResult> ListBargeAnbar(int type = 3, int page = 1, int pageSize = 10,
@@ -132,7 +214,7 @@ namespace WebUI.Controllers
 
             var codeMarkaz = _userservice.GetCodMarkazById(OnGetUserId());
 
-            var result = await _bargebaskoulservice.GetFilteredAsyncbyType(type, codeMarkaz, searchTerm, page,
+            var result = await _bargebaskoulservice.GetFilteredAsyncbyType(type, codeMarkaz, user.SelectedSiteId.Value, searchTerm, page,
                 pageSize, sortColumn, sortDirection);
             int totalPages = (int)Math.Ceiling((double)result.TotalCount / pageSize);
 
@@ -171,6 +253,8 @@ namespace WebUI.Controllers
             if(bargebaskouls.bargeBaskoulViews == null) bargebaskouls.bargeBaskoulViews = new List<BargeBaskoulViewModel>();
             var Weighbridges = await _baskoulService.GetBySiteAsync(user.SelectedSiteId ?? 0, user.CodMarkaz);
             barg.Mabanis = await _bargebaskoulservice.GetAllMabanisAsync(barg.CodMarkaz);
+            barg.DateBarge = NormalizePersianDate(barg.DateBarge);
+            barg.DateBaskol = NormalizePersianDate(barg.DateBaskol);
             int totalPages = (int)Math.Ceiling((double)bargebaskouls.TotalCount / pageSize);
             var model = new BargeAnbarViewModel
             {
@@ -198,6 +282,8 @@ namespace WebUI.Controllers
         {
             var user = _userservice.GetById(OnGetUserId());
             if (entity == null) return RedirectToAction("Error", "Home");
+            ValidateManualWeight(entity);
+            entity.TypeBarge ??= InferBargeType(entity.VaznPor, entity.VanKhali);
             // Reload all necessary data
             var codeMarkaz = entity.CodMarkaz;
             var bargebaskouls = await _bargebaskoulservice.GetAllAsync(codeMarkaz, (int)user.SelectedSiteId, page, pageSize);
@@ -212,10 +298,11 @@ namespace WebUI.Controllers
 
             if (!ModelState.IsValid)
             {
-                model.BargeAnbar = new BargeBaskoulViewModel
-                {
-                    TypeBarge = entity.TypeBarge
-                };
+                model.BargeAnbar = entity;
+                model.BargeAnbar.DateBarge = NormalizePersianDate(entity.DateBarge);
+                model.BargeAnbar.DateBaskol = NormalizePersianDate(entity.DateBaskol);
+                model.BargeAnbar.TimeBarge = entity.TimeBarge ?? DateTime.Now.ToString("HH:mm:ss");
+                model.BargeAnbar.TimeBaskol = entity.TimeBaskol ?? DateTime.Now.ToString("HH:mm:ss");
                 int totalPages = (int)Math.Ceiling((double)bargebaskouls.TotalCount / pageSize);
                 ViewBag.ErrorMessage = "ذخیره با خطا مواجه شد. دوباره سعی کنید!";
                 ViewBag.totalPages = totalPages;
@@ -238,7 +325,7 @@ namespace WebUI.Controllers
             {
                 bool result = await _bargebaskoulservice.SabtBargeAnbar((int)entity.ID, OnGetUserId());
 
-                if (entity.FlgSabt == true && (entity.VanKhali == null || entity.VaznPor == null))
+                if (entity.FlgSabt == true && entity.VaznPor == null)
                 {
                     TempData["ErrorMessage"] = "عملیات توزین برگه کامل نشده است!";
                     return RedirectToAction("EditBargeBaskoul", new { id = entity.ID });
@@ -268,13 +355,14 @@ namespace WebUI.Controllers
         public async Task<IActionResult> PartialBargeBaskoul(string searchTerm, string codeMarkaz, int siteId, int type = 3, int page = 1, int pageSize = 10,
             string sortColumn = "", string sortDirection = "")
         {
+            var user = _userservice.GetById(OnGetUserId());
+            codeMarkaz = user.CodMarkaz;
+            siteId = user.SelectedSiteId ?? 0;
             var data = new PagedResultBarge();
             if (string.IsNullOrEmpty(searchTerm))
                 data = await _bargebaskoulservice.GetAllAsync(codeMarkaz, siteId, page, pageSize);
             else
-                data = await _bargebaskoulservice.GetFilteredAsyncbyType(type, codeMarkaz, searchTerm, page, pageSize, sortColumn, sortDirection);
-
-            var user = _userservice.GetById(OnGetUserId());
+                data = await _bargebaskoulservice.GetFilteredAsyncbyType(type, codeMarkaz, user.SelectedSiteId.Value, searchTerm, page, pageSize, sortColumn, sortDirection);
 
             var model = new BargeAnbarViewModel
             {
@@ -301,6 +389,65 @@ namespace WebUI.Controllers
         public IActionResult UploadExcel()
         {
             return View();
+        }
+
+        private static string ToPersianDate(DateTime date)
+        {
+            var calendar = new PersianCalendar();
+            return $"{calendar.GetYear(date):0000}/{calendar.GetMonth(date):00}/{calendar.GetDayOfMonth(date):00}";
+        }
+
+        private static string NormalizePersianDate(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return ToPersianDate(DateTime.Now);
+            }
+
+            var normalized = value.Trim().Replace("-", "/");
+            var parts = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 3
+                && int.TryParse(parts[0], out var year)
+                && int.TryParse(parts[1], out var month)
+                && int.TryParse(parts[2], out var day))
+            {
+                if (year >= 1700)
+                {
+                    return ToPersianDate(new DateTime(year, month, day));
+                }
+
+                return $"{year:0000}/{month:00}/{day:00}";
+            }
+
+            return normalized;
+        }
+
+        private static int? InferBargeType(float? currentWeight, float? previousWeight)
+        {
+            if (!currentWeight.HasValue || !previousWeight.HasValue)
+            {
+                return null;
+            }
+
+            if (currentWeight.Value <= 0 || previousWeight.Value <= 0 || currentWeight.Value == previousWeight.Value)
+            {
+                return null;
+            }
+
+            return previousWeight.Value > currentWeight.Value ? 1 : 2;
+        }
+
+        private void ValidateManualWeight(BargeBaskoulViewModel entity)
+        {
+            if (!entity.UseManualWeight)
+            {
+                return;
+            }
+
+            if (!entity.ManualWeight.HasValue || entity.ManualWeight.Value <= 0)
+            {
+                ModelState.AddModelError(nameof(entity.ManualWeight), "وزن دستی باید یک عدد مثبت باشد.");
+            }
         }
 
         [HttpPost("/upload")]

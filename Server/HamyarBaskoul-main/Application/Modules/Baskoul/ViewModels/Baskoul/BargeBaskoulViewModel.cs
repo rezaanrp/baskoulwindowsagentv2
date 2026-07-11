@@ -38,6 +38,8 @@ namespace Application.ViewModels.Weighbridge
         public float? NerkhKala { get; set; }
         public float? VaznPor { get; set; }
         public float? VanKhali { get; set; }
+        public bool UseManualWeight { get; set; }
+        public float? ManualWeight { get; set; }
         public float? VaznBasteBandi { get; set; }
         public string? TimeVaznPor { get; set; }
         public string? TimeVaznKhali { get; set; }
@@ -60,7 +62,6 @@ namespace Application.ViewModels.Weighbridge
         /// 1 : voroud kala - havale anbar,
         /// 2 : khorouj kala - resid anbar
         /// </summary>
-        [Required(ErrorMessage = "لطفاً نوع برگه را انتخاب کنید")]
         public int? TypeBarge { get; set; }
         public string? Karbar_Sabt { get; set; }
         public DateTime? Date_Sabt { get; set; }
@@ -74,6 +75,38 @@ namespace Application.ViewModels.Weighbridge
         public IEnumerable<MabaniViewModel>? Mabanis { get; set; }
         public string? CodMarkaz { get; set; }
         public int? siteId { get; set; }
+
+        public string DriverDisplayName { get; set; } = "ثبت نشده";
+
+        public float? EntryWeight
+        {
+            get
+            {
+                if (!HasTwoWeights) return VaznPor > 0 ? VaznPor : VanKhali;
+                return TypeBarge == 2 ? VanKhali : VaznPor;
+            }
+        }
+
+        public float? ExitWeight => HasTwoWeights ? (TypeBarge == 2 ? VaznPor : VanKhali) : null;
+        public float? NetDisplayWeight => HasTwoWeights ? Math.Abs(VaznPor!.Value - VanKhali!.Value) : null;
+        public bool HasTwoWeights => VaznPor > 0 && VanKhali > 0;
+        public bool HasOneWeight => (VaznPor > 0) != (VanKhali > 0);
+
+        public string CalculatedBargeType
+        {
+            get
+            {
+                if (HasOneWeight) return "در انتظار وزن دوم";
+                if (!HasTwoWeights || EntryWeight == ExitWeight) return "نامشخص";
+                return EntryWeight > ExitWeight ? "ورود" : "خروج";
+            }
+        }
+
+        public string WeighingStatus => FlgEbtal == true
+            ? "باطل شده"
+            : HasTwoWeights && EntryWeight != ExitWeight
+                ? "تکمیل شده"
+                : HasOneWeight ? "در حال توزین" : "نامشخص";
         public bool? isManual { get; set; }
         public bool SubmitFinal { get; set; }
     }

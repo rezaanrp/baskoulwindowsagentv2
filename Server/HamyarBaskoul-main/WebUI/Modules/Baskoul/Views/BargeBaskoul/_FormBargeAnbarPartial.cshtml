@@ -1,759 +1,1274 @@
-﻿@using Application.ViewModels.Weighbridge
-@model BargeBaskoulViewModel
+﻿@using Application.ViewModels.Weighbridge
+@model BargeBaskoulViewModel
+
+@{
+    int mode = ViewBag.EditOrSubmit ?? 1;
+    string formAction = mode == 1
+        ? Url.Action("BargeAnbar", "BargeBaskoul")
+        : Url.Action("EditBargeBaskoul", "BargeBaskoul");
+    var mabanis = Model.Mabanis ?? Enumerable.Empty<MabaniViewModel>();
+}
+
+<link href="~/shamsidate/jalalidatepicker.min.css" rel="stylesheet" />
+<script src="~/shamsidate/jalalidatepicker.min.js"></script>
+
+<style>
+    .baskoul-form-shell {
+        background: linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
+        border-radius: 1rem;
+        padding: 1rem;
+        padding-bottom: 5.5rem;
+    }
+
+    .baskoul-form-card {
+        border: 0;
+        border-radius: 1rem;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+
+    .form-receipt-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: .85rem 1rem;
+        border: 1px solid #d7e2ec;
+        border-radius: 1rem;
+        background: linear-gradient(135deg, #f8fbfe 0%, #eef6fb 100%);
+        margin-bottom: .9rem;
+    }
+
+    .receipt-number {
+        direction: ltr;
+        color: #17324d;
+        font-size: 1.3rem;
+        font-weight: 900;
+    }
+
+    .form-section {
+        border: 1px solid #dbe6ef;
+        border-radius: 1rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #fff;
+    }
+
+    .form-section.soft {
+        background: #f8fbfe;
+    }
+
+    .form-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: .85rem;
+        padding-bottom: .65rem;
+        border-bottom: 1px solid #edf2f6;
+    }
+
+    .form-section-title {
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+        margin: 0;
+        color: #17324d;
+        font-size: .98rem;
+        font-weight: 900;
+    }
+
+    .form-section-title i {
+        color: #22a06b;
+    }
+
+    .important-grid .form-control,
+    .important-grid .form-select {
+        min-height: 48px;
+        font-size: 1rem;
+    }
+
+    .barge-type-picker {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .55rem;
+        padding: .35rem;
+        border: 1px solid #d7e2ec;
+        border-radius: 1rem;
+        background: #f8fbfe;
+    }
+
+    .barge-type-option {
+        border: 0;
+        border-radius: .8rem;
+        background: transparent;
+        color: #52667a;
+        padding: .72rem .85rem;
+        text-align: right;
+        transition: background .15s ease, box-shadow .15s ease, color .15s ease, transform .15s ease;
+    }
+
+    .barge-type-option:hover {
+        transform: translateY(-1px);
+        color: #16324f;
+        background: #edf5fb;
+    }
+
+    .barge-type-option.active {
+        color: #fff;
+        background: linear-gradient(135deg, #146c43 0%, #22a06b 100%);
+        box-shadow: 0 10px 18px rgba(34, 160, 107, .24);
+    }
+
+    .barge-type-option.outgoing.active {
+        background: linear-gradient(135deg, #9f1239 0%, #d71920 100%);
+        box-shadow: 0 10px 18px rgba(215, 25, 32, .22);
+    }
+
+    .barge-type-title {
+        display: block;
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .barge-type-subtitle {
+        display: block;
+        margin-top: .2rem;
+        font-size: .75rem;
+        opacity: .82;
+    }
+
+    .plate-preview {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: .75rem 1rem;
+        border-radius: .85rem;
+        background: #f7fbff;
+        border: 1px dashed #98b6d1;
+    }
+
+    .plate-preview strong {
+        color: #153a5b;
+    }
+
+    .weight-dashboard {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .75rem;
+        margin-top: 1rem;
+    }
+
+    .weight-tile {
+        border: 1px solid #d7e2ec;
+        background: #fff;
+        border-radius: .5rem;
+        padding: .8rem;
+        min-height: 112px;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .weight-tile.active {
+        border-color: #22a06b;
+        box-shadow: 0 0 0 3px rgba(34, 160, 107, .12);
+    }
+
+    .weight-tile-label {
+        color: #52667a;
+        font-size: .85rem;
+        margin-bottom: .35rem;
+    }
+
+    .weight-tile-value {
+        color: #16324f;
+        direction: ltr;
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1.15;
+    }
+
+    .weight-tile-unit {
+        color: #52667a;
+        font-size: .85rem;
+    }
+
+    .current-scale-tile .weight-tile-value {
+        color: #d71920;
+    }
+
+    @@media (max-width: 991.98px) {
+        .weight-dashboard {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .weight-dashboard {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .scale-card {
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+        cursor: pointer;
+    }
+
+    .scale-card:hover,
+    .scale-card.active {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 22px rgba(15, 23, 42, 0.14);
+        border-color: #2a6f97 !important;
+    }
+
+    .section-title {
+        font-size: .95rem;
+        font-weight: 700;
+        color: #16324f;
+        margin-bottom: .75rem;
+    }
+
+    .sticky-toolbar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1040;
+        background: rgba(14, 25, 38, .92);
+        backdrop-filter: blur(10px);
+        color: #fff;
+        padding: .75rem 1rem;
+    }
+
+    .sticky-toolbar .form-check-label {
+        color: #fff;
+    }
+
+    .toolbar-shell {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .kbd-hint {
+        font-size: .85rem;
+        color: #c7d3df;
+    }
+</style>
+
+<form id="form-anbar" method="post" action="@formAction">
+    @Html.AntiForgeryToken()
+    <div class="baskoul-form-shell">
+        <div class="card baskoul-form-card">
+            <div class="card-body">
+                <div class="form-receipt-strip">
+                    <div>
+                        <div class="small text-muted">شماره قبض باسکول</div>
+                        <div class="receipt-number">@Model.GhabzBaskolID</div>
+                    </div>
+                    <div class="small text-muted">جابجایی باسکول با کلید F5</div>
+                </div>
+
+                <section class="form-section">
+                    <div class="form-section-header">
+                        <h5 class="form-section-title">
+                            <i class="fas fa-bolt"></i>
+                            اطلاعات سریع ثبت
+                        </h5>
+                    </div>
+                    <div class="row g-3 important-grid">
+                        <div class="col-12">
+                            <input asp-for="TypeBarge" type="hidden" id="TypeBarge" />
+                            <div class="form-text text-muted" id="typeBargeAutoHint">
+                                نوع برگه به‌صورت خودکار از روی وزن اول و دوم تشخیص داده می‌شود.
+                            </div>
+                        </div>
+                    </div>
+
+                <input asp-for="ID" type="hidden" id="BargeBaskoulId">
+                <input asp-for="VaznPor" type="hidden" id="VaznPor">
+                <input asp-for="VanKhali" type="hidden" id="VanKhali">
+                <input asp-for="TimeVaznPor" type="hidden" id="TimeVaznPor">
+                <input asp-for="TimeVaznKhali" type="hidden" id="TimeVaznKhali">
+                <input type="hidden" id="CurrentScaleWeight" value="0">
+
+                <section class="form-section soft">
+                    <div class="form-section-header">
+                        <h5 class="form-section-title">
+                            <i class="fas fa-weight-hanging"></i>
+                            وزن و زمان‌ها
+                        </h5>
 
-@{
-    int mode = ViewBag.EditOrSubmit ?? 1;
-        string formAction = mode == 1
-            ? Url.Action("BargeAnbar", "BargeBaskoul")
-            : Url.Action("EditBargeBaskoul", "BargeBaskoul");
-}
-
-<link href="~/shamsidate/jalalidatepicker.min.css" rel="stylesheet" />
-<script src="~/shamsidate/jalalidatepicker.min.js"></script>
-<form id="form-anbar" method="post" action="@formAction">
-    @Html.AntiForgeryToken()  <!-- اضافه کردن توکن ضد جعل برای امنیت بیشتر -->
-    <div class="row g-2">
-        <div class="col-auto">
-            <label asp-for="GhabzBaskolID" class="form-label">شماره قبض باسکول</label>
-            <input asp-for="GhabzBaskolID" type="text" class="form-control form-control-sm" readonly>
-        </div>
-        <div class="col-auto">
-            <label asp-for="DateBarge" class="form-label">تاریخ برگه</label>
-            <input asp-for="DateBarge" type="text" class="form-control form-control-sm" readonly>
-        </div>
-        <div class="col-auto">
-            <label asp-for="TimeBaskol" class="form-label">ساعت باسکول</label>
-            <input asp-for="TimeBaskol" type="text" class="form-control form-control-sm" readonly>
-        </div>
-        <div class="col-auto">
-            <label asp-for="DateBaskol" class="form-label">تاریخ باسکول</label>
-            <input asp-for="DateBaskol" type="text" class="form-control form-control-sm" readonly>
-        </div>
-        <div class="col-auto">
-            <label asp-for="TypeBarge" class="form-label">نوع برگه</label>
-            <select asp-for="TypeBarge" class="form-select custom-select" required>
-                <option value="">انتخاب کنید</option>
-                <option value="1">ورودی</option>
-                <option value="2">خروجی</option>
-            </select>
-            <span asp-validation-for="TypeBarge" class="text-danger"></span>
-        </div>
-    </div>
-    <hr />
-    <div class="row g-3">
-        <!-- First Box -->
-        <div class="col-md-4">
-            <div class="p-3 border rounded">
-                <!-- Header Row -->
-                <div class="row mb-2">
-                    <div class="col">
-                        <h6 class="fw-bold">نگهبانی</h6>
-                    </div>
-                </div>
-                <!-- Input Fields Row -->
-                <div class="row g-2">
-                    <div class="col-auto">
-                        <label asp-for="IDNegahbani" class="form-label">شماره قبض</label>
-                        <input type="text" asp-for="IDNegahbani" class="form-control">
-                    </div>
-                    <div class="col-auto">
-                        <label asp-for="DateNegahbani" class="form-label">تاریخ</label>
-                        <input asp-for="DateNegahbani" data-jdp data-jdp-miladi-input="miladi_date" type="text" class="form-control" placeholder="تاریخ را وارد کنید" />
-                    </div>
-                    <div class="col-auto">
-                        <label asp-for="TimeNegahbani" class="form-label">ساعت</label>
-                        <div class="input-group" id="timePicker">
-                            <input type="text" class="form-control" id="TimeNegahbani" asp-for="TimeNegahbani" data-jdp-only-time data-jdp placeholder="ساعت را وارد کنید" />
+                        <div class="form-check form-switch">
+                            <input asp-for="UseManualWeight" class="form-check-input" type="checkbox" id="UseManualWeight">
+                            <label class="form-check-label" for="UseManualWeight">ورود دستی وزن</label>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <!-- Second Box -->
-        <div class="col-md-4">
-            <div class="p-3 border rounded">
-                <!-- Header Row -->
-                <div class="row mb-2">
-                    <div class="col">
-                        <h6 class="fw-bold">تخلیه</h6>
-                    </div>
-                </div>
-                <!-- Input Fields Row -->
-                <div class="row g-2">
-                    <div class="col-auto">
-                    <label asp-for="IDTakhlie" class="form-label">شماره قبض</label>
-                    <div class="input-group">
-                        <div class="input-group input-group-sm">
-                            <input asp-for="IDTakhlie" type="text" class="form-control" id="IDTakhlie" />
-                            <span class="input-group-append">
-                                <button type="button" class="btn btn-info btn-flat" id="searchTakhlieBtn">...</button>
-                            </span>
-                        </div>
-                    </div>
-                    </div>
-                    <div class="col-auto">
-                        <label asp-for="DateTakhlie" class="form-label">تاریخ</label>
-                        <input asp-for="DateTakhlie" id="DateTakhlie" type="text" class="form-control" readonly/>
-                    </div>
-                    <div class="col-auto">
-                        <label asp-for="TimeTakhlie" class="form-label">ساعت</label>
-                        <input asp-for="TimeTakhlie" type="text" class="form-control" readonly>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Third Box -->
-        <div class="col-md-4">
-            <div class="p-3 border rounded">
-                <!-- Header Row -->
-                <div class="row mb-2">
-                    <div class="col">
-                        <h6 class="fw-bold">بارگیری</h6>
-                    </div>
-                </div>
-                <!-- Input Fields Row -->
-                <div class="row g-2">
-                    <div class="col-auto">
-                        <label asp-for="IDBargiri" class="form-label">شماره قبض</label>
-                        <div class="input-group">
-                            <div class="input-group input-group-sm">
-                                <input asp-for="IDBargiri" type="text" class="form-control" id="IDBargiri">
-                                <span class="input-group-append">
-                                    <button type="button" class="btn btn-info btn-flat" id="searchBargiriBtn">...</button>
-                                </span>
+                    <div id="manualWeightPanel" class="row g-2 align-items-end mb-3 d-none">
+                        <div class="col-lg-4 col-md-6">
+                            <label asp-for="ManualWeight" class="form-label">وزن فعلی دستی</label>
+                            <div class="input-group" dir="ltr">
+                                <span class="input-group-text">kg</span>
+                                <input asp-for="ManualWeight" type="number" min="1" step="1" inputmode="numeric"
+                                       class="form-control" id="ManualWeight" autocomplete="off" />
                             </div>
+                            <span asp-validation-for="ManualWeight" class="text-danger d-block mt-1" id="ManualWeightValidation"></span>
+                        </div>
+                        <div class="col-lg-8 col-md-6">
+                            <div class="form-text">در حالت دستی، وزن واردشده بدون انتظار برای ثابت‌شدن باسکول ثبت می‌شود.</div>
                         </div>
                     </div>
-                    <div class="col-auto">
-                        <label asp-for="DateBargiri" class="form-label">تاریخ</label>
-                        <input asp-for="DateBargiri" type="text" class="form-control" readonly/>
+
+                    <div class="weight-dashboard">
+                        <div class="weight-tile current-scale-tile active" id="activeScaleTile">
+                            <div class="weight-tile-label">وزن باسکول انتخاب‌شده</div>
+                            <div class="small text-muted" id="ActiveScaleName">باسکول فعال</div>
+                            <div class="weight-tile-value" id="ActiveScaleWeight">0</div>
+                            <div class="weight-tile-unit">kg</div>
+                        </div>
+                        <div class="weight-tile">
+                            <div class="weight-tile-label">وزن قبلی پلاک</div>
+                            <div class="weight-tile-value" id="PreviousWeightPreview">0</div>
+                            <div class="weight-tile-unit">kg</div>
+                        </div>
+                        <div class="weight-tile">
+                            <div class="weight-tile-label">وزن خالص</div>
+                            <div class="weight-tile-value" id="VaznBargePreview">0</div>
+                            <div class="weight-tile-unit">kg</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-lg-3 col-md-6">
+                            <label asp-for="DateBarge" class="form-label">تاریخ برگه</label>
+                            <input asp-for="DateBarge" type="text" class="form-control" readonly>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <label asp-for="TimeBarge" class="form-label">ساعت برگه</label>
+                            <input asp-for="TimeBarge" type="text" class="form-control" readonly>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <label asp-for="DateBaskol" class="form-label">تاریخ باسکول</label>
+                            <input asp-for="DateBaskol" type="text" class="form-control" readonly>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <label asp-for="TimeBaskol" class="form-label">ساعت باسکول</label>
+                            <input asp-for="TimeBaskol" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <div class="form-section-header">
+                        <h5 class="form-section-title">
+                            <i class="fas fa-id-card"></i>
+
+                            پلاک و راننده
+                        </h5>
+
+                        <div class="form-check">
+
+                            <input type="checkbox" id="toggleManualEntry" class="form-check-input ms-2" @(Model.isManual.GetValueOrDefault() ? "checked" : "")>
+
+                            <label for="toggleManualEntry" class="form-check-label">ورود دستی راننده</label>
+                        </div>
+
                     </div>
-                    <div class="col-auto">
-                        <label asp-for="TimeBargiri" class="form-label">ساعت</label>
-                        <input asp-for="TimeBargiri" type="text" class="form-control" readonly>
+
+                    <div class="row g-3">
+
+                        <div class="col-lg-5 col-md-6 plate-driver-primary">
+
+                            <label asp-for="ShomareMashin" class="form-label">پلاک</label>
+
+                            <div class="input-group">
+
+                                <span class="input-group-text">ایران</span>
+
+                                <input asp-for="ShomareMashin" type="text" class="form-control" id="ShomareMashin" autocomplete="off" data-primary-field="plate" />
+
+                                <button class="btn btn-outline-secondary" type="button" id="lookupPlateBtn">استعلام</button>
+
+                            </div>
+
+                            <div id="plateLookupStatus" class="form-text text-muted mt-1">پلاک را وارد کنید تا وزن قبلی بررسی شود.</div>
+
+                        </div>
+
+                        <div class="col-lg-4 col-md-6 RanandeDropdown plate-driver-primary" style="@(Model.isManual.GetValueOrDefault() ? "display:none;" : "")">
+
+                            <label class="form-label mb-1" for="IDRanande">راننده</label>
+                            <select asp-for="IDRanande" asp-items="ViewBag.ranande" id="IDRanande" class="form-select custom-select" data-primary-field="driver">
+
+                                <option value="">انتخاب کنید</option>
+                                @foreach (var item in mabanis.Where(m => m.TableName == "Ranande"))
+
+                                {
+
+                                    var selected = item.IDLinq == @Model.IDRanande ? true : false;
+
+                                    <option value="@item.ID" selected=@selected>@item.Onvan</option>
+
+                                }
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-lg-4 col-md-6 RanandehInput plate-driver-primary" style="@(Model.isManual.GetValueOrDefault() ? "" : "display:none;")">
+
+                            <label class="form-label mb-1" for="OnvanRanandeh">راننده</label>
+                            <input type="text" asp-for="OnvanRanandeh" id="OnvanRanandeh" value="@Model.OnvanRanandeh" class="form-control" data-primary-field="driver-manual">
+
+                        </div>
+
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <hr />
-    <h3>مشخصات راننده و بار</h3>
 
-    <br />
-    <div class="container">
-        <!-- First Row -->
-        <div class="container">
-            <div class="row g-3 align-items-center">
-                <!-- چک‌باکس ورود دستی -->
-                <div class="col-auto">
-                    <div class="form-check d-flex align-items-center">
-                        <input type="checkbox" id="toggleManualEntry" class="form-check-input ms-2" @(Model.isManual.GetValueOrDefault() ? "checked" : "")>
-                        <label for="toggleManualEntry" class="form-check-label">ورود دستی</label>
-                    </div>
-                </div>
+                </section>
 
-                <!-- دراپ‌داون راننده -->
-                <div class="col-auto RanandeDropdown" style="@(Model.isManual.GetValueOrDefault() ? "display:none;" : "")">
-                    <label class="form-label mb-1" for="IDRanande">راننده</label>
-                    <select asp-for="IDRanande" asp-items="ViewBag.ranande" id="IDRanande" class="form-control custom-select">
-                        <option value="">انتخاب کنید</option>
-                        @foreach (var item in Model.Mabanis.Where(m => m.TableName == "Ranande"))
-                        {
-                            var selected = item.IDLinq == @Model.IDRanande ? true : false;
-                            <option value="@item.ID" selected=@selected>@item.Onvan</option>
-                        }
-                    </select>
-                </div>
+                <section class="form-section">
 
-                <!-- ورودی متنی راننده -->
-                <div class="col-auto RanandehInput" style="@(Model.isManual.GetValueOrDefault() ? "" : "display:none;")">
-                    <label class="form-label mb-1" for="OnvanRanandeh">راننده</label>
-                    <input type="text" asp-for="OnvanRanandeh" id="OnvanRanandeh" value="@Model.OnvanRanandeh" class="form-control form-control-sm">
-                </div>
-            </div>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label asp-for="IDShakhs" class="form-label mt-2">شخص</label>
-                    <select name="IDShakhs" class="select2 form-control form-control-sm">
-                        <option value="">انتخاب کنید</option>
-                        @foreach (var item in Model.Mabanis.Where(m => m.TableName == "Shakhs"))
-                        {
-                            var selected = item.IDLinq == @Model.IDShakhs ? true : false;
-                            <option value="@item.ID" selected=@selected>@item.Onvan</option>
-                        }
-                    </select>
-                </div>
+                    <div class="form-section-header">
 
-                <!-- Second row -->
-                <div class="col-md-4">
-                    <label asp-for="IDTafsili" class="form-label mt-2">تفصیلی</label>
-                    <select name="IDTafsili" class="select2 form-control form-control-sm">
-                        <option value="">انتخاب کنید</option>
-                        @foreach (var item in Model.Mabanis.Where(m => m.TableName == "Tafsili"))
-                        {
-                            var selected = item.IDLinq == @Model.IDTafsili ? true : false;
-                            <option value="@item.ID" selected=@selected>@item.Onvan</option>
-                        }
-                    </select>
-                </div>
+                        <h5 class="form-section-title">
 
-                <div class="col-md-4">
-                    <label asp-for="IDTafsili2" class="form-label mt-2">تفصیلی ۲</label>
-                    <select name="IDTafsili2" class="select2 form-control form-control-s">
-                        <option value="">انتخاب کنید</option>
-                        @foreach (var item in Model.Mabanis.Where(m => m.TableName == "Tafsili2"))
-                        {
-                            var selected = item.IDLinq == @Model.IDTafsili2 ? true : false;
-                            <option value="@item.ID" selected=@selected>@item.Onvan</option>
-                        }
-                    </select>
-                </div>
-                <!-- Third row -->
-                <div class="col-md-4">
-                    <label asp-for="IDAnbar" class="form-label mt-2">انبار</label>
-                    <select name="IDAnbar" class="select2 form-control form-control-sm">
-                        <option value="">انتخاب کنید</option>
-                        @foreach (var item in Model.Mabanis.Where(m => m.TableName == "Anbar"))
-                        {
-                            var selected = item.IDLinq == @Model.IDAnbar ? true : false;
-                            <option value="@item.ID" selected=@selected>@item.Onvan</option>
-                        }
-                    </select>
-                </div>
-
-                <div class="col-md-4">
-                    <label asp-for="IDKala" class="form-label mt-2">کالا</label>
-                    <select name="IDKala" class="select2 form-control form-control-sm">
-                        <option value="">انتخاب کنید</option>
-                        @foreach (var item in Model.Mabanis.Where(m => m.TableName == "Kala"))
-                        {
-                            var selected = item.IDLinq == @Model.IDKala ? true : false;
-                            <option value="@item.ID" selected=@selected>@item.Onvan</option>
-                        }
-                    </select>
-                </div>
-
-                <!-- Fourth row -->
-                <div class="col-md-4">
-                    <label asp-for="IDVasile" class="form-label mt-2">نوع وسیله حمل</label>
-                    <select name="IDVasile" class="select2 form-control form-control-sm">
-                        <option value="">انتخاب کنید</option>
-                        @foreach (var item in Model.Mabanis.Where(m => m.TableName == "Vasile"))
-                        {
-                            var selected = item.IDLinq == @Model.IDVasile ? true : false;
-                            <option value="@item.ID" selected=@selected>@item.Onvan</option>
-                        }
-                    </select>
-                </div>
-
-                <div class="col-md-4">
-                    <label asp-for="IDTypeMarkazHamz" class="form-label mt-2">نوع مراکز حمل</label>
-                        <select name="IDTypeMarkazHamz" class="select2 form-control form-control-sm">
+                            <i class="fas fa-clipboard-list"></i>
+                            عملیات و قبض‌ها
+                        </h5>
+                    </div>
+                    <div class="row g-3">
+                    <div class="col-lg-4 col-md-6">
+                        <label asp-for="IDTakhlie" class="form-label">شماره قبض تخلیه</label>
+                        <div class="input-group">
+                            <input asp-for="IDTakhlie" type="text" class="form-control" id="IDTakhlie" />
+                            <button type="button" class="btn btn-info" id="searchTakhlieBtn">...</button>
+                        </div>
+                        <input asp-for="DateTakhlie" id="DateTakhlie" type="text" class="form-control form-control-sm mt-2" readonly />
+                        <input asp-for="TimeTakhlie" type="text" class="form-control form-control-sm mt-2" readonly>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <label asp-for="IDBargiri" class="form-label">شماره قبض بارگیری</label>
+                        <div class="input-group">
+                            <input asp-for="IDBargiri" type="text" class="form-control" id="IDBargiri">
+                            <button type="button" class="btn btn-info" id="searchBargiriBtn">...</button>
+                        </div>
+                        <input asp-for="DateBargiri" type="text" class="form-control form-control-sm mt-2" readonly />
+                        <input asp-for="TimeBargiri" type="text" class="form-control form-control-sm mt-2" readonly>
+                    </div>
+                    <div class="col-lg-4 col-md-12">
+                        <label asp-for="IDNegahbani" class="form-label">شماره قبض نگهبانی</label>
+                        <input type="text" asp-for="IDNegahbani" class="form-control">
+                        <input asp-for="DateNegahbani" data-jdp data-jdp-miladi-input="miladi_date" type="text" class="form-control form-control-sm mt-2" placeholder="تاریخ را وارد کنید" />
+                        <input type="text" class="form-control form-control-sm mt-2" id="TimeNegahbani" asp-for="TimeNegahbani" data-jdp-only-time data-jdp placeholder="ساعت را وارد کنید" />
+                    </div>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <div class="form-section-header">
+                        <h5 class="form-section-title">
+                            <i class="fas fa-truck"></i>
+                            خودرو و بار
+                        </h5>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input ms-2 d-none" disabled>
+                            <label class="form-check-label d-none">اطلاعات خودرو</label>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-lg-5 col-md-6 d-none">
+                            <label asp-for="ShomareMashin" class="form-label">پلاک</label>
+                            <div class="input-group">
+                                <span class="input-group-text">ایران</span>
+                                <input type="text" class="form-control" disabled />
+                                <button class="btn btn-outline-secondary" type="button" id="lookupPlateBtn">استعلام</button>
+                            </div>
+                            <div id="plateLookupStatus" class="form-text text-muted mt-1">پلاک را وارد کنید تا وزن قبلی بررسی شود.</div>
+                        </div>
+                    <div class="col-lg-4 col-md-6 d-none">
+                        <label class="form-label mb-1" for="IDRanande">راننده</label>
+                        <select class="form-select" disabled>
                             <option value="">انتخاب کنید</option>
-                            @foreach (var item in Model.Mabanis.Where(m => m.TableName == "MarkazHaml"))
-                            {
-                                var selected = item.IDLinq == @Model.IDTypeMarkazHamz ? true : false;
-                                <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            @foreach (var item in mabanis.Where(m => m.TableName == "Ranande"))
+                            {
+                                var selected = item.IDLinq == @Model.IDRanande ? true : false;
+                                <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-6 d-none">
+                        <label class="form-label mb-1" for="OnvanRanandeh">راننده</label>
+                        <input type="text" class="form-control" disabled>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <label asp-for="IDShakhs" class="form-label">شخص</label>
+                        <select name="IDShakhs" class="select2 form-control form-control-sm">
+                            <option value="">انتخاب کنید</option>
+                            @foreach (var item in mabanis.Where(m => m.TableName == "Shakhs"))
+                            {
+                                var selected = item.IDLinq == @Model.IDShakhs ? true : false;
+                                <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <label asp-for="IDTafsili" class="form-label">تفصیلی</label>
+                        <select name="IDTafsili" class="select2 form-control form-control-sm">
+                            <option value="">انتخاب کنید</option>
+                            @foreach (var item in mabanis.Where(m => m.TableName == "Tafsili"))
+                            {
+                                var selected = item.IDLinq == @Model.IDTafsili ? true : false;
+                                <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <label asp-for="IDTafsili2" class="form-label">تفصیلی 2</label>
+                        <select name="IDTafsili2" class="select2 form-control form-control-sm">
+                            <option value="">انتخاب کنید</option>
+                            @foreach (var item in mabanis.Where(m => m.TableName == "Tafsili2"))
+                            {
+                                var selected = item.IDLinq == @Model.IDTafsili2 ? true : false;
+                                <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <label asp-for="IDAnbar" class="form-label">انبار</label>
+                        <select name="IDAnbar" class="select2 form-control form-control-sm">
+                            <option value="">انتخاب کنید</option>
+                            @foreach (var item in mabanis.Where(m => m.TableName == "Anbar"))
+                            {
+                                var selected = item.IDLinq == @Model.IDAnbar ? true : false;
+                                <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <label asp-for="IDKala" class="form-label">کالا</label>
+                        <select name="IDKala" class="select2 form-control form-control-sm">
+                            <option value="">انتخاب کنید</option>
+                            @foreach (var item in mabanis.Where(m => m.TableName == "Kala"))
+                            {
+                                var selected = item.IDLinq == @Model.IDKala ? true : false;
+                                <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <label asp-for="IDVasile" class="form-label">نوع وسیله حمل</label>
+                        <select name="IDVasile" class="select2 form-control form-control-sm">
+                            <option value="">انتخاب کنید</option>
+                            @foreach (var item in mabanis.Where(m => m.TableName == "Vasile"))
+                            {
+                                var selected = item.IDLinq == @Model.IDVasile ? true : false;
+                                <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <label asp-for="IDTypeMarkazHamz" class="form-label">نوع مراکز حمل</label>
+                        <select name="IDTypeMarkazHamz" class="select2 form-control form-control-sm">
+                            <option value="">انتخاب کنید</option>
+                            @foreach (var item in mabanis.Where(m => m.TableName == "MarkazHaml"))
+                            {
+                                var selected = item.IDLinq == @Model.IDTypeMarkazHamz ? true : false;
+                                <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <label asp-for="IDTypeJabejaiee" class="form-label">نوع جابه‌جایی</label>
+                        <select name="IDTypeJabejaiee" class="select2 form-control form-control-sm">
+                            <option value="">انتخاب کنید</option>
+                            @foreach (var item in mabanis.Where(m => m.TableName == "TypeJabejaiee"))
+                            {
+                                var selected = item.IDLinq == @Model.IDTypeJabejaiee ? true : false;
+                                <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                </section>
+
+                <section class="form-section">
+                    <div class="form-section-header">
+                        <h5 class="form-section-title">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            هزینه، خلاصه و توضیحات
+                        </h5>
+                    </div>
+                    <div class="row g-3 align-items-end">
+                    <div class="col-lg-3 col-md-6">
+                        <label asp-for="VaznBasteBandi" class="form-label">وزن بسته‌بندی</label>
+                        <input asp-for="VaznBasteBandi" type="text" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <label asp-for="KerayeHaml" class="form-label">کرایه حمل</label>
+                        <input asp-for="KerayeHaml" type="text" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <label asp-for="MablaghBaskol" class="form-label">مبلغ باسکول</label>
+                        <input asp-for="MablaghBaskol" type="text" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="small text-muted">خلاصه توزین</div>
+                        <div class="fw-bold">وزن جاری: <span id="EkhtelafVazn">0</span></div>
+                        <div class="fw-bold">وزن خالص: <span id="VaznKhaalesh">0</span></div>
+                    </div>
+                    </div>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-12">
+                            <label asp-for="Tozihat" class="form-label">توضیحات</label>
+                            <textarea asp-for="Tozihat" id="Tozihat" class="form-control" rows="3" style="resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <input type="hidden" asp-for="CodMarkaz" />
+                <input type="hidden" asp-for="siteId" />
+
+                <div class="d-flex align-items-center gap-2 flex-wrap mt-4">
+                    @if (mode == 1)
+                    {
+                        <button type="submit" class="btn btn-primary px-4">ثبت اولیه</button>
+                        <button type="button" class="btn btn-outline-secondary px-4" id="clearBargeFormButton">پاک کردن</button>
+                    }
+                    else if (mode == 2)
+                    {
+                        <button type="submit" name="SubmitFinal" value="true" class="btn btn-info px-4">ثبت نهایی</button>
+                        <button type="button" class="btn btn-outline-secondary px-4" id="clearBargeFormButton">پاک کردن</button>
+                    }
+                    <span class="small text-muted">برای کنترل سریع باسکول‌ها، `F5` را بزنید.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="sticky-toolbar">
+    <div class="toolbar-shell">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="form-check">
+                <input type="checkbox" id="sabtCheckbox" class="form-check-input" data-bargid="@Model.ID" @(Model.FlgSabt == true ? "checked" : "")>
+                <label for="sabtCheckbox" class="form-check-label ms-2">تایید</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="ebtalCheckbox" class="form-check-input" data-bargid="@Model.ID" @(Model.FlgEbtal == true ? "checked" : "")>
+                <label for="ebtalCheckbox" class="form-check-label ms-2">ابطال</label>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <label id="updateLabel" class="text-white mb-0"></label>
+            <progress id="progressbar" max="100" value="0"></progress>
+        </div>
+    </div>
+</div>
+
+<script>
+    jalaliDatepicker.startWatch();
+
+    const jalaliInput = document.querySelector("[data-jdp-miladi-input]");
+    if (jalaliInput) {
+        jalaliInput.addEventListener("jdp:change", function () {
+            var miladiInput = document.getElementById(this.getAttribute("data-jdp-miladi-input"));
+            if (!this.value) {
+                miladiInput.value = "";
+                return;
+            }
+            var date = this.value.split("/");
+            miladiInput.value = jalali_to_gregorian(date[0], date[1], date[2]).join("/");
+        });
+    }
+
+    function jalali_to_gregorian(jy, jm, jd) {
+        jy = Number(jy);
+        jm = Number(jm);
+        jd = Number(jd);
+        var gy = (jy <= 979) ? 621 : 1600;
+        jy -= (jy <= 979) ? 0 : 979;
+        var days = (365 * jy) + ((parseInt(jy / 33)) * 8) + (parseInt(((jy % 33) + 3) / 4))
+            + 78 + jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
+        gy += 400 * (parseInt(days / 146097));
+        days %= 146097;
+        if (days > 36524) {
+            gy += 100 * (parseInt(--days / 36524));
+            days %= 36524;
+            if (days >= 365) days++;
+        }
+        gy += 4 * (parseInt(days / 1461));
+        days %= 1461;
+        gy += parseInt((days - 1) / 365);
+        if (days > 365) days = (days - 1) % 365;
+        var gd = days + 1;
+        var sal_a = [0, 31, ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        var gm;
+        for (gm = 0; gm < 13; gm++) {
+            var v = sal_a[gm];
+            if (gd <= v) break;
+            gd -= v;
+        }
+        return [gy, gm, gd];
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById('form-anbar');
+        const ranandeDropdown = document.getElementById('IDRanande');
+        const ranandeInput = document.getElementById('OnvanRanandeh');
+        const toggleCheckbox = document.getElementById("toggleManualEntry");
+        const vanKhaliInput = document.getElementById("VanKhali");
+
+        const bargeBaskoulIdInput = document.getElementById("BargeBaskoulId");
+        const vaznPorInput = document.getElementById("VaznPor");
+        const shomareMashinInput = document.getElementById("ShomareMashin");
+        const plateLookupStatus = document.getElementById("plateLookupStatus");
+        const vaznBargePreview = document.getElementById("VaznBargePreview");
+        const previousWeightPreview = document.getElementById("PreviousWeightPreview");
+        const activeScaleWeight = document.getElementById("ActiveScaleWeight");
+        const activeScaleName = document.getElementById("ActiveScaleName");
+        const activeScaleTile = document.getElementById("activeScaleTile");
+
+        const useManualWeightInput = document.getElementById("UseManualWeight");
+
+        const manualWeightInput = document.getElementById("ManualWeight");
+
+        const manualWeightPanel = document.getElementById("manualWeightPanel");
+
+        const manualWeightValidation = document.getElementById("ManualWeightValidation");
+        const lookupPlateBtn = document.getElementById("lookupPlateBtn");
+        const clearBargeFormButton = document.getElementById("clearBargeFormButton");
+        const selectedScaleInputs = Array.from(document.querySelectorAll("input[name='selectedScale']"));
+        const scaleCards = Array.from(document.querySelectorAll(".small-box"));
+
+        const resetMarkerKey = "baskoul:form-reset";
+        const selectedScaleStorageKey = "baskoul:selected-scale";
+        const resetRequested = sessionStorage.getItem(resetMarkerKey) === "1";
+        if (resetRequested) {
+            const savedScale = sessionStorage.getItem(selectedScaleStorageKey);
+            const savedScaleInput = selectedScaleInputs.find(input => input.value === savedScale);
+            if (savedScaleInput) savedScaleInput.checked = true;
+            sessionStorage.removeItem(resetMarkerKey);
+            sessionStorage.removeItem(selectedScaleStorageKey);
+        }
+        let previousWeight = parseFloat(vanKhaliInput?.value || vaznPorInput?.value) || 0;
+        let currentWeight = 0;
+
+        let isSubmitting = false;
+
+        function hasEnteredFormData() {
+            if (!form) return false;
+
+            return Array.from(form.elements).some(function (field) {
+                const type = (field.type || "").toLowerCase();
+                if (field.disabled || field.readOnly || type === "hidden" || type === "submit" || type === "button" || type === "radio") {
+                    return false;
+                }
+                if (type === "checkbox") return field.id !== "toggleManualEntry" && field.checked;
+                if (field.offsetParent === null) return false;
+                return String(field.value || "").trim() !== "";
+            });
+        }
+
+        function clearBargeForm() {
+            if (hasEnteredFormData() && !window.confirm("اطلاعات واردشده پاک شود؟")) {
+                return;
+            }
+
+            const selectedScale = selectedScaleInputs.find(input => input.checked);
+            sessionStorage.setItem(resetMarkerKey, "1");
+            if (selectedScale) {
+                sessionStorage.setItem(selectedScaleStorageKey, selectedScale.value);
+            } else {
+                sessionStorage.removeItem(selectedScaleStorageKey);
+            }
+
+            window.location.assign('@Url.Action("BargeAnbar", "BargeBaskoul")');
+        }
+
+        clearBargeFormButton?.addEventListener("click", clearBargeForm);
+
+        function getManualWeight() {
+            const rawValue = (manualWeightInput?.value || "").trim();
+            const value = Number(rawValue);
+            return rawValue !== "" && Number.isFinite(value) && value > 0 ? value : 0;
+        }
+
+        function validateManualWeight(showMessage = true) {
+            if (!useManualWeightInput?.checked) {
+                if (manualWeightValidation) manualWeightValidation.textContent = "";
+                manualWeightInput?.classList.remove("is-invalid");
+                return true;
+            }
+
+            const isValid = getManualWeight() > 0;
+            if (manualWeightValidation) {
+                manualWeightValidation.textContent = !isValid && showMessage
+                    ? "وزن دستی باید یک عدد مثبت باشد."
+                    : "";
+            }
+            manualWeightInput?.classList.toggle("is-invalid", !isValid && showMessage);
+            return isValid;
+        }
+
+        function toggleManualWeight() {
+            const isManual = !!useManualWeightInput?.checked;
+            manualWeightPanel?.classList.toggle("d-none", !isManual);
+
+            if (isManual && getManualWeight() <= 0 && currentWeight > 0 && manualWeightInput) {
+                manualWeightInput.value = String(currentWeight);
+            }
+
+            validateManualWeight(false);
+            updateScaleDashboard();
+        }
+
+        function toggleFields() {
+            if (!toggleCheckbox) return;
+            if (toggleCheckbox.checked) {
+                $(".RanandeDropdown").hide();
+                $(".RanandehInput").show();
+            } else {
+                $(".RanandehInput").hide();
+                $(".RanandeDropdown").show();
+            }
+        }
+
+        toggleFields();
+        toggleCheckbox?.addEventListener("change", toggleFields);
+
+        ranandeInput?.addEventListener("input", function () {
+            if (ranandeDropdown) {
+                ranandeDropdown.value = "";
+            }
+        });
+
+        function formatNumber(value) {
+            if (value === null || value === undefined || value === "") return "--";
+            var num = Number(value);
+            if (Number.isNaN(num)) return "--";
+            return num.toLocaleString("fa-IR");
+        }
+
+        function getScaleItems() {
+            return scaleCards.map(baskoul => {
+                const weightElement = baskoul.querySelector("h3[id^='weight-']");
+                const weight = parseFloat(weightElement?.textContent) || 0;
+                const type = String(baskoul.dataset.type || "");
+                const radio = baskoul.querySelector("input[name='selectedScale']");
+                const name = (baskoul.querySelector(".inner p")?.textContent || "باسکول فعال").trim();
+                return { element: baskoul, weight, type, radio, name };
+            });
+        }
+        function updateScaleDashboard() {
+            const scaleItems = getScaleItems();
+            const inbound = scaleItems.find(x => x.type === "1") || scaleItems[0];
+            const outbound = scaleItems.find(x => x.type === "2") || scaleItems[1] || scaleItems[0];
+            let selectedRadio = document.querySelector("input[name='selectedScale']:checked");
+            let selectedScale = selectedRadio
+                ? scaleItems.find(x => x.radio && x.radio.value === selectedRadio.value)
+                : null;
+            const typeBarge = document.getElementById("TypeBarge")?.value;
+
+            if (!selectedRadio) {
+                const defaultScale = typeBarge === "2" ? outbound : inbound;
+                if (defaultScale?.radio) {
+                    defaultScale.radio.checked = true;
+                    selectedRadio = defaultScale.radio;
+                    selectedScale = defaultScale;
+                }
+            }
+
+            const activeScale = selectedScale || (typeBarge === "2" ? outbound : inbound) || scaleItems[0];
+            const isManualWeight = !!useManualWeightInput?.checked;
+            currentWeight = isManualWeight ? getManualWeight() : (activeScale?.weight || 0);
+
+            if (activeScaleWeight) {
+                activeScaleWeight.textContent = formatNumber(currentWeight);
+            }
+            if (activeScaleName) {
+                const scaleTypeLabel = activeScale?.type === "2" ? "خروج" : "ورود";
+                activeScaleName.textContent = isManualWeight
+                    ? "وزن واردشده توسط کاربر"
+                    : activeScale?.name
+                    ? `${activeScale.name} | ${scaleTypeLabel}`
+                    : "بدون باسکول فعال";
+            }
+
+            activeScaleTile?.classList.toggle("active", isManualWeight ? currentWeight > 0 : !!activeScale);
+
+            syncWeightFields();
+        }
+
+        function syncWeightFields() {
+            const current = parseFloat(currentWeight) || 0;
+            const previous = parseFloat(previousWeight) || 0;
+            const basteBandi = parseFloat(document.getElementById("VaznBasteBandi")?.value) || 0;
+            const por = Math.max(current, previous);
+            const khali = Math.min(current, previous);
+            const net = Math.max(0, por - khali - basteBandi);
+            const now = new Date().toLocaleTimeString("fa-IR");
+
+            if (vaznPorInput) {
+                vaznPorInput.value = por;
+            }
+            if (vanKhaliInput) {
+                vanKhaliInput.value = khali;
+            }
+            if (document.getElementById("CurrentScaleWeight")) {
+                document.getElementById("CurrentScaleWeight").value = current;
+            }
+            if (document.getElementById("TimeVaznPor") && current >= previous) {
+                document.getElementById("TimeVaznPor").value = now;
+            }
+            if (document.getElementById("TimeVaznKhali") && current < previous) {
+                document.getElementById("TimeVaznKhali").value = now;
+            }
+
+            if (previousWeightPreview) {
+                previousWeightPreview.textContent = formatNumber(previous);
+            }
+            if (document.getElementById("EkhtelafVazn")) {
+                document.getElementById("EkhtelafVazn").textContent = formatNumber(current);
+            }
+            if (document.getElementById("VaznKhaalesh")) {
+                document.getElementById("VaznKhaalesh").textContent = formatNumber(net);
+            }
+            if (vaznBargePreview) {
+                vaznBargePreview.textContent = formatNumber(net);
+            }
+
+            inferBargeTypeFromWeights(current, previous);
+        }
+
+        function calculateWeights() {
+            updateScaleDashboard();
+        }
+
+        vaznPorInput?.addEventListener("input", calculateWeights);
+        vanKhaliInput?.addEventListener("input", calculateWeights);
+        document.getElementById("VaznBasteBandi")?.addEventListener("input", syncWeightFields);
+
+        const typeBargeInput = document.getElementById("TypeBarge");
+        const typeBargeAutoHint = document.getElementById("typeBargeAutoHint");
+        const weightStableThresholdMs = 1200;
+        let lastWeightChangeAt = Date.now();
+
+        function inferBargeTypeFromWeights(current, previous) {
+            let inferredType = "";
+            let hintText = "نوع برگه فعلاً از روی وزن‌ها تشخیص داده می‌شود.";
+
+            if (current > 0 && previous > 0 && current !== previous) {
+                inferredType = previous > current ? "1" : "2";
+                hintText = inferredType === "1"
+                    ? "برگه ورودی: وزن قبلی از وزن فعلی بیشتر است."
+                    : "برگه خروجی: وزن فعلی از وزن قبلی بیشتر است.";
+            }
+
+            if (typeBargeInput) {
+                typeBargeInput.value = inferredType;
+            }
+
+            if (typeBargeAutoHint) {
+                typeBargeAutoHint.textContent = hintText;
+            }
+        }
+
+        function isWeightStable() {
+            if (useManualWeightInput?.checked) {
+                return validateManualWeight(true);
+            }
+
+            return currentWeight > 0 && (Date.now() - lastWeightChangeAt) >= weightStableThresholdMs;
+        }
+
+        function tryAutoSubmitOnEnter(event) {
+            const target = event.target;
+            const tagName = (target?.tagName || "").toUpperCase();
+            const inputType = (target?.type || "").toLowerCase();
+
+            if (tagName === "TEXTAREA" || tagName === "BUTTON" || inputType === "checkbox" || inputType === "radio") {
+                return;
+            }
+
+            event.preventDefault();
+            updateScaleDashboard();
+
+            if (isWeightStable()) {
+                if (form?.requestSubmit) {
+                    form.requestSubmit();
+                } else {
+                    form?.submit();
+                }
+            }
+        }
+
+        document.addEventListener("scaleWeightUpdated", function () {
+            lastWeightChangeAt = Date.now();
+            updateScaleDashboard();
+        });
+        useManualWeightInput?.addEventListener("change", toggleManualWeight);
+        manualWeightInput?.addEventListener("input", function () {
+            validateManualWeight(false);
+            updateScaleDashboard();
+        });
+        toggleManualWeight();
+
+        form?.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                tryAutoSubmitOnEnter(event);
+            }
+        });
+
+        function lookupPlateWeight() {
+
+            const plate = (shomareMashinInput?.value || "").trim();
+            if (!plate) {
+                previousWeight = 0;
+                if (plateLookupStatus) {
+                    plateLookupStatus.textContent = "پلاک را وارد کنید تا وزن قبلی بررسی شود.";
+                }
+                syncWeightFields();
+                return;
+            }
+
+            if (plateLookupStatus) {
+                plateLookupStatus.textContent = "در حال بررسی وزن قبلی این پلاک...";
+            }
+
+            $.ajax({
+                url: '@Url.Action("LookupPlateWeight", "BargeBaskoul")',
+                type: 'GET',
+                data: { plate: plate },
+                success: function (response) {
+                    if (!response || response.success !== true) {
+                        previousWeight = 0;
+                        if (plateLookupStatus) {
+                            plateLookupStatus.textContent = "امکان بررسی پلاک وجود نداشت.";
+                        }
+                        syncWeightFields();
+                        return;
+                    }
+
+                    if (response.hasPrevious) {
+                        previousWeight = parseFloat(response.previousWeight) || 0;
+                        if (bargeBaskoulIdInput) {
+                            bargeBaskoulIdInput.value = response.id || 0;
+                        }
+
+                        if (response.isManualDriver && response.driverName) {
+                            if (toggleCheckbox) toggleCheckbox.checked = true;
+                            if (ranandeInput) ranandeInput.value = response.driverName;
+                            if (ranandeDropdown) ranandeDropdown.value = "";
+                        } else if (response.driverId) {
+                            if (toggleCheckbox) toggleCheckbox.checked = false;
+                            if (ranandeDropdown) {
+                                ranandeDropdown.value = String(response.driverId);
+                                $(ranandeDropdown).trigger("change");
                             }
-                        </select>
-                </div>
-
-                <!-- Fifth row-->
-                <div class="col-md-4">
-                    <label asp-for="IDTypeJabejaiee" class="form-label mt-2">نوع جابه‌جایی</label>
-                    <select name="IDTypeJabejaiee" class="select2 form-control form-control-sm">
-                        <option value="">انتخاب کنید</option>
-                        @foreach (var item in Model.Mabanis.Where(m => m.TableName == "TypeJabejaiee"))
-                        {
-                            var selected = item.IDLinq == @Model.IDTypeJabejaiee ? true : false;
-                            <option value="@item.ID" selected=@selected>@item.Onvan</option>
+                            if (ranandeInput) ranandeInput.value = "";
                         }
-                    </select>
-                </div>
-            </div>
-        </div>
-        <hr />
-        <!-- Second Row -->
-        <div class="container">
-            <div class="row g-2 align-items-end">
-                <div class="col-auto">
-                    <label asp-for="VaznPor" class="form-label">وزن پر</label>
-                    <input asp-for="VaznPor" type="text" class="form-control form-control-sm" id="VaznPor">
-                </div>
-                <div class="col-auto">
-                    <label asp-for="TimeVaznPor" class="form-label">ساعت وزن پر</label>
-                    <input asp-for="TimeVaznPor" type="text" class="form-control form-control-sm">
-                </div>
-                <div class="col-auto">
-                    <button id="btnVaznPor" class="btn btn-block btn-outline-primary btn-flat">خواندن وزن پر</button>
-                </div>
-                <div class="col-auto">
-                    <label class="form-label">اختلاف وزن: <span id="EkhtelafVazn">--</span></label>
-                </div>
-            </div>
-            <div class="row g-2 align-items-end">
-                <div class="col-auto">
-                    <label asp-for="VanKhali" class="form-label">وزن خالی</label>
-                    <input asp-for="VanKhali" type="text" class="form-control form-control-sm" id="VanKhali">
-                </div>
-                <div class="col-auto">
-                    <label asp-for="TimeVaznKhali" class="form-label">ساعت خالی</label>
-                    <input asp-for="TimeVaznKhali" type="text" class="form-control form-control-sm">
-                </div>
-                <div class="col-auto">
-                    <button id="btnVaznKhali" class="btn btn-block btn-outline-primary btn-flat">خواندن وزن خالی</button>
-                </div>
-                <div class="col-auto">
-                    <label class="form-label">وزن خالص: <span id="VaznKhaalesh">--</span></label>
-                </div>
-            </div>
-        </div>
+                        toggleFields();
+                        const labelParts = [];
+                        if (response.ghabzBaskolId) {
+                            labelParts.push(`قبض قبلی: ${response.ghabzBaskolId}`);
+                        }
+                        labelParts.push(`وزن قبلی: ${formatNumber(previousWeight)} کیلوگرم`);
+
+                        if (plateLookupStatus) {
+                            plateLookupStatus.textContent = labelParts.length > 0
+                                ? `وزن اول این پلاک پیدا شد؛ وزن فعلی به‌عنوان وزن دوم ثبت می‌شود. ${labelParts.join(" | ")}`
+                                : "برای این پلاک سابقه ثبت شد.";
+                        }
+                        syncWeightFields();
+                    } else {
+                        previousWeight = 0;
+                        if (plateLookupStatus) {
+                            const hadIncompleteRecord = (parseInt(bargeBaskoulIdInput?.value || "0", 10) || 0) > 0;
+                            if (bargeBaskoulIdInput) bargeBaskoulIdInput.value = 0;
+                            if (hadIncompleteRecord) {
+                                if (ranandeDropdown) ranandeDropdown.value = "";
+                                if (ranandeInput) ranandeInput.value = "";
+                            }
+                            plateLookupStatus.textContent = "برگه ناقصی برای این پلاک وجود ندارد؛ وزن فعلی به‌عنوان وزن اول ثبت می‌شود.";
+                        }
+                        syncWeightFields();
+                    }
+                },
+                error: function () {
+                    previousWeight = 0;
+                    if (plateLookupStatus) {
+                        plateLookupStatus.textContent = "خطا در استعلام پلاک. دوباره تلاش کنید.";
+                    }
+                    syncWeightFields();
+                }
+            });
+        }
+
+        let plateLookupTimer = null;
+        shomareMashinInput?.addEventListener("input", function () {
+            clearTimeout(plateLookupTimer);
+            plateLookupTimer = setTimeout(lookupPlateWeight, 600);
+        });
+        shomareMashinInput?.addEventListener("blur", lookupPlateWeight);
+        lookupPlateBtn?.addEventListener("click", lookupPlateWeight);
+
+        function applyTransportData(model) {
+            $('#DateTakhlie').val(model.dateTakhlie);
+            $('#TimeTakhlie').val(model.timeTakhlie);
+            $('#OnvanRanandeh').val(model.nameRanande);
+            $('#ShomareMashin').val(model.shomareMashin);
+            $('#Tozihat').val(model.tozihat);
+            lookupPlateWeight();
+
+            if (model.nameRanande && model.nameRanande.trim() !== "") {
+                $('#toggleManualEntry').prop('checked', true);
+                $('.RanandehInput').show();
+                $('.RanandeDropdown').hide();
+            } else {
+                $('#toggleManualEntry').prop('checked', false);
+                $('.RanandehInput').hide();
+                $('.RanandeDropdown').show();
+            }
+        }
+
+        function bindTransportLookup(buttonId, url, idFieldName, applyData) {
+            const btn = document.getElementById(buttonId);
+            if (!btn) return;
+
+            btn.addEventListener("click", function () {
+                const idValue = document.getElementById(idFieldName).value;
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    data: buttonId === "searchTakhlieBtn" ? { idTakhlie: idValue } : { idBargiri: idValue },
+                    success: function (response) {
+                        if (response.success && response.data) {
+                            applyData(response.data);
+                        } else {
+                            alert("داده‌ای برای نمایش موجود نیست.");
+                        }
+                    },
+                    error: function () {
+                        alert("خطا در واکشی اطلاعات.");
+                    }
+                });
+            });
+        }
+
+        bindTransportLookup("searchTakhlieBtn", '@Url.Action("Tahklie", "APIs")', "IDTakhlie", applyTransportData);
+        bindTransportLookup("searchBargiriBtn", '@Url.Action("Bargiri", "APIs")', "IDBargiri", applyTransportData);
+
+        form?.addEventListener('submit', function (e) {
 
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label asp-for="ShomareMashin" class="form-label">شماره ماشین</label>
-
-                <div class="input-group input-group-sm" dir="rtl">
-                    <span class="input-group-text">ایران |</span>
-                    <input asp-for="ShomareMashin" type="text" class="form-control form-control-sm" />
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <label asp-for="KerayeHaml" class="form-label">کرایه حمل</label>
-                <input asp-for="KerayeHaml" type="text" class="form-control form-control-sm">
-            </div>
-            <div class="col-md-3">
-                <label asp-for="VaznBasteBandi" class="form-label">وزن بسته‌بندی</label>
-                <input asp-for="VaznBasteBandi" type="text" class="form-control form-control-sm">
-            </div>
-            <div class="col-md-3">
-                <label asp-for="MablaghBaskol" class="form-label">مبلغ باسکول</label>
-                <input asp-for="MablaghBaskol" type="text" class="form-control form-control-sm">
-            </div>
-        </div>
-
-        <hr />
-        <!-- Third Row -->
-        <div class="row g-3">
-            <div class="col-12">
-                <div class="p-3 border rounded">
-                    <div class="col-auto">
-                        <label asp-for="Tozihat" class="form-label">توضیحات</label>
-                        <textarea asp-for="Tozihat" id="Tozihat" class="form-control form-control-sm" rows="3" style="resize: both;"></textarea>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <hr />
-    <input type="hidden" asp-for="CodMarkaz" />
-    <input type="hidden" asp-for="siteId" />
-    <div class="row align-items-center">
-        <div class="col-auto">
-            @if (mode == 1)
-            {
-                <button type="submit" class="btn btn-primary">ثبت اولیه</button>
-               @*  <a class="btn btn-secondary px-4" asp-controller="Home" asp-action="Index">لغو</a> *@
+            if (isSubmitting) {
+                e.preventDefault();
+                return;
             }
-            else if (mode == 2)
-            {
-                <button type="submit" name="SubmitFinal"
-                        value="true" class="btn btn-info">
-                    ثبت نهایی
-                </button>
-               @*  <a class="btn btn-secondary px-4" asp-controller="BargeBaskoul" asp-action="ListBargeAnbar">لغو</a> *@
+            const dropdownValue = ranandeDropdown ? ranandeDropdown.value.trim() : "";
+            const inputValue = ranandeInput ? ranandeInput.value.trim() : "";
+            const shomareMashinValue = shomareMashinInput ? shomareMashinInput.value.trim() : "";
+            updateScaleDashboard();
+
+            if (!validateManualWeight(true)) {
+                e.preventDefault();
+                manualWeightInput?.focus();
+                return;
             }
-            <a class="btn btn-secondary px-4" asp-controller="BargeBaskoul" asp-action="ListBargeAnbar">لغو</a>
-        </div>
-    </div>
-</form>
-<!-- Fixed bottom toolbar -->
-<body style="margin: 0; padding-bottom: 60px;">
-    <div id="bottom-toolbar">
-        <div class="toolbar-buttons col-auto">
-                <div class="form-check">
-                    <input type="checkbox" id="sabtCheckbox" class="form-check-input" data-bargid="@Model.ID" @(Model.FlgSabt == true ? "checked" : "")>
-                    <label for="sabtCheckbox" class="form-check-label ms-2">تایید</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" id="ebtalCheckbox" class="form-check-input" data-bargid="@Model.ID" @(Model.FlgEbtal == true ? "checked" : "")>
-                    <label for="ebtalCheckbox" class="form-check-label ms-2">ابطال</label>
-                </div>
-        </div>
-        <div class="toolbar-progress d-flex align-items-center">
-            <label id="updateLabel" class="text-white" style="margin-left: 10px"></label>
-            <progress id="progressbar" max="100" value="0"></progress>
-        </div>
-    </div>
-</body>
 
-<script>
-    const form = document.getElementById('form-anbar');
-    const ranandeDropdown = document.getElementById('IDRanande');
-    const ranandeInput = document.getElementById('OnvanRanandeh');
-
-    const vanKhaliInput = document.getElementById('VanKhali');
-    const vaznPorInput = document.getElementById('VaznPor');
-    const shomareMashinInput = document.querySelector('input[name="ShomareMashin"]'); // Select by name
-
-    form.addEventListener('submit', function (e) {
-        const dropdownValue = ranandeDropdown.value.trim();
-        const inputValue = ranandeInput.value.trim();
-
-        const vanKhaliValue = vanKhaliInput.value.trim();
-        const vaznPorValue = vaznPorInput.value.trim();
-        const shomareMashinValue = shomareMashinInput.value.trim();
-
-        if (dropdownValue === "" && inputValue === "") {
-            alert('لطفاً راننده را انتخاب یا وارد کنید.');
-            e.preventDefault();
-        }
-
-         // Check if both VanKhali and VaznPor are empty or zero
-        if ((vanKhaliValue === "" || parseFloat(vanKhaliValue) === 0) &&
-            (vaznPorValue === "" || parseFloat(vaznPorValue) === 0)) {
-            alert('عملیات توزین برگه تکمیل نیست.');
-            e.preventDefault();
-            return;
-        }
-
-        // Check if ShomareMashin is empty
-        if (shomareMashinValue === "") {
-            alert('لطفاً شماره ماشین را وارد کنید.');
-            e.preventDefault();
-            return;
-        }
-    });
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var toggleCheckbox = document.getElementById("toggleManualEntry");
-        var textInput = document.querySelector(".RanandehInput input"); // اینجا فیلد ورودی متن راننده رو میگیریم
-        var idHidden = document.getElementById("IDRanande"); // اینجا هم فیلد hidden یا select رو میگیریم (که در asp-for بود)
-
-        function toggleFields() {
-            if (toggleCheckbox.checked) {
-                $(".RanandeDropdown").hide();
-                $(".RanandehInput").show();
-            } else {
-                $(".RanandehInput").hide();
-                $(".RanandeDropdown").show();
-            }
-        }
-
-        toggleFields(); // آپدیت ظاهر فیلدها بر اساس وضعیت اولیه
-
-        toggleCheckbox.addEventListener("change", function () {
-            toggleFields();
-        });
-
-        // وقتی کاربر دستی تایپ می‌کند
-        if (textInput) {
-            textInput.addEventListener("input", function () {
-                if (idHidden) {
-                    idHidden.value = ""; // وقتی تایپ دستی می‌کند، ID پاک شود
-                }
-            });
-        }
-    });
-</script>
-<script>
-    //خواندن وزن 
-    document.addEventListener("DOMContentLoaded", function () {
-
-        function getSelectedWeight() {
-
-            let Weighbridges = document.querySelectorAll(".small-box");
-            let selectedRadio = document.querySelector("input[name='selectedScale']:checked");
-
-            let validBaskouls = [];
-
-            Weighbridges.forEach(baskoul => {
-                let weightElement = baskoul.querySelector("h3[id^='weight-']");
-                let weight = parseFloat(weightElement.textContent) || 0;
-                let type = baskoul.dataset.type; // Scale type
-
-                if (weight > 0) {
-                    validBaskouls.push({
-                        element: baskoul,
-                        weight: weight,
-                        type: type
-                    });
-                }
+            if (dropdownValue === "" && inputValue === "") {
+                alert('لطفاً راننده را انتخاب یا وارد کنید.');
+                e.preventDefault();
+                return;
+            }
+
+            if ((parseFloat(currentWeight) || 0) <= 0) {
+                alert('عملیات توزین برگه تکمیل نیست.');
+                e.preventDefault();
+                return;
+            }
+
+            isSubmitting = true;
+            form.querySelectorAll('button[type="submit"]').forEach(function (button) {
+                button.disabled = true;
             });
 
-            // ❌ No valid weights
-            if (validBaskouls.length === 0) {
-                return 0;
-            }
-
-            // ✅ Only one scale → automatic
-            if (validBaskouls.length === 1) {
-                return validBaskouls[0].weight;
-            }
-
-            // ✅ If user selected a scale
-            if (selectedRadio) {
-                let selectedId = selectedRadio.value;
-                let selected = validBaskouls.find(b =>
-                    b.element.querySelector(`input[value='${selectedId}']`)
-                );
-                if (selected) return selected.weight;
-            }
-
-            // 🔍 No selection → decide based on VaznPor / VaznKhali
-            let vaznPor = document.getElementById("VaznPor")?.value;
-            let vaznKhali = document.getElementById("VanKhali")?.value;
-
-            let targetType;
-
-            if (vaznPor || vaznKhali) {
-                targetType = "2";
-            } else {
-                targetType = "1";
-            }
-
-            let typeMatch = validBaskouls.find(b => b.type === targetType);
-
-            if (typeMatch) {
-                return typeMatch.weight;
-            }
-
-            // ❌ Type is null or not found
-            alert("لطفاً باسکول مورد نظر را انتخاب کنید");
-            return null;
+            if (shomareMashinValue === "") {
+                alert('لطفاً شماره ماشین را وارد کنید.');
+                isSubmitting = false;
+                form.querySelectorAll('button[type="submit"]').forEach(function (button) {
+                    button.disabled = false;
+                });
+                e.preventDefault();
+                return;
+            }
+        });
+
+        function switchScaleWithF5() {
+            if (!selectedScaleInputs.length) return;
+            const currentIndex = Math.max(0, selectedScaleInputs.findIndex(x => x.checked));
+            const nextIndex = (currentIndex + 1) % selectedScaleInputs.length;
+            selectedScaleInputs[nextIndex].checked = true;
+            selectedScaleInputs[nextIndex].dispatchEvent(new Event("change", { bubbles: true }));
+            selectedScaleInputs[nextIndex].closest(".small-box")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "F5") {
+                e.preventDefault();
+                switchScaleWithF5();
+            }
+        });
+
+        const interval = 10 * 60 * 1000;
+        const progressBar = document.getElementById("progressbar");
+
+        function fetchAndUpdate() {
+            fetch('@Url.Action("AutoUpdate", "APIs")')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.state === true && progressBar) {
+                        progressBar.value = 100;
+                        setTimeout(() => {
+                            progressBar.value = 0;
+                        }, 1000);
+                    }
+
+                    const label = document.getElementById("updateLabel");
+                    if (label && data.message) {
+                        label.textContent = data.message;
+                    }
+                })
+                .catch(err => {
+                    console.error("Error calling server:", err);
+                });
+        }
+
+        fetchAndUpdate();
+        setInterval(fetchAndUpdate, interval);
+        calculateWeights();
+
+        if (resetRequested) {
+            window.setTimeout(function () {
+                shomareMashinInput?.focus();
+                shomareMashinInput?.select();
+            }, 100);
         }
 
-        // وزن پر
-        document.getElementById("btnVaznPor").addEventListener("click", function (event) {
-            event.preventDefault();
-            let weight = getSelectedWeight();
-            if (weight !== null) {
-                document.getElementById("VaznPor").value = weight;
-                document.getElementById("TimeVaznPor").value =
-                    new Date().toLocaleTimeString("fa-IR");
-            }
-        });
-
-        // وزن خالی
-        document.getElementById("btnVaznKhali").addEventListener("click", function (event) {
-            event.preventDefault();
-            let weight = getSelectedWeight();
-            if (weight !== null) {
-                document.getElementById("VanKhali").value = weight;
-                document.getElementById("TimeVaznKhali").value =
-                    new Date().toLocaleTimeString("fa-IR");
-            }
-        });
-
-    });
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        function calculateWeights() {
-            const por = parseFloat(document.getElementById("VaznPor").value) || 0;
-            const khali = parseFloat(document.getElementById("VanKhali").value) || 0;
-            const basteBandi = parseFloat(document.getElementById("VaznBasteBandi")?.value) || 0; // Optional if not always present
-
-            const ekhtelaf = por - khali;
-            const khaalesh = ekhtelaf - basteBandi;
-
-            document.getElementById("EkhtelafVazn").textContent = (ekhtelaf > 0 ? ekhtelaf.toLocaleString() : "--");
-            document.getElementById("VaznKhaalesh").textContent = (khaalesh > 0 ? khaalesh.toLocaleString() : "--");
-        }
-
-        // Trigger calculation when any value changes
-        document.getElementById("VaznPor").addEventListener("input", calculateWeights);
-        document.getElementById("VanKhali").addEventListener("input", calculateWeights);
-
-        // If your buttons fill values programmatically, trigger calculation after filling:
-        document.getElementById("btnVaznPor").addEventListener("click", function () {
-            setTimeout(calculateWeights, 200); // Wait a bit if async
-        });
-
-        document.getElementById("btnVaznKhali").addEventListener("click", function () {
-            setTimeout(calculateWeights, 200); // Wait a bit if async
-        });
-    });
-</script>
-<script>
-    jalaliDatepicker.startWatch();
-
-    document.querySelector("[data-jdp-miladi-input]").addEventListener("jdp:change", function (e) {
-        var miladiInput = document.getElementById(this.getAttribute("data-jdp-miladi-input"));
-        if (!this.value) {
-            miladiInput.value = "";
-            return;
-        }
-        var date = this.value.split("/");
-        miladiInput.value = jalali_to_gregorian(date[0], date[1], date[2]).join("/")
-    });
-
-    function jalali_to_gregorian(jy, jm, jd) {
-        jy = Number(jy);
-        jm = Number(jm);
-        jd = Number(jd);
-        var gy = (jy <= 979) ? 621 : 1600;
-        jy -= (jy <= 979) ? 0 : 979;
-        var days = (365 * jy) + ((parseInt(jy / 33)) * 8) + (parseInt(((jy % 33) + 3) / 4))
-            + 78 + jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
-        gy += 400 * (parseInt(days / 146097));
-        days %= 146097;
-        if (days > 36524) {
-            gy += 100 * (parseInt(--days / 36524));
-            days %= 36524;
-            if (days >= 365) days++;
-        }
-        gy += 4 * (parseInt((days) / 1461));
-        days %= 1461;
-        gy += parseInt((days - 1) / 365);
-        if (days > 365) days = (days - 1) % 365;
-        var gd = days + 1;
-        var sal_a = [0, 31, ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-        var gm
-        for (gm = 0; gm < 13; gm++) {
-            var v = sal_a[gm];
-            if (gd <= v) break;
-            gd -= v;
-        }
-        return [gy, gm, gd];
-    }
-</script>
-<script>
-    function bindSearchButton() {
-        const btn = document.getElementById("searchTakhlieBtn");
-        if (!btn) return;
-
-        btn.addEventListener("click", function () {
-            const idValue = document.getElementById("IDTakhlie").value;
-
-            $.ajax({
-                url: '@Url.Action("Tahklie", "APIs")',
-                type: 'GET',
-                data: { idTakhlie: idValue },
-                success: function (response) {
-                    if (response.success && response.data) {
-                        const model = response.data;
-
-                        $('#DateTakhlie').val(model.dateTakhlie);
-                        $('#TimeTakhlie').val(model.timeTakhlie);
-                        $('#OnvanRanandeh').val(model.nameRanande);
-                        $('#ShomareMashin').val(model.shomareMashin);
-                        $('#Tozihat').val(model.tozihat);
-
-                        // If nameRanande exists, assume manual entry
-                        if (model.nameRanande && model.nameRanande.trim() !== "") {
-                            $('#toggleManualEntry').prop('checked', true);
-                            $('.RanandehInput').show();
-                            $('.RanandeDropdown').hide();
-                        } else {
-                            $('#toggleManualEntry').prop('checked', false);
-                            $('.RanandehInput').hide();
-                            $('.RanandeDropdown').show();
-                        }
-                    } else {
-                        alert("داده‌ای برای نمایش موجود نیست.");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    alert("خطا در واکشی اطلاعات:", error);
-                }
-            });
-        });
-    }
-
-    document.addEventListener("DOMContentLoaded", bindSearchButton);
-</script>
-<script>
-    function bindSearchButton() {
-        const btn = document.getElementById("searchBargiriBtn");
-        if (!btn) return;
-
-        btn.addEventListener("click", function () {
-            const idValue = document.getElementById("IDBargiri").value;
-
-            $.ajax({
-                url: '@Url.Action("Bargiri", "APIs")',
-                type: 'GET',
-                data: { idBargiri: idValue },
-                success: function (response) {
-                    if (response.success && response.data) {
-                        const model = response.data;
-
-                        $('#DateBargiri').val(model.dateBargiri);
-                        $('#TimeBargiri').val(model.timeBargiri);
-                        $('#OnvanRanandeh').val(model.nameRanande);
-                        $('#ShomareMashin').val(model.shomareMashin);
-                        $('#Tozihat').val(model.tozihat);
-
-                        // If nameRanande exists, assume manual entry
-                        if (model.nameRanande && model.nameRanande.trim() !== "") {
-                            $('#toggleManualEntry').prop('checked', true);
-                            $('.RanandehInput').show();
-                            $('.RanandeDropdown').hide();
-                        } else {
-                            $('#toggleManualEntry').prop('checked', false);
-                            $('.RanandehInput').hide();
-                            $('.RanandeDropdown').show();
-                        }
-                    } else {
-                        alert("داده‌ای برای نمایش موجود نیست.");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    alert("خطا در واکشی اطلاعات:", error);
-                }
-            });
-        });
-    }
-
-    document.addEventListener("DOMContentLoaded", bindSearchButton);
-</script>
-<script>
-    const interval = 10 * 60 * 1000; // 10 minutes in milliseconds
-    const progressBar = document.getElementById("progressbar");
-
-        function fetchAndUpdate() {
-        fetch('@Url.Action("AutoUpdate", "APIs")')
-            .then(response => response.json())
-            .then(data => {
-                // Check if result.state is true
-                if (data.state === true) {
-                    // Update progress bar
-                    progressBar.value = 100;
-
-                    // Optionally, reset it after a short moment
-                    setTimeout(() => {
-                        progressBar.value = 0;
-                    }, 1000); // 1 second delay
-                }
-
-                // Update the label with message
-                const label = document.getElementById("updateLabel");
-                if (label && data.message) {
-                    label.textContent = data.message;
-                }
-            })
-            .catch(err => {
-                alert("Error calling server:", err);
-            });
-    }
-
-    function startUpdateCycle() {
-        // Run immediately on load
-        fetchAndUpdate();
-
-        // Run every 10 minutes
-        setInterval(fetchAndUpdate, interval);
-    }
-
-    // Start on page load
-    window.addEventListener("load", startUpdateCycle);
-</script>
-
-
-
-
-
+        if (shomareMashinInput?.value) {
+            lookupPlateWeight();
+        }
+        updateScaleDashboard();
+        updateScaleDashboard();
+        updateScaleDashboard();
+    });
+</script>
+
+

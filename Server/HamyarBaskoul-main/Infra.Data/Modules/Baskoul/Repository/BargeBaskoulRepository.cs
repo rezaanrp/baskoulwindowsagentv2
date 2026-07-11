@@ -6,6 +6,7 @@ using Domain.Classes;
 using Infra.Data.Context;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 
 namespace Infra.Data.Repository
@@ -95,6 +96,97 @@ namespace Infra.Data.Repository
             }
         }
 
+        public async Task<bool> AddOrCompleteByPlateAsync(BargeBaskoulDomainViewModel entity)
+        {
+            var normalizedPlate = (entity.ShomareMashin ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(normalizedPlate) || string.IsNullOrWhiteSpace(entity.CodMarkaz) || !entity.siteId.HasValue)
+            {
+                throw new InvalidOperationException("اطلاعات پلاک، مرکز یا سایت کامل نیست.");
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+            try
+            {
+                var incomplete = await _context.BargeBaskouls
+                    .Where(b =>
+                        b.CodMarkaz == entity.CodMarkaz &&
+                        b.siteId == entity.siteId &&
+                        b.ShomareMashin != null &&
+                        b.ShomareMashin.Trim() == normalizedPlate &&
+                        b.FlgSabt != true &&
+                        b.FlgEbtal != true &&
+                        ((b.VaznPor.HasValue && b.VaznPor.Value > 0 && (!b.VanKhali.HasValue || b.VanKhali.Value <= 0)) ||
+                         (b.VanKhali.HasValue && b.VanKhali.Value > 0 && (!b.VaznPor.HasValue || b.VaznPor.Value <= 0))))
+                    .OrderByDescending(b => b.DateTimeBarge ?? DateTime.MinValue)
+                    .ThenByDescending(b => b.ID)
+                    .FirstOrDefaultAsync();
+
+                if (incomplete != null)
+                {
+                    var id = incomplete.ID;
+                    var receiptId = incomplete.GhabzBaskolID;
+                    var dateBarge = incomplete.DateBarge;
+                    var timeBarge = incomplete.TimeBarge;
+                    var insertedBy = incomplete.Karbar_Ins;
+                    var insertedAt = incomplete.DateTimeBarge;
+                    var driverId = incomplete.IDRanande;
+                    var manualDriver = incomplete.OnvanRanandeh;
+
+                    _mapper.Map(entity, incomplete);
+                    incomplete.ID = id;
+                    incomplete.GhabzBaskolID = receiptId;
+                    incomplete.DateBarge = dateBarge;
+                    incomplete.TimeBarge = timeBarge;
+                    incomplete.Karbar_Ins = insertedBy;
+                    incomplete.DateTimeBarge = insertedAt;
+                    incomplete.IDRanande ??= driverId;
+                    incomplete.OnvanRanandeh ??= manualDriver;
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return true;
+                }
+
+                var model = _mapper.Map<BargeBaskoul>(entity);
+                model.ShomareMashin = normalizedPlate;
+                await _context.BargeBaskouls.AddAsync(model);
+                await _context.SaveChangesAsync();
+
+                var persianCalendar = new PersianCalendar();
+                var currentYear = persianCalendar.GetYear(DateTime.Now);
+                var tracker = await _context.GhabzSerialTrackers
+                    .FirstOrDefaultAsync(t => t.CodMarkaz == model.CodMarkaz && t.Year == currentYear);
+
+                var newSerial = 1;
+                if (tracker == null)
+                {
+                    tracker = new GhabzSerialTracker
+                    {
+                        CodMarkaz = model.CodMarkaz,
+                        Year = currentYear,
+                        Serial = newSerial
+                    };
+                    _context.GhabzSerialTrackers.Add(tracker);
+                }
+                else
+                {
+                    tracker.Serial += 1;
+                    newSerial = tracker.Serial;
+                }
+
+                var yearSuffix = (currentYear % 100).ToString("D2");
+                model.GhabzBaskolID = long.Parse($"{model.CodMarkaz}{yearSuffix}{newSerial.ToString().PadLeft(4, '0')}");
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return false;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
         public async Task<Dictionary<int, long?>> MabaniDict(List<long> idsToFetch)
         {
             var mabanidict = await _context.Mabanis
@@ -169,6 +261,32 @@ namespace Infra.Data.Repository
             return result;
         }
 
+        public async Task<BargeBaskoulDomainViewModel?> GetLatestByPlateAsync(string codeMarkaz, int siteId, string shomareMashin)
+        {
+            var normalizedPlate = (shomareMashin ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(normalizedPlate))
+            {
+                return null;
+            }
+
+            var model = await _context.BargeBaskouls
+                .AsNoTracking()
+                .Where(b =>
+                    b.CodMarkaz == codeMarkaz &&
+                    b.siteId == siteId &&
+                    b.ShomareMashin != null &&
+                    b.ShomareMashin.Trim() == normalizedPlate &&
+                    b.FlgSabt != true &&
+                    b.FlgEbtal != true &&
+                    ((b.VaznPor.HasValue && b.VaznPor.Value > 0 && (!b.VanKhali.HasValue || b.VanKhali.Value <= 0)) ||
+                     (b.VanKhali.HasValue && b.VanKhali.Value > 0 && (!b.VaznPor.HasValue || b.VaznPor.Value <= 0))))
+                .OrderByDescending(b => b.DateTimeBarge ?? DateTime.MinValue)
+                .ThenByDescending(b => b.ID)
+                .FirstOrDefaultAsync();
+
+            return _mapper.Map<BargeBaskoulDomainViewModel>(model);
+        }
+
         public async Task<BargeBaskoulDomainViewModel?> GetByGhabzBaskoulAsync(long ghabzId)
         {
             var model = await _context.BargeBaskouls.FirstOrDefaultAsync(b => b.GhabzBaskolID == ghabzId);
@@ -201,7 +319,7 @@ namespace Infra.Data.Repository
         }
 
         public async Task<PagedResultDomain<BargeBaskoulDomainViewModel>> GetFilteredAsyncbyType(
-            int type, string codeMarkaz, string searchTerm, int page, int pageSize, string sortColumn, string sortDirection)
+            int type, string codeMarkaz, int siteId, string searchTerm, int page, int pageSize, string sortColumn, string sortDirection)
         {
             _context.Database.SetCommandTimeout(180); // 180 seconds
             IQueryable<BargeBaskoul> query = _context.BargeBaskouls;
@@ -209,11 +327,11 @@ namespace Infra.Data.Repository
             // Filter based on type
             if (type == 1 || type == 2)
             {
-                query = query.Where(x => x.TypeBarge == type && x.CodMarkaz == codeMarkaz);
+                query = query.Where(x => x.TypeBarge == type && x.CodMarkaz == codeMarkaz && x.siteId == siteId);
             }
             else
             {
-                query = query.Where(x => x.CodMarkaz == codeMarkaz);
+                query = query.Where(x => x.CodMarkaz == codeMarkaz && x.siteId == siteId);
             }
 
             if (!string.IsNullOrEmpty(searchTerm))

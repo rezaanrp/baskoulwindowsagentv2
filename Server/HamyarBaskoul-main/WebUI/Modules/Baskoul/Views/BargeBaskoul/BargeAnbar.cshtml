@@ -41,22 +41,84 @@
             display: flex;
             align-items: center;
         }
+
+        .baskoul-page-shell {
+            background: linear-gradient(180deg, #f4f7fb 0%, #eef3f8 100%);
+            border-radius: 1.15rem;
+            padding: 1rem;
+        }
+
+        .operation-card {
+            border: 0;
+            border-radius: 1rem;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
+            overflow: hidden;
+        }
+
+        .operation-card .card-header {
+            border: 0;
+            background: linear-gradient(135deg, #17324d 0%, #24577d 100%);
+            color: #fff;
+            padding: .95rem 1rem;
+        }
+
+        .operation-title {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .operation-title i {
+            color: #9be7c1;
+        }
+
+        .operation-search {
+            display: flex;
+            gap: .5rem;
+            width: 100%;
+            margin-bottom: .85rem;
+        }
+
+        .operation-search .form-control {
+            min-height: 44px;
+            border-radius: .85rem;
+            border-color: #d7e2ec;
+            background: #f8fbfe;
+        }
+
+        .operation-search .btn {
+            min-width: 92px;
+            border-radius: .85rem;
+            font-weight: 700;
+        }
+
+        #modelList {
+            width: 100%;
+        }
+
+        @@media (max-width: 575.98px) {
+            .operation-search {
+                flex-direction: column;
+            }
+
+            .operation-search .btn {
+                width: 100%;
+            }
+        }
     </style>
-    <div class="card card-secondary">
-        <div class="card-header">
-            <h3 class="card-title">برگه انبار</h3>
-        </div>
-        <!-- /.card-header -->
-        <div class="card-body">
+    <div class="baskoul-page-shell">
             <div class="row">
                 <div class="col-md-4">
-                    @if(Model.Baskouls.Any())
+                    @if(Model.Baskouls?.Any() == true)
                     {
                         foreach (var baskoul in Model.Baskouls)
                         {
                             <div class="col-12">
                                 <!-- small box -->
-                                <div class="small-box bg-info d-flex align-items-center p-3"
+                                <div class="small-box bg-info d-flex align-items-center p-3 scale-card"
                                     data-type="@baskoul.Type">
                                     <!-- Radio Button -->
                                     <div class="form-check">
@@ -97,46 +159,56 @@
                             </div>
                         </div>
                     }
-                    <div class="row">
+                    <div class="row mt-3">
                         <div class="col-md-12">
-                            <div class="card card-outline">
+                            <div class="card operation-card">
                                 <div class="card-header">
-                                    <h3 class="card-title">ماشین‌های در حال تخلیه/بارگیری</h3>
+                                    <h3 class="operation-title">
+                                        <i class="fas fa-truck-loading"></i>
+                                        ماشین‌های در حال تخلیه/بارگیری
+                                    </h3>
                                 </div>
-                                <!-- /.card-header -->
                                 <div class="card-body">
-                                    <div class="row">
-                                        <form method="get" asp-action="PartialBargeBaskoul" id="searchForm" class="form-inline mb-3">
-                                            <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" class="form-control mr-2" placeholder="جستجو با شماره ماشین یا قبض..." />
-                                            <input type="hidden" name="codeMarkaz" value="@ViewBag.codeMarkaz" />
-                                            <input type="hidden" name="siteId" value="@ViewBag.siteId" />
-                                            <button type="submit" class="btn btn-primary">جستجو</button>
-                                        </form>
-                                    </div>
+                                    <form method="get" asp-action="PartialBargeBaskoul" id="searchForm" class="operation-search">
+                                        <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" class="form-control" placeholder="جستجو با شماره ماشین یا قبض..." autocomplete="off" />
+                                        <input type="hidden" name="codeMarkaz" value="@ViewBag.codeMarkaz" />
+                                        <input type="hidden" name="siteId" value="@ViewBag.siteId" />
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-search ml-1"></i>
+                                            جستجو
+                                        </button>
+                                    </form>
                                     <div id="modelList">
-                                        <div class="row">
-                                            @await Html.PartialAsync("_BargiriTakhlieCard", @Model)
-                                        </div>
+                                        @await Html.PartialAsync("_BargiriTakhlieCard", @Model)
                                     </div>
-                                </div>
-                                <div class="card-footer">
                                 </div>
                              </div>
                         </div>
-                        <!-- /.col-->
                     </div>
                 </div>
 
                 <!-- Form -->
                 <div class="col-md-8">
                     <div class="">
+                        @if (TempData["BargeSuccessMessage"] is string successMessage)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert" id="bargeSuccessMessage">
+                                <i class="fas fa-check-circle ml-1"></i>
+                                @successMessage
+                                <button type="button" class="close" data-dismiss="alert" aria-label="بستن">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        }
+                        @if (ViewBag.ErrorMessage is string errorMessage)
+                        {
+                            <div class="alert alert-danger" role="alert">@errorMessage</div>
+                        }
                         @await Html.PartialAsync("_FormBargeAnbarPartial", @Model.BargeAnbar)
                         <input type="hidden" id="codmarkaz" asp-for="Codemarkaz" />
                     </div>
                 </div>
                 </div>
-        </div>
-        <!-- /.card-body -->
     </div>
 }
 @section Scripts {
@@ -145,6 +217,14 @@
     <script>
         const codmarkaz = document.getElementById("codmarkaz")?.value || "";
         const hubUrl = "@Url.Content("~/hubs/weight")";
+
+        if (document.getElementById("bargeSuccessMessage")) {
+            window.setTimeout(function () {
+                const plateInput = document.getElementById("ShomareMashin");
+                plateInput?.focus();
+                plateInput?.select();
+            }, 100);
+        }
 
         function setHubStatus(text, state) {
             console.log(`SignalR status: ${text}`, state || "");
@@ -198,6 +278,7 @@
 
         function updateWeightCard(weightElement, weight) {
             weightElement.textContent = weight ?? 0;
+            document.dispatchEvent(new CustomEvent("scaleWeightUpdated"));
         }
 
         let lastMissingWeightElementLogAt = 0;
@@ -260,11 +341,10 @@
             var bargId = $checkbox.data('bargid');
 
         // Get values of weights
-        var vaznPor = parseFloat($('#VaznPor').val());
-        var vanKhali = parseFloat($('#VanKhali').val());
+        var currentScaleWeight = parseFloat($('#CurrentScaleWeight').val());
 
-        // Check if either is null, empty, or 0
-        if (isChecked && (!vaznPor || !vanKhali)) {
+        // With the new one-weight workflow, completion depends on the live selected scale weight.
+        if (isChecked && !currentScaleWeight) {
             alert('❌ عملیات توزین این برگه تکمیل نشده است.');
             $checkbox.prop('checked', false);
             return;
@@ -318,6 +398,13 @@
 
         // Form submission via AJAX
         $(document).ready(function () {
+            document.addEventListener("click", function (event) {
+                const row = event.target.closest(".clickable-row");
+                if (row) {
+                    window.location = row.getAttribute("data-href");
+                }
+            });
+
             $('#searchForm').submit(function (e) {
                 e.preventDefault(); // Prevent full page reload
                 var form = $(this);

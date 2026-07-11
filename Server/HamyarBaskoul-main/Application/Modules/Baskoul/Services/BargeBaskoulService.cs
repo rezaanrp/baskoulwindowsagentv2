@@ -32,15 +32,25 @@ namespace Application.Services
         }
         public async Task AddBargeBaskoulAsync(BargeBaskoulViewModel entity)
         {
+            entity.TypeBarge ??= InferBargeType(entity.VaznPor, entity.VanKhali);
             entity = await MapMabanis(entity);
             var result = _mapper.Map<BargeBaskoulDomainViewModel>(entity);
             await _bargebaskoulrepository.AddAsync(result);
+        }
+
+        public async Task<bool> AddOrCompleteByPlateAsync(BargeBaskoulViewModel entity)
+        {
+            entity.TypeBarge ??= InferBargeType(entity.VaznPor, entity.VanKhali);
+            entity = await MapMabanis(entity);
+            var result = _mapper.Map<BargeBaskoulDomainViewModel>(entity);
+            return await _bargebaskoulrepository.AddOrCompleteByPlateAsync(result);
         }
         public async Task<PagedResultBarge> GetAllAsync(string codeMarkaz, int siteID, int pageNumber, int pageSize)
         {
             var list = await _bargebaskoulrepository.GetAllAsync(codeMarkaz, siteID, pageNumber, pageSize);
             if (list == null || list.Items == null) return null;
             var result = _mapper.Map<List<BargeBaskoulViewModel>>(list.Items);
+            await PopulateDriverNamesAsync(result, codeMarkaz);
             return new PagedResultBarge
             {
                 bargeBaskoulViews = result,
@@ -122,22 +132,53 @@ namespace Application.Services
             else model.isManual = true;
                 return model;
         }
+
+        public async Task<BargeBaskoulViewModel?> GetLatestByPlateAsync(string codeMarkaz, int siteId, string shomareMashin)
+        {
+            var barg = await _bargebaskoulrepository.GetLatestByPlateAsync(codeMarkaz, siteId, shomareMashin);
+            if (barg == null)
+            {
+                return null;
+            }
+
+            return _mapper.Map<BargeBaskoulViewModel>(barg);
+        }
+
         public async Task UpdateBargeBaskoulAsync(BargeBaskoulViewModel entity)
         {
+            entity.TypeBarge ??= InferBargeType(entity.VaznPor, entity.VanKhali);
             entity = await MapMabanis(entity);
             var barg = _mapper.Map<BargeBaskoulDomainViewModel>(entity);
             await _bargebaskoulrepository.UpdateAsync(barg);
         }
-        public async Task<PagedResultBarge> GetFilteredAsyncbyType(int type, string codeMarkaz, string searchTerm,
+        public async Task<PagedResultBarge> GetFilteredAsyncbyType(int type, string codeMarkaz, int siteId, string searchTerm,
             int page, int pageSize, string sortColumn, string sortDirection)
          {
-            var model = await _bargebaskoulrepository.GetFilteredAsyncbyType(type, codeMarkaz, searchTerm, page, pageSize, sortColumn, sortDirection);
+            var model = await _bargebaskoulrepository.GetFilteredAsyncbyType(type, codeMarkaz, siteId, searchTerm, page, pageSize, sortColumn, sortDirection);
             var result = new PagedResultBarge
             {
                 TotalCount = model.TotalCount,
                 bargeBaskoulViews = _mapper.Map<List<BargeBaskoulViewModel>>(model.Items)
             };
+            await PopulateDriverNamesAsync(result.bargeBaskoulViews, codeMarkaz);
             return result;
+        }
+
+        private async Task PopulateDriverNamesAsync(IEnumerable<BargeBaskoulViewModel> items, string codeMarkaz)
+        {
+            var drivers = (await _bargebaskoulrepository.GetAllMabanisAsync(codeMarkaz))
+                .Where(m => m.TableName == "Ranande" && m.IDLinq.HasValue)
+                .GroupBy(m => m.IDLinq!.Value)
+                .ToDictionary(g => g.Key, g => g.First().Onvan ?? "ثبت نشده");
+
+            foreach (var item in items)
+            {
+                item.DriverDisplayName = !string.IsNullOrWhiteSpace(item.OnvanRanandeh)
+                    ? item.OnvanRanandeh
+                    : item.IDRanande.HasValue && drivers.TryGetValue(item.IDRanande.Value, out var driverName)
+                        ? driverName
+                        : "ثبت نشده";
+            }
         }
 
         public async Task<bool> EbtalBargeAnbar(int bargId, string userId)
@@ -201,6 +242,21 @@ namespace Application.Services
         private long? TryParseLong(string input)
         {
             return long.TryParse(input, out var result) ? result : null;
+        }
+
+        private static int? InferBargeType(float? currentWeight, float? previousWeight)
+        {
+            if (!currentWeight.HasValue || !previousWeight.HasValue)
+            {
+                return null;
+            }
+
+            if (currentWeight.Value <= 0 || previousWeight.Value <= 0 || currentWeight.Value == previousWeight.Value)
+            {
+                return null;
+            }
+
+            return previousWeight.Value > currentWeight.Value ? 1 : 2;
         }
 
     }
