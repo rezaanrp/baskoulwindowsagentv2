@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Data;
 
 namespace Infra.Data.Context
 {
@@ -32,6 +33,30 @@ namespace Infra.Data.Context
         public DbSet<GhabzSerialTracker> GhabzSerialTrackers { get; set; }
         public DbSet<ReportSetting> ReportSettings { get; set; }
         public DbSet<Settings> Settings { get; set; }
+
+        public async Task<T> ExecuteInTransactionAsync<T>(
+            Func<CancellationToken, Task<T>> operation,
+            IsolationLevel isolationLevel = IsolationLevel.Serializable,
+            CancellationToken cancellationToken = default)
+        {
+            if (Database.CurrentTransaction != null)
+            {
+                return await operation(cancellationToken);
+            }
+
+            await using var transaction = await Database.BeginTransactionAsync(isolationLevel, cancellationToken);
+            try
+            {
+                var result = await operation(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return result;
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

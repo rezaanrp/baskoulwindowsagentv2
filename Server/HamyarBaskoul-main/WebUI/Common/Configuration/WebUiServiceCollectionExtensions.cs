@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
 using WebUI.Common.Mvc.Filters;
 using WebUI.Controllers;
+using Application.Common.Interfaces;
+using WebUI.Common.Security;
 
 namespace WebUI.Common.Configuration
 {
@@ -111,6 +113,7 @@ namespace WebUI.Common.Configuration
             });
 
             services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentBaskoulUser, CurrentBaskoulUser>();
 
             services.AddDataProtection()
                 .PersistKeysToDbContext<WriteDbContext>()

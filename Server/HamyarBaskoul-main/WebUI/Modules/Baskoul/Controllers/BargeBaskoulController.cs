@@ -27,8 +27,15 @@ namespace WebUI.Controllers
             _userManager = userManager;
             _userservice = userservice;
         }
+
         [HttpGet]
-        public async Task<IActionResult> BargeAnbar(int type = 3, int page = 1, int pageSize = 10, 
+        public IActionResult BargeAnbar()
+        {
+            return RedirectToAction("Index", "BaskoulVue");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> BargeAnbarLegacy(int type = 3, int page = 1, int pageSize = 10, 
             string searchTerm = "", string sortColumn = "", string sortDirection = "")
         {
             var user = _userservice.GetById(OnGetUserId());

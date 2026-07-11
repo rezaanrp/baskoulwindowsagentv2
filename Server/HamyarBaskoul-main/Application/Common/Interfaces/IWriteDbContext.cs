@@ -1,5 +1,6 @@
 ﻿using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace Application.Common.Interfaces
 {
@@ -20,6 +21,10 @@ namespace Application.Common.Interfaces
         DbSet<Settings> Settings { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<T> ExecuteInTransactionAsync<T>(
+            Func<CancellationToken, Task<T>> operation,
+            IsolationLevel isolationLevel = IsolationLevel.Serializable,
+            CancellationToken cancellationToken = default);
     }
 }
 

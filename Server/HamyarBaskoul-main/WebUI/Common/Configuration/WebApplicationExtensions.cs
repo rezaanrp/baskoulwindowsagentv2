@@ -70,7 +70,11 @@ namespace WebUI.Common.Configuration
                 if (!string.IsNullOrEmpty(path))
                 {
                     var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                    if (segments.Length > 0)
+                    var nonTenantRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        "api", "BaskoulVue", "Identity", "hubs", "Error"
+                    };
+                    if (segments.Length > 0 && !nonTenantRoots.Contains(segments[0]))
                     {
                         context.Items["OriginalRequestPath"] = $"{context.Request.Path}{context.Request.QueryString}";
                         context.Items["AppName"] = segments[0];
