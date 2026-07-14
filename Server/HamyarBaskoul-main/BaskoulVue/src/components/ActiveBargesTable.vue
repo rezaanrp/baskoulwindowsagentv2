@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { api } from "../api";
 import StatusBadge from "./StatusBadge.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
@@ -9,6 +9,18 @@ const emit = defineEmits(["search", "page", "selected", "changed", "error"]);
 const search = ref("");
 const pendingAction = ref(null);
 const loadingRowId = ref(null);
+
+const pageStats = computed(() => {
+  const items = props.state?.items || [];
+  const activeStatuses = ["در حال توزین", "در انتظار وزن اول", "تکمیل شده"];
+  return {
+    total: props.state?.totalCount || 0,
+    visible: items.length,
+    active: items.filter((item) => activeStatuses.includes(item.status)).length,
+    finalized: items.filter((item) => item.status === "نهایی شده").length,
+    cancelled: items.filter((item) => item.status === "باطل شده").length,
+  };
+});
 
 async function selectRow(id) {
   if (loadingRowId.value) return;
@@ -136,6 +148,31 @@ async function action() {
       >
         بعدی
       </button>
+    </div>
+    <div class="table-summary">
+      <div class="summary-tile">
+        <small>کل برگ‌ها</small>
+        <strong>{{ pageStats.total.toLocaleString("fa-IR") }}</strong>
+      </div>
+      <div class="summary-tile">
+        <small>نمایش فعلی</small>
+        <strong>{{ pageStats.visible.toLocaleString("fa-IR") }}</strong>
+      </div>
+      <div class="summary-tile">
+        <small>در جریان</small>
+        <strong>{{ pageStats.active.toLocaleString("fa-IR") }}</strong>
+      </div>
+      <div class="summary-tile">
+        <small>نهایی شده</small>
+        <strong>{{ pageStats.finalized.toLocaleString("fa-IR") }}</strong>
+      </div>
+      <div class="summary-tile">
+        <small>ابطال شده</small>
+        <strong>{{ pageStats.cancelled.toLocaleString("fa-IR") }}</strong>
+      </div>
+      <div class="summary-note">
+        <span>این بخش برای پر شدن فضای خالی زیر جدول و نمایش جمع‌بندی سریع صفحه اضافه شده است.</span>
+      </div>
     </div>
     <ConfirmDialog
       v-if="pendingAction"
