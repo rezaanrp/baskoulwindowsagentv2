@@ -107,6 +107,9 @@ public sealed class BaskoulCommandHandler(IWriteDbContext db, ICurrentBaskoulUse
             item.TimeVaznKhali = DateTime.Now.ToString("HH:mm:ss");
             item.Date_Up = DateTime.Now;
             item.Karbar_Up = scope.UserId;
+            item.FlgSabt = true;
+            item.Karbar_Sabt = scope.UserId;
+            item.Date_Sabt = DateTime.Now;
             var driver = await ResolveDriver(request.DriverId, scope.CodeMarkaz, token);
             if (driver.HasValue) { item.IDRanande = driver; item.OnvanRanandeh = null; }
             else if (!string.IsNullOrWhiteSpace(request.DriverName)) item.OnvanRanandeh = request.DriverName.Trim();

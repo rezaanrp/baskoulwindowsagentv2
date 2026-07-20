@@ -1,3 +1,5 @@
+import { pathBase } from "./api";
+
 export function printTripleBarge(id, { removeAfterMs = 1000 } = {}) {
   const existingFrame = document.getElementById("triple-barge-print-frame");
   if (existingFrame) existingFrame.remove();
@@ -26,7 +28,7 @@ export function printTripleBarge(id, { removeAfterMs = 1000 } = {}) {
   };
 
   const url = new URL(
-    `/Reports/PrintTripleBarge/${id}?silent=1`,
+    `${pathBase}/Reports/PrintTripleBarge/${id}?silent=1`,
     window.location.origin,
   );
   iframe.src = url.toString();

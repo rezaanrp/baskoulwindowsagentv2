@@ -25,7 +25,8 @@
                 <tbody>
                     @foreach (var barge in Model.bargeBaskoulViews)
                     {
-                        <tr class="dtr-control sorting_1 odd" data-href="@Url.Action("EditBargeBaskoul", "BargeBaskoul", new { id = barge.ID })">
+                        var editUrl = Url.Content($"~/BaskoulVue?editId={barge.ID}");
+                        <tr class="dtr-control sorting_1 odd" data-href="@editUrl">
                             <td class="dtr-control sorting_1">@barge.ID</td>
                             <td>@barge.GhabzBaskolID</td>
                             <td>@barge.ShomareMashin</td>
@@ -43,7 +44,7 @@
                             <td>
                                 <a class="btn btn-outline-primary" asp-controller="Reports" asp-action="PrintSimpleBarge" asp-route-id="@barge.ID">چاپ ساده</a>
                                 <a class="btn btn-outline-primary" asp-controller="Reports" asp-action="PrintTripleBarge" asp-route-id="@barge.ID">چاپ سه برگه</a>
-                                <a class="btn btn-outline-primary" asp-controller="BargeBaskoul" asp-action="EditBargeBaskoul" asp-route-id="@barge.ID" target="_blank">ویرایش</a>
+                                <a class="btn btn-outline-primary" href="@editUrl" target="_blank">ویرایش</a>
                             </td>
                         </tr>
                     }
@@ -100,4 +101,3 @@
         </div>
     </div>
 </div>
-

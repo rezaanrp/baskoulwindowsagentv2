@@ -276,10 +276,16 @@ namespace Infra.Data.Repository
       .AsNoTracking()
       .Where(o =>
           o.CodMarkaz == codmarkaz &&
+          o.FlgSabt == true &&
+          o.FlgEbtal != true &&
+          o.VaznPor.HasValue &&
+          o.VanKhali.HasValue &&
+          o.VaznPor > 0 &&
+          o.VanKhali > 0 &&
           (
               o.IDWebBarge == null ||
               o.DateInsToWeb == null ||
-              (o.DateUpToWeb.HasValue && o.Date_Up.HasValue && o.DateUpToWeb.Value < o.Date_Up.Value && (o.FlgEbtal == true || o.FlgSabt == true) )
+              (o.DateUpToWeb.HasValue && o.Date_Up.HasValue && o.DateUpToWeb.Value < o.Date_Up.Value)
           )
       )
       .ToList();

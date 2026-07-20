@@ -102,6 +102,20 @@ async function loadTable(page = table.page) {
   }
 }
 
+async function openEditBarge(editId) {
+  const id = Number(editId);
+  if (!id) return;
+  try {
+    const barge = await api(`/${id}`);
+    editingBarge.value = barge;
+    if (barge?.weighbridgeId) {
+      selectScale(barge.weighbridgeId, false, "auto");
+    }
+  } catch (error) {
+    notify(error.message, "error");
+  }
+}
+
 async function initialize() {
   try {
     Object.assign(formData, await api("/form"));
@@ -117,6 +131,10 @@ async function initialize() {
       "auto",
     );
     await loadTable(1);
+    const editId = new URLSearchParams(window.location.search).get("editId");
+    if (editId) {
+      await openEditBarge(editId);
+    }
     connectSignalR();
   } catch (error) {
     notify(error.message, "error");
