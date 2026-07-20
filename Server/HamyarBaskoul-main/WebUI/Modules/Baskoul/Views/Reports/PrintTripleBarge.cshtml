@@ -1,4 +1,4 @@
-﻿@model Application.ViewModels.Reports.TripleReportViewModel
+@model Application.ViewModels.Reports.TripleReportViewModel
 
 @{
     Layout = "~/Views/Shared/_LayoutAdminSimple.cshtml";
@@ -61,7 +61,7 @@
 
 @section Body
 {
-    <body onload="window.print();">
+    <body>
         <div class="wrapper">
             <!-- Main content -->
             <!-- Main content -->
@@ -82,7 +82,10 @@
 
                 <div class="row invoice-info justify-content-center">
                     <div class="col-sm-3 text-end mx-2">
-                        <img src=@Model.LogoPath alt="لوگو" style="max-width: 80px; height: 40px;" />
+                        @if (!string.IsNullOrWhiteSpace(Model.LogoPath))
+                        {
+                            <img src="@Model.LogoPath" alt="لوگو" style="max-width: 80px; height: 40px;" />
+                        }
                     </div>
                     <div class="col-sm-3 invoice-col">
                         <b>
@@ -212,7 +215,10 @@
 
                 <div class="row invoice-info justify-content-center">
                     <div class="col-sm-3 text-end mx-2">
-                        <img src=@Model.LogoPath alt="لوگو" style="max-width: 80px; height: 40px;" />
+                        @if (!string.IsNullOrWhiteSpace(Model.LogoPath))
+                        {
+                            <img src="@Model.LogoPath" alt="لوگو" style="max-width: 80px; height: 40px;" />
+                        }
                     </div>
                     <div class="col-sm-3 invoice-col">
                         <b>
@@ -341,7 +347,10 @@
 
                 <div class="row invoice-info justify-content-center">
                     <div class="col-sm-3 text-end mx-2">
-                        <img src=@Model.LogoPath alt="لوگو" style="max-width: 80px; height: 40px;" />
+                        @if (!string.IsNullOrWhiteSpace(Model.LogoPath))
+                        {
+                            <img src="@Model.LogoPath" alt="لوگو" style="max-width: 80px; height: 40px;" />
+                        }
                     </div>
                     <div class="col-sm-3 invoice-col">
                         <b>
@@ -451,12 +460,13 @@
             </div>
         </div>
         <!-- ./wrapper -->
+        @if (!(ViewBag.SuppressAutoPrint as bool? ?? false))
+        {
+            <script>
+                window.print();
+            </script>
+        }
     </body>
 }
 @section Scripts {
 }
-
-
-
-
-

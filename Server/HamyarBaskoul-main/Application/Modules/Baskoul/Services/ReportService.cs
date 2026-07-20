@@ -4,6 +4,7 @@ using Application.ViewModels.Reports;
 using AutoMapper;
 using Domain.Interfaces;
 using Domain.ViewModels;
+using System.Globalization;
 
 namespace Application.Services
 {
@@ -54,6 +55,7 @@ namespace Application.Services
         {
             var entity = await _reportrepo.GetSimpleReportViewModel(id);
             var model = _mapper.Map<SimpleReportViewModel>(entity);
+            model.DateBarge = ToPersianDate(entity?.DateBarge);
             var vazn = model.VaznPor - model.VaznKhali - (model.VazneBasteBandi == null ? 0 : model.VazneBasteBandi);
             model.Vaznekhlaes = vazn.ToString();
             return model;
@@ -64,9 +66,21 @@ namespace Application.Services
             var entity = await _reportrepo.GetTripleReportViewModel(id, username);
             if (entity == null) return null;
             var model = _mapper.Map<TripleReportViewModel>(entity);
+            model.DateBarge = ToPersianDate(entity.DateBarge);
             var vazn = model.VaznPor - model.VaznKhali - (model.VazneBasteBandi == null ? 0 : model.VazneBasteBandi);
             model.Vaznekhlaes = vazn.ToString();
             return model;
+        }
+
+        private static string ToPersianDate(DateTime? value)
+        {
+            if (!value.HasValue)
+            {
+                return "-";
+            }
+
+            var calendar = new PersianCalendar();
+            return $"{calendar.GetYear(value.Value):0000}/{calendar.GetMonth(value.Value):00}/{calendar.GetDayOfMonth(value.Value):00}";
         }
     }
 }

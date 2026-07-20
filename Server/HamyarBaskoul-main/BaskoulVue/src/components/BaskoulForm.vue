@@ -197,7 +197,7 @@ async function submit() {
         : await api("/first-weight", { method: "POST", body });
     const message = isEditing.value ? "ویرایش برگه ذخیره شد." : result.message;
     reset();
-    emit("completed", message);
+    emit("completed", { ...result, message });
   } catch (error) {
     emit("error", error.message);
   } finally {
@@ -279,7 +279,7 @@ onBeforeUnmount(() => {
                 ? "ثبت وزن دوم"
                 : "ثبت وزن اول"
         }}</button
-      ><button type="button" @click="requestClear">پاک کردن</button>
+      ><button type="button" @click="requestClear">برگه جدید</button>
     </div>
     <ConfirmDialog
       v-if="showClear"

@@ -5,6 +5,7 @@ import { api, pathBase } from "./api";
 import BaskoulForm from "./components/BaskoulForm.vue";
 import ActiveBargesTable from "./components/ActiveBargesTable.vue";
 import ToastContainer from "./components/ToastContainer.vue";
+import { printTripleBarge } from "./print";
 
 const formData = reactive({
   drivers: [],
@@ -139,8 +140,12 @@ async function connectSignalR() {
   }
 }
 
-async function completed(message) {
-  notify(message);
+async function completed(result) {
+  const payload = typeof result === "string" ? { message: result } : result || {};
+  notify(payload.message || "عملیات با موفقیت انجام شد.");
+  if (payload.status === "تکمیل شده" && payload.id) {
+    printTripleBarge(payload.id);
+  }
   editingBarge.value = null;
   await loadTable(1);
 }

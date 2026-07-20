@@ -12,7 +12,7 @@ namespace Application.ViewModels.Reports
         public string? TypeBarge { get; set; }
         public string? CoName { get; set; }
         public long? GhabzBaskoul { get; set; }
-        public DateTime? DateBarge { get; set; }
+        public string? DateBarge { get; set; }
         public long? IdBargiri { get; set; }
         public long? IdTakhlie { get; set; }
         public string? NameRanande { get; set; }

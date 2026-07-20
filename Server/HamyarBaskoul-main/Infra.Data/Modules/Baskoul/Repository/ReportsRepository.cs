@@ -79,11 +79,20 @@ namespace Infra.Data.Repository
         public async Task<TripleReportDomainViewModel> GetTripleReportViewModel(int id, string username)
         {
             var barge = await _context.BargeBaskouls.FirstOrDefaultAsync(b => b.ID == id);
+            if (barge == null)
+            {
+                return null;
+            }
+
             var markaz = await _context.Companies.FirstOrDefaultAsync(c => c.CodMarkaz == barge.CodMarkaz);
+            if (markaz == null)
+            {
+                return null;
+            }
+
             var kala = barge.IDKala != null ? await _context.Mabanis.FirstOrDefaultAsync(t => t.IDLinq == barge.IDKala) : null;
             var vasile = barge.IDVasile != null ? await _context.Mabanis.FirstOrDefaultAsync(t => t.IDLinq == barge.IDVasile) : null;
             var reportSetting = await _context.ReportSettings.FirstOrDefaultAsync(s => s.Company == markaz.CodMarkaz);
-            if (reportSetting == null) return null;
             var model = new TripleReportDomainViewModel
             {
                 GhabzBaskoul = barge.GhabzBaskolID,
@@ -102,16 +111,20 @@ namespace Infra.Data.Repository
                 Tozihat = barge.Tozihat,
                 TimeVazneKhali = barge.TimeVaznKhali,
                 TimeVaznePor = barge.TimeVaznPor,
-                OfficeAdress = "دفتر مرکزی: " + reportSetting.OfficeAddress + "-تلفن: "
-                + reportSetting.OfficePhone 
-                + "-کد پستی: " + reportSetting.Postcode + "-تلفاکس: " + reportSetting.Telfax,
-                FactoryAddress = "آدرس کارگاه: " + reportSetting.FactoryAddress + 
-                "-تلفن: " + reportSetting.FactoryPhone + "-فاکس: " + reportSetting.Fax,
-                ShomareSanad = reportSetting.ShomareSanad,
-                BaznegariDate = reportSetting.TarikhBaznegari,
-                BaznegariNumber = reportSetting.ShomareBaznegari,
+                OfficeAdress = reportSetting == null
+                    ? string.Empty
+                    : "دفتر مرکزی: " + reportSetting.OfficeAddress + "-تلفن: "
+                    + reportSetting.OfficePhone
+                    + "-کد پستی: " + reportSetting.Postcode + "-تلفاکس: " + reportSetting.Telfax,
+                FactoryAddress = reportSetting == null
+                    ? string.Empty
+                    : "آدرس کارگاه: " + reportSetting.FactoryAddress +
+                    "-تلفن: " + reportSetting.FactoryPhone + "-فاکس: " + reportSetting.Fax,
+                ShomareSanad = reportSetting?.ShomareSanad,
+                BaznegariDate = reportSetting?.TarikhBaznegari,
+                BaznegariNumber = reportSetting?.ShomareBaznegari,
                 AdminName = username,
-                LogoPath = reportSetting.LogoPath
+                LogoPath = reportSetting?.LogoPath ?? string.Empty
             };
             return model;
         }

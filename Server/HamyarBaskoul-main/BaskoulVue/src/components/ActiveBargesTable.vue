@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { api } from "../api";
+import { printTripleBarge } from "../print";
 import StatusBadge from "./StatusBadge.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
 
@@ -43,6 +44,10 @@ async function action() {
   } catch (error) {
     emit("error", error.message);
   }
+}
+
+function printBarge(id) {
+  printTripleBarge(id);
 }
 </script>
 <template>
@@ -101,6 +106,11 @@ async function action() {
             <td class="row-actions">
               <span v-if="loadingRowId === item.id">در حال بارگذاری...</span
               ><template v-else
+                ><button
+                  type="button"
+                  @click.stop.prevent="printBarge(item.id)"
+                >
+                  چاپ</button
                 ><button
                   v-if="!['باطل شده', 'نهایی شده'].includes(item.status)"
                   type="button"

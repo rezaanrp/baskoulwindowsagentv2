@@ -12,7 +12,7 @@ namespace Application.ViewModels.Reports
         public string? CoName { get; set; }
         public long? GhabzBaskoul { get; set; }
         public string? DateBaskoul { get; set; }
-        public DateTime? DateBarge { get; set; }
+        public string? DateBarge { get; set; }
         public string? TimeBaskoul { get; set; }
         public long? IdNegahbani { get; set; }
         public string? TimeNegahbani { get; set; }

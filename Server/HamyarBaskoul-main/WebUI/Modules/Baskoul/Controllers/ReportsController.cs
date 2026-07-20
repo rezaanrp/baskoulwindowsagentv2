@@ -64,7 +64,7 @@ namespace WebUI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> PrintTripleBarge(int id)
+        public async Task<IActionResult> PrintTripleBarge(int id, bool silent = false)
         {
             var user = _userservice.GetById(OnGetUserId());
             var username = user.Name + " " + user.Family;
@@ -73,6 +73,7 @@ namespace WebUI.Controllers
             {
                 return RedirectToAction("ListBargeAnbar", "BargeBaskoul", new { type = 4});
             }
+            ViewBag.SuppressAutoPrint = silent;
             return View(barge);
         }
     }
