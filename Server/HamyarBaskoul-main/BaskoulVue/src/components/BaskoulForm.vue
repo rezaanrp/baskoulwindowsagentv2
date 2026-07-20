@@ -16,10 +16,12 @@ const props = defineProps({
   hasLiveWeight: Boolean,
   connectionStatus: String,
   selectedScaleId: Number,
+  scaleSelectionMode: String,
   editingBarge: Object,
 });
 const emit = defineEmits([
   "select-scale",
+  "auto-select-scale",
   "completed",
   "editing-cleared",
   "error",
@@ -74,6 +76,17 @@ const bargeType = computed(() =>
 const isEditing = computed(
   () => !!props.editingBarge && props.editingBarge.status !== "در حال توزین",
 );
+
+function getNextScaleId(previousScaleId) {
+  const scales = props.weighbridges || [];
+  if (!scales.length) return null;
+  if (scales.length === 1) return scales[0].id;
+  const previousIndex = scales.findIndex(
+    (scale) => scale.id === Number(previousScaleId),
+  );
+  if (previousIndex < 0) return scales[0].id;
+  return scales[(previousIndex + 1) % scales.length].id;
+}
 
 watch(
   () => model.plate,
@@ -132,6 +145,14 @@ async function lookup(plate) {
           ? ""
           : incomplete.value.driverName;
       model.description = incomplete.value.description || "";
+      if (props.scaleSelectionMode !== "manual") {
+        const nextScaleId = getNextScaleId(
+          incomplete.value.weighbridgeId ?? props.selectedScaleId,
+        );
+        if (nextScaleId && nextScaleId !== props.selectedScaleId) {
+          emit("auto-select-scale", nextScaleId);
+        }
+      }
       lookupStatus.value = `وزن اول ${Number(firstWeight.value).toLocaleString("fa-IR")} کیلوگرم پیدا شد؛ وزن فعلی وزن دوم است.`;
     } else
       lookupStatus.value =

@@ -39,6 +39,7 @@ internal static class BaskoulMapping
             entry,
             exit,
             hasTwo ? Math.Abs(item.VaznPor!.Value - item.VanKhali!.Value) : null,
+            item.IDBaskul,
             type,
             status,
             item.Tozihat);

@@ -28,6 +28,7 @@ const table = reactive({
   loading: false,
 });
 const editingBarge = ref(null);
+const scaleSelectionMode = ref("auto");
 const toast = reactive({ text: "", type: "success" });
 
 const selectedScale = computed(
@@ -42,11 +43,16 @@ const hasSelectedLiveWeight = computed(
   () => !!live.receivedAt[selectedScale.value?.scaleCode],
 );
 
-function selectScale(id, announce = false) {
+function selectScale(id, announce = false, source = "manual") {
   const scale = formData.weighbridges.find((item) => item.id === Number(id));
   if (!scale) return;
   live.selectedScaleId = scale.id;
   localStorage.setItem("baskoul-vue-selected-scale", String(scale.id));
+  if (source === "manual") {
+    scaleSelectionMode.value = "manual";
+  } else if (scaleSelectionMode.value !== "manual") {
+    scaleSelectionMode.value = "auto";
+  }
   if (announce) notify(`${scale.name} انتخاب شد`);
 }
 
@@ -64,7 +70,11 @@ function selectNextScale(event) {
   const currentIndex = scales.findIndex(
     (item) => item.id === live.selectedScaleId,
   );
-  selectScale(scales[(currentIndex + 1) % scales.length].id, true);
+  selectScale(scales[(currentIndex + 1) % scales.length].id, true, "manual");
+}
+
+function resetScaleSelectionMode() {
+  scaleSelectionMode.value = "auto";
 }
 
 function notify(text, type = "success") {
@@ -101,7 +111,11 @@ async function initialize() {
     const savedScaleExists = formData.weighbridges.some(
       (item) => item.id === savedScaleId,
     );
-    selectScale(savedScaleExists ? savedScaleId : formData.weighbridges[0]?.id);
+    selectScale(
+      savedScaleExists ? savedScaleId : formData.weighbridges[0]?.id,
+      false,
+      "auto",
+    );
     await loadTable(1);
     connectSignalR();
   } catch (error) {
@@ -147,6 +161,7 @@ async function completed(result) {
     printTripleBarge(payload.id);
   }
   editingBarge.value = null;
+  scaleSelectionMode.value = "auto";
   await loadTable(1);
 }
 
@@ -182,10 +197,15 @@ onBeforeUnmount(() => window.removeEventListener("keydown", selectNextScale));
         :has-live-weight="hasSelectedLiveWeight"
         :connection-status="live.status"
         :selected-scale-id="live.selectedScaleId"
+        :scale-selection-mode="scaleSelectionMode"
         :editing-barge="editingBarge"
         @select-scale="selectScale($event)"
+        @auto-select-scale="selectScale($event, false, 'auto')"
         @completed="completed"
-        @editing-cleared="editingBarge = null"
+        @editing-cleared="
+          editingBarge = null;
+          resetScaleSelectionMode();
+        "
         @error="notify($event, 'error')"
       />
       <ActiveBargesTable

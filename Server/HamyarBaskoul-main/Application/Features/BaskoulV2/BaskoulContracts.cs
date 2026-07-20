@@ -18,6 +18,7 @@ public sealed record BargeDto(
     float? EntryWeight,
     float? ExitWeight,
     float? NetWeight,
+    long? WeighbridgeId,
     string BargeType,
     string Status,
     string? Description);
