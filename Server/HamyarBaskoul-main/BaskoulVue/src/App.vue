@@ -30,6 +30,7 @@ const table = reactive({
 const editingBarge = ref(null);
 const scaleSelectionMode = ref("auto");
 const toast = reactive({ text: "", type: "success" });
+let tableRequestId = 0;
 
 const selectedScale = computed(
   () =>
@@ -86,6 +87,7 @@ function notify(text, type = "success") {
 }
 
 async function loadTable(page = table.page) {
+  const requestId = ++tableRequestId;
   table.loading = true;
   try {
     const q = new URLSearchParams({
@@ -94,11 +96,17 @@ async function loadTable(page = table.page) {
       search: table.search,
     });
     const result = await api(`/active?${q}`);
+    if (requestId !== tableRequestId) return;
+    const lastPage = Math.max(1, Math.ceil(result.totalCount / result.pageSize));
+    if (result.page > lastPage) {
+      await loadTable(lastPage);
+      return;
+    }
     Object.assign(table, result);
   } catch (error) {
-    notify(error.message, "error");
+    if (requestId === tableRequestId) notify(error.message, "error");
   } finally {
-    table.loading = false;
+    if (requestId === tableRequestId) table.loading = false;
   }
 }
 
@@ -130,12 +138,12 @@ async function initialize() {
       false,
       "auto",
     );
+    connectSignalR();
     await loadTable(1);
     const editId = new URLSearchParams(window.location.search).get("editId");
     if (editId) {
       await openEditBarge(editId);
     }
-    connectSignalR();
   } catch (error) {
     notify(error.message, "error");
   }
@@ -199,7 +207,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", selectNextScale));
     <header class="hero">
       <div>
         <span class="eyebrow">سامانه توزین</span>
-        <h1>ثبت برگه باسکول</h1>
+        <h1><i class="fas fa-weight-hanging" aria-hidden="true"></i> ثبت برگه باسکول</h1>
       </div>
       <span class="connection" :class="{ online: live.status === 'متصل' }">{{
         live.status
@@ -233,6 +241,10 @@ onBeforeUnmount(() => window.removeEventListener("keydown", selectNextScale));
           loadTable(1);
         "
         @page="loadTable"
+        @page-size="
+          table.pageSize = $event;
+          loadTable(1);
+        "
         @selected="selectBarge"
         @changed="loadTable()"
         @error="notify($event, 'error')"

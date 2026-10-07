@@ -26,6 +26,10 @@ public sealed class BaskoulV2ApiController(ISender sender, IAntiforgery antiforg
     public Task<BargeDto?> IncompleteByPlate([FromQuery] string plate, CancellationToken ct) =>
         sender.Send(new GetIncompleteBargeByPlateQuery(plate), ct);
 
+    [HttpGet("driver-by-plate")]
+    public Task<PlateDriverDto?> DriverByPlate([FromQuery] string plate, CancellationToken ct) =>
+        sender.Send(new GetDriverByPlateQuery(plate), ct);
+
     [HttpGet("active")]
     public Task<PagedBargesDto> Active([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken ct = default) =>
         sender.Send(new GetActiveBargesQuery(search, page, pageSize), ct);

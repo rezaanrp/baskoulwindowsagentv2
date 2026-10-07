@@ -94,8 +94,11 @@ watch(
     clearTimeout(timer);
     controller?.abort();
     controller = null;
+    lookingUp.value = false;
     if (props.editingBarge) return;
     incomplete.value = null;
+    model.driverId = null;
+    model.driverName = "";
     if (!plate) {
       lookupStatus.value = "پلاک را وارد کنید.";
       return;
@@ -130,37 +133,53 @@ watch(
 );
 
 async function lookup(plate) {
-  controller = new AbortController();
+  const requestController = new AbortController();
+  controller = requestController;
+  const driverIdBeforeLookup = model.driverId;
+  const driverNameBeforeLookup = model.driverName;
   lookingUp.value = true;
   lookupStatus.value = "در حال بررسی برگه ناقص...";
   try {
-    incomplete.value = await api(
+    const foundIncomplete = await api(
       `/incomplete-by-plate?plate=${encodeURIComponent(plate)}`,
-      { signal: controller.signal },
+      { signal: requestController.signal },
     );
-    if (incomplete.value) {
-      model.driverId = incomplete.value.driverId;
-      model.driverName =
-        incomplete.value.driverName === "ثبت نشده"
-          ? ""
-          : incomplete.value.driverName;
-      model.description = incomplete.value.description || "";
+    if (requestController.signal.aborted || model.plate !== plate || props.editingBarge) return;
+    incomplete.value = foundIncomplete;
+    if (foundIncomplete) {
+      if (model.driverId === driverIdBeforeLookup && model.driverName === driverNameBeforeLookup) {
+        model.driverId = foundIncomplete.driverId;
+        model.driverName = foundIncomplete.driverName === "ثبت نشده" ? "" : foundIncomplete.driverName;
+      }
+      model.description = foundIncomplete.description || "";
       if (props.scaleSelectionMode !== "manual") {
         const nextScaleId = getNextScaleId(
-          incomplete.value.weighbridgeId ?? props.selectedScaleId,
+          foundIncomplete.weighbridgeId ?? props.selectedScaleId,
         );
         if (nextScaleId && nextScaleId !== props.selectedScaleId) {
           emit("auto-select-scale", nextScaleId);
         }
       }
       lookupStatus.value = `وزن اول ${Number(firstWeight.value).toLocaleString("fa-IR")} کیلوگرم پیدا شد؛ وزن فعلی وزن دوم است.`;
-    } else
-      lookupStatus.value =
-        "برگه ناقصی وجود ندارد؛ وزن فعلی وزن اول ثبت می‌شود.";
+    } else {
+      const previousDriver = await api(
+        `/driver-by-plate?plate=${encodeURIComponent(plate)}`,
+        { signal: requestController.signal },
+      );
+      if (requestController.signal.aborted || model.plate !== plate || props.editingBarge) return;
+      if (previousDriver && model.driverId === driverIdBeforeLookup && model.driverName === driverNameBeforeLookup) {
+        const knownDriver = props.drivers?.find((driver) => driver.id === previousDriver.driverId);
+        model.driverId = knownDriver ? knownDriver.id : null;
+        model.driverName = knownDriver ? "" : previousDriver.driverName;
+        lookupStatus.value = "راننده از سوابق این پلاک انتخاب شد؛ می‌توانید آن را تغییر دهید.";
+      } else {
+        lookupStatus.value = "برگه ناقصی وجود ندارد؛ وزن فعلی وزن اول ثبت می‌شود.";
+      }
+    }
   } catch (error) {
     if (error.name !== "AbortError") emit("error", error.message);
   } finally {
-    lookingUp.value = false;
+    if (controller === requestController) lookingUp.value = false;
   }
 }
 
@@ -291,6 +310,7 @@ onBeforeUnmount(() => {
     />
     <div class="form-actions">
       <button type="submit" class="primary" :disabled="submitting">
+        <i class="fas fa-save" aria-hidden="true"></i>
         {{
           submitting
             ? "در حال ثبت..."
@@ -300,7 +320,7 @@ onBeforeUnmount(() => {
                 ? "ثبت وزن دوم"
                 : "ثبت وزن اول"
         }}</button
-      ><button type="button" @click="requestClear">برگه جدید</button>
+      ><button type="button" @click="requestClear"><i class="fas fa-plus" aria-hidden="true"></i> برگه جدید</button>
     </div>
     <ConfirmDialog
       v-if="showClear"

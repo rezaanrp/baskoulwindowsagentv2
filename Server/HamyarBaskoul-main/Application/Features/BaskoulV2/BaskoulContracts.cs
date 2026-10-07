@@ -1,6 +1,7 @@
 namespace Application.Features.BaskoulV2;
 
 public sealed record LookupItemDto(long Id, string Title);
+public sealed record PlateDriverDto(long? DriverId, string DriverName);
 public sealed record WeighbridgeDto(int Id, string Name, string ScaleCode, int? Type, float Weight);
 
 public sealed record BaskoulFormDto(
@@ -12,6 +13,8 @@ public sealed record BaskoulFormDto(
 public sealed record BargeDto(
     long Id,
     long? ReceiptNumber,
+    string? DateBarge,
+    string? TimeBarge,
     string Plate,
     long? DriverId,
     string DriverName,
@@ -21,6 +24,7 @@ public sealed record BargeDto(
     long? WeighbridgeId,
     string BargeType,
     string Status,
+    string SyncStatus,
     string? Description);
 
 public sealed record PagedBargesDto(IReadOnlyList<BargeDto> Items, int Page, int PageSize, int TotalCount);

@@ -149,9 +149,13 @@ public sealed class BaskoulCommandHandler(IWriteDbContext db, ICurrentBaskoulUse
     {
         var scope = await currentUser.GetScopeAsync(ct);
         var item = await Scoped(request.Id, scope, ct);
+        if (item.FlgEbtal == true) throw new BaskoulConflictException("این برگه قبلاً باطل شده است.");
+        var now = DateTime.Now;
         item.FlgEbtal = true;
         item.Karbar_Ebtal = scope.UserId;
-        item.Date_Ebtal = DateTime.Now;
+        item.Date_Ebtal = now;
+        item.Karbar_Up = scope.UserId;
+        item.Date_Up = now;
         await db.SaveChangesAsync(ct);
         return new WeightCommandResult(item.ID, item.GhabzBaskolID, "باطل شده", "برگه باطل شد");
     }

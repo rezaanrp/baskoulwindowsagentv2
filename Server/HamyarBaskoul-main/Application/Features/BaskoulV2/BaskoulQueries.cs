@@ -6,6 +6,7 @@ namespace Application.Features.BaskoulV2;
 
 public sealed record GetBaskoulFormQuery : IRequest<BaskoulFormDto>;
 public sealed record GetIncompleteBargeByPlateQuery(string Plate) : IRequest<BargeDto?>;
+public sealed record GetDriverByPlateQuery(string Plate) : IRequest<PlateDriverDto?>;
 public sealed record GetBargeByIdQuery(long Id) : IRequest<BargeDto>;
 public sealed record GetActiveBargesQuery(string? Search, int Page = 1, int PageSize = 10) : IRequest<PagedBargesDto>;
 public sealed record GetDriversQuery : IRequest<IReadOnlyList<LookupItemDto>>;
@@ -14,6 +15,7 @@ public sealed record GetWeighbridgesQuery : IRequest<IReadOnlyList<WeighbridgeDt
 public sealed class BaskoulQueryHandler(IReadDbContext db, ICurrentBaskoulUser currentUser) :
     IRequestHandler<GetBaskoulFormQuery, BaskoulFormDto>,
     IRequestHandler<GetIncompleteBargeByPlateQuery, BargeDto?>,
+    IRequestHandler<GetDriverByPlateQuery, PlateDriverDto?>,
     IRequestHandler<GetBargeByIdQuery, BargeDto>,
     IRequestHandler<GetActiveBargesQuery, PagedBargesDto>,
     IRequestHandler<GetDriversQuery, IReadOnlyList<LookupItemDto>>,
@@ -37,6 +39,24 @@ public sealed class BaskoulQueryHandler(IReadDbContext db, ICurrentBaskoulUser c
                          (x.VanKhali > 0 && (!x.VaznPor.HasValue || x.VaznPor <= 0))))
             .OrderByDescending(x => x.ID).FirstOrDefaultAsync(ct);
         return item == null ? null : await Map(item, scope.CodeMarkaz, ct);
+    }
+
+    public async Task<PlateDriverDto?> Handle(GetDriverByPlateQuery request, CancellationToken ct)
+    {
+        var plate = request.Plate.Trim();
+        if (plate.Length == 0) return null;
+        var scope = await currentUser.GetScopeAsync(ct);
+        var item = await db.BargeBaskouls.AsNoTracking()
+            .Where(x => x.CodMarkaz == scope.CodeMarkaz && x.siteId == scope.SiteId &&
+                        x.ShomareMashin != null && x.ShomareMashin.Trim() == plate &&
+                        x.FlgEbtal != true &&
+                        (x.IDRanande.HasValue || !string.IsNullOrEmpty(x.OnvanRanandeh)))
+            .OrderByDescending(x => x.ID).FirstOrDefaultAsync(ct);
+        if (item == null) return null;
+
+        var drivers = await DriverMap(scope.CodeMarkaz, ct);
+        var name = DriverName(item, drivers);
+        return name == "ثبت نشده" ? null : new PlateDriverDto(item.IDRanande, name);
     }
 
     public async Task<BargeDto> Handle(GetBargeByIdQuery request, CancellationToken ct)

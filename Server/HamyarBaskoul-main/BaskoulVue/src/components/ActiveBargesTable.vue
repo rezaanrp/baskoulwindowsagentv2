@@ -6,10 +6,35 @@ import StatusBadge from "./StatusBadge.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
 
 const props = defineProps({ state: Object });
-const emit = defineEmits(["search", "page", "selected", "changed", "error"]);
+const emit = defineEmits(["search", "page", "page-size", "selected", "changed", "error"]);
 const search = ref("");
 const pendingAction = ref(null);
 const loadingRowId = ref(null);
+const selectedRowId = ref(null);
+const pageCount = computed(() =>
+  Math.max(1, Math.ceil((props.state?.totalCount || 0) / (props.state?.pageSize || 10))),
+);
+const firstEntry = computed(() =>
+  props.state?.totalCount ? (props.state.page - 1) * props.state.pageSize + 1 : 0,
+);
+const lastEntry = computed(() =>
+  Math.min(props.state?.page * props.state?.pageSize || 0, props.state?.totalCount || 0),
+);
+const visiblePages = computed(() => {
+  const current = Math.min(props.state?.page || 1, pageCount.value);
+  const pages = new Set([1, pageCount.value]);
+  for (let page = Math.max(1, current - 2); page <= Math.min(pageCount.value, current + 2); page++) {
+    pages.add(page);
+  }
+  const result = [];
+  for (const page of [...pages].sort((a, b) => a - b)) {
+    const previous = result[result.length - 1];
+    if (typeof previous === "number" && page - previous === 2) result.push(previous + 1);
+    else if (typeof previous === "number" && page - previous > 2) result.push("…");
+    result.push(page);
+  }
+  return result;
+});
 
 const pageStats = computed(() => {
   const items = props.state?.items || [];
@@ -25,6 +50,7 @@ const pageStats = computed(() => {
 
 async function selectRow(id) {
   if (loadingRowId.value) return;
+  selectedRowId.value = id;
   loadingRowId.value = id;
   try {
     emit("selected", await api(`/${id}`));
@@ -55,13 +81,21 @@ function printBarge(id) {
     <div class="table-head">
       <div>
         <span class="eyebrow">صف عملیات</span>
-        <h2>ماشین‌های باسکول</h2>
+        <h2><i class="fas fa-truck" aria-hidden="true"></i> ماشین‌های باسکول</h2>
       </div>
       <form @submit.prevent="$emit('search', search)">
         <input v-model="search" placeholder="پلاک یا شماره قبض" /><button>
-          جست‌وجو
+          <i class="fas fa-search" aria-hidden="true"></i> جست‌وجو
         </button>
       </form>
+    </div>
+    <div class="status-guide" aria-label="راهنمای وضعیت برگه‌ها">
+      <span><StatusBadge text="در حال توزین" /> وزن دوم مانده</span>
+      <span><StatusBadge text="تکمیل شده" /> دو وزن ثبت شده</span>
+      <span><StatusBadge text="نهایی شده" /> ثبت قطعی؛ ارسال جداست</span>
+      <span><StatusBadge text="باطل شده" /> از گردش خارج</span>
+      <span><StatusBadge text="نامشخص" /> وزن معتبری ندارد</span>
+      <span><StatusBadge text="ارسال شده" /> ثبت در سامانهٔ مقصد</span>
     </div>
     <div class="table-wrap">
       <table>
@@ -75,42 +109,54 @@ function printBarge(id) {
             <th>خالص</th>
             <th>نوع</th>
             <th>وضعیت</th>
+            <th>ارسال به سامانه</th>
             <th>عملیات</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="state.loading">
-            <td colspan="9">در حال دریافت...</td>
+            <td colspan="10" class="table-message">در حال دریافت...</td>
           </tr>
           <tr v-else-if="!state.items.length">
-            <td colspan="9">برگه‌ای پیدا نشد.</td>
+            <td colspan="10" class="table-message">برگه‌ای پیدا نشد.</td>
           </tr>
           <tr
             v-for="item in state.items"
             :key="item.id"
-            :class="{ 'row-loading': loadingRowId === item.id }"
+            :class="{ 'row-loading': loadingRowId === item.id, 'row-selected': selectedRowId === item.id }"
+            tabindex="0"
             @click.stop="selectRow(item.id)"
+            @keydown.enter.self.prevent="selectRow(item.id)"
+            @keydown.space.self.prevent="selectRow(item.id)"
           >
-            <td class="plate">{{ item.plate }}</td>
-            <td>{{ item.receiptNumber || "-" }}</td>
-            <td>{{ item.driverName }}</td>
-            <td>
+            <td class="plate" data-label="پلاک">{{ item.plate }}</td>
+            <td data-label="قبض">
+              <span class="receipt-details">
+                <span>{{ item.receiptNumber || "-" }}</span>
+                <small v-if="item.dateBarge || item.timeBarge" class="receipt-date-time">
+                  {{ [item.dateBarge, item.timeBarge].filter(Boolean).join(" ") }}
+                </small>
+              </span>
+            </td>
+            <td data-label="راننده">{{ item.driverName }}</td>
+            <td data-label="ورود">
               {{ item.entryWeight?.toLocaleString("fa-IR") || "ثبت نشده" }}
             </td>
-            <td>
+            <td data-label="خروج">
               {{ item.exitWeight?.toLocaleString("fa-IR") || "ثبت نشده" }}
             </td>
-            <td>{{ item.netWeight?.toLocaleString("fa-IR") || "-" }}</td>
-            <td><StatusBadge :text="item.bargeType" /></td>
-            <td><StatusBadge :text="item.status" /></td>
-            <td class="row-actions">
+            <td data-label="خالص">{{ item.netWeight?.toLocaleString("fa-IR") || "-" }}</td>
+            <td data-label="نوع"><StatusBadge :text="item.bargeType" /></td>
+            <td data-label="وضعیت"><StatusBadge :text="item.status" /></td>
+            <td data-label="ارسال"><StatusBadge :text="item.syncStatus" /></td>
+            <td class="row-actions" data-label="عملیات">
               <span v-if="loadingRowId === item.id">در حال بارگذاری...</span
               ><template v-else
                 ><button
                   type="button"
                   @click.stop.prevent="printBarge(item.id)"
                 >
-                  چاپ</button
+                  <i class="fas fa-print" aria-hidden="true"></i> چاپ</button
                 ><button
                   v-if="!['باطل شده', 'نهایی شده'].includes(item.status)"
                   type="button"
@@ -126,7 +172,7 @@ function printBarge(id) {
                 >
                   نهایی</button
                 ><button
-                  v-if="!['باطل شده', 'نهایی شده'].includes(item.status)"
+                  v-if="item.status !== 'باطل شده'"
                   type="button"
                   class="danger"
                   @click.stop.prevent="
@@ -141,24 +187,47 @@ function printBarge(id) {
         </tbody>
       </table>
     </div>
-    <div class="pagination">
-      <button
-        type="button"
-        :disabled="state.page <= 1"
-        @click.stop.prevent="$emit('page', state.page - 1)"
-      >
-        قبلی</button
-      ><span
-        >صفحه {{ state.page }} از
-        {{ Math.max(1, Math.ceil(state.totalCount / state.pageSize)) }}</span
-      ><button
-        type="button"
-        :disabled="state.page * state.pageSize >= state.totalCount"
-        @click.stop.prevent="$emit('page', state.page + 1)"
-      >
-        بعدی
-      </button>
-    </div>
+    <nav class="pagination" aria-label="صفحه‌بندی برگه‌ها">
+      <span class="pagination-info">
+        نمایش {{ firstEntry.toLocaleString("fa-IR") }} تا
+        {{ lastEntry.toLocaleString("fa-IR") }} از
+        {{ state.totalCount.toLocaleString("fa-IR") }} برگه
+      </span>
+      <div class="pagination-pages">
+        <button type="button" class="icon-only" aria-label="صفحهٔ اول" title="صفحهٔ اول"
+          :disabled="state.loading || state.page <= 1" @click="$emit('page', 1)">
+          <i class="fas fa-angles-right" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="icon-only" aria-label="صفحهٔ قبلی" title="صفحهٔ قبلی"
+          :disabled="state.loading || state.page <= 1" @click="$emit('page', state.page - 1)">
+          <i class="fas fa-angle-right" aria-hidden="true"></i>
+        </button>
+        <template v-for="(page, index) in visiblePages" :key="`${page}-${index}`">
+          <span v-if="page === '…'" class="pagination-ellipsis" aria-hidden="true">…</span>
+          <button v-else type="button" :class="{ active: page === state.page }"
+            :aria-label="`صفحه ${page}`" :aria-current="page === state.page ? 'page' : undefined"
+            :disabled="state.loading" @click="page !== state.page && $emit('page', page)">
+            {{ page.toLocaleString("fa-IR") }}
+          </button>
+        </template>
+        <button type="button" class="icon-only" aria-label="صفحهٔ بعدی" title="صفحهٔ بعدی"
+          :disabled="state.loading || state.page >= pageCount" @click="$emit('page', state.page + 1)">
+          <i class="fas fa-angle-left" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="icon-only" aria-label="صفحهٔ آخر" title="صفحهٔ آخر"
+          :disabled="state.loading || state.page >= pageCount" @click="$emit('page', pageCount)">
+          <i class="fas fa-angles-left" aria-hidden="true"></i>
+        </button>
+      </div>
+      <label class="pagination-size" title="تعداد برگه در صفحه">
+        <i class="fas fa-list" aria-hidden="true"></i>
+        <select aria-label="تعداد برگه در صفحه" :value="state.pageSize" :disabled="state.loading" @change="$emit('page-size', Number($event.target.value))">
+          <option :value="10">۱۰</option>
+          <option :value="20">۲۰</option>
+          <option :value="50">۵۰</option>
+        </select>
+      </label>
+    </nav>
     <div class="table-summary">
       <div class="summary-tile">
         <small>کل برگ‌ها</small>
@@ -180,15 +249,12 @@ function printBarge(id) {
         <small>ابطال شده</small>
         <strong>{{ pageStats.cancelled.toLocaleString("fa-IR") }}</strong>
       </div>
-      <div class="summary-note">
-        <span>این بخش برای پر شدن فضای خالی زیر جدول و نمایش جمع‌بندی سریع صفحه اضافه شده است.</span>
-      </div>
     </div>
     <ConfirmDialog
       v-if="pendingAction"
       :text="
         pendingAction.action === 'cancel'
-          ? 'این برگه باطل شود؟'
+          ? 'این برگه باطل شود؟ اگر قبلاً ارسال شده باشد، ابطال در همگام‌سازی بعدی منتقل می‌شود.'
           : 'این برگه نهایی شود؟'
       "
       @confirm="action"

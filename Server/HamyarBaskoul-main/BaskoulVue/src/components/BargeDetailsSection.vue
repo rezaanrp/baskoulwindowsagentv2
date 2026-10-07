@@ -11,7 +11,7 @@ defineProps({
   <section class="form-section">
     <div class="section-title">
       <span>۲</span>
-      <h2>جزئیات برگه</h2>
+      <h2><i class="fas fa-file-invoice" aria-hidden="true"></i> جزئیات برگه</h2>
     </div>
     <div class="summary-grid">
       <div>

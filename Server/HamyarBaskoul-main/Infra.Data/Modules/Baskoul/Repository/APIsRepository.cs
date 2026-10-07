@@ -273,19 +273,18 @@ namespace Infra.Data.Repository
         public async Task<SendToServerDomainViewModel> SendToServer(string codmarkaz, string userid, string selectedDore)
         {
             var bargs = _context.BargeBaskouls
-      .AsNoTracking()
       .Where(o =>
           o.CodMarkaz == codmarkaz &&
           o.FlgSabt == true &&
-          o.FlgEbtal != true &&
           o.VaznPor.HasValue &&
           o.VanKhali.HasValue &&
           o.VaznPor > 0 &&
           o.VanKhali > 0 &&
+          (o.FlgEbtal != true || (o.IDWebBarge != null && o.DateInsToWeb != null)) &&
           (
               o.IDWebBarge == null ||
               o.DateInsToWeb == null ||
-              (o.DateUpToWeb.HasValue && o.Date_Up.HasValue && o.DateUpToWeb.Value < o.Date_Up.Value)
+              (o.Date_Up.HasValue && (!o.DateUpToWeb.HasValue || o.DateUpToWeb.Value < o.Date_Up.Value))
           )
       )
       .ToList();
@@ -307,7 +306,7 @@ namespace Infra.Data.Repository
 
             foreach(var barg in bargs)
             {
-                if(barg.DateInsToWeb == null)
+                if(barg.DateInsToWeb == null || barg.IDWebBarge == null)
                 {
                     const string soapAction = SoapActions.Insert;
                     string soapBody = SoapActions.InsertSoapBody(barg, selectedDore, token);
@@ -341,9 +340,17 @@ namespace Infra.Data.Repository
                         var message = resultNode.SelectSingleNode("t:Messege", nsmgr)?.InnerText;
                         var data = resultNode.SelectSingleNode("t:Data", nsmgr)?.InnerText;
 
-                        bool success = state?.ToLower() == "true";
+                        if (!string.Equals(state, "true", StringComparison.OrdinalIgnoreCase) ||
+                            !int.TryParse(data, out var webBargeId) || webBargeId <= 0)
+                        {
+                            return new SendToServerDomainViewModel
+                            {
+                                State = false,
+                                Message = string.IsNullOrWhiteSpace(message) ? "پاسخ نامعتبر از سرور" : message
+                            };
+                        }
 
-                        barg.IDWebBarge = int.Parse(data);
+                        barg.IDWebBarge = webBargeId;
                         barg.DateInsToWeb = DateTime.Now;
                         barg.DateUpToWeb = DateTime.Now;
                         await _context.SaveChangesAsync();
@@ -389,16 +396,21 @@ namespace Infra.Data.Repository
                         // Extract values
                         var state = resultNode.SelectSingleNode("t:State", nsmgr)?.InnerText;
                         var message = resultNode.SelectSingleNode("t:Messege", nsmgr)?.InnerText;
-                        var data = resultNode.SelectSingleNode("t:Data", nsmgr)?.InnerText;
-
-                        bool success = state?.ToLower() == "true";
+                        if (!string.Equals(state, "true", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return new SendToServerDomainViewModel
+                            {
+                                State = false,
+                                Message = string.IsNullOrWhiteSpace(message) ? "به‌روزرسانی برگه در سرور انجام نشد" : message
+                            };
+                        }
 
                         barg.DateUpToWeb = DateTime.Now;
                         await _context.SaveChangesAsync();
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogToFile($"API Insert: {ex.Message}");
+                        Logger.LogToFile($"API Update: {ex.Message}");
                         return new SendToServerDomainViewModel
                         {
                             State = false,

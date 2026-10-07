@@ -29,10 +29,19 @@ internal static class BaskoulMapping
             : item.FlgSabt == true ? "نهایی شده"
             : hasTwo ? "تکمیل شده"
             : hasOne ? "در حال توزین" : "نامشخص";
+        var wasSent = item.IDWebBarge.HasValue && item.DateInsToWeb.HasValue;
+        var needsUpdate = item.Date_Up.HasValue &&
+            (!item.DateUpToWeb.HasValue || item.Date_Up.Value > item.DateUpToWeb.Value);
+        var syncStatus = item.FlgEbtal == true
+            ? !wasSent ? "ارسال نشده" : needsUpdate ? "ابطال در انتظار ارسال" : "ابطال ارسال شد"
+            : !wasSent ? item.FlgSabt == true ? "در انتظار ارسال" : "آماده ارسال نیست"
+            : needsUpdate ? "در انتظار همگام‌سازی" : "ارسال شده";
 
         return new BargeDto(
             item.ID,
             item.GhabzBaskolID,
+            item.DateBarge,
+            item.TimeBarge,
             item.ShomareMashin ?? string.Empty,
             item.IDRanande,
             driverName,
@@ -42,6 +51,7 @@ internal static class BaskoulMapping
             item.IDBaskul,
             type,
             status,
+            syncStatus,
             item.Tozihat);
     }
 }
